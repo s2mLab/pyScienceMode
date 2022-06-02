@@ -33,10 +33,10 @@ class Channel:
         Contain the different names of the different modes
     """
 
-    MODE = {'CCLM': 0, 'OSCLM': 1, 'SP': 2}
+    MODE = {'Single': 0, 'Doublet': 1, 'Triplet': 2}
 
-    def __init__(self, mode: str, no_channel: int, amplitude: int, frequency: int, pulse_width: int,
-                 stimulation_interval: int, inter_pulse_interval: int, name: str = None):
+    def __init__(self, mode: str = 'Single', no_channel: int = 1, amplitude: int = 0, frequency: int = 1,
+                 pulse_width: int = 1, stimulation_interval: int = 1, inter_pulse_interval: int = 1, name: str = None):
         """
         Create an object Channel.
         Check if the values given are in limits.
