@@ -5,7 +5,7 @@ import crccheck.checksum
 from colorama import Fore
 import serial
 import time
-from Channel import Channel
+from pyScienceMode2 import Channel
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
