@@ -1,5 +1,5 @@
 # pyScienceMode2
-Control the Rehastim2.
+Python interface to control the Rehastim2.
 
 ## Instalation
 To install the program run the following command in the main directory 
