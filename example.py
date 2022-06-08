@@ -3,6 +3,8 @@ from pyScienceMode2 import Stimulator as St
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
 
+import time
+
 # Create a list of channel
 list_channels = []
 
@@ -54,14 +56,25 @@ list_channels[2].amplitude = 10
 list_channels.append(channel_7)
 
 # Wait a given time in seconds
-stimulator.wait(5)
+time.sleep(5)
 
 # Update the parameters of the stimulation
 stimulator.update_stimulation(list_channels)
 
 # Wait a given time in seconds
-stimulator.wait(5)
+time.sleep(5)
 
 # Stop the stimulation
 stimulator.stop_stimulation()
- 
+
+# Disconnect the Rehastim, stop sending watchdog
+stimulator.disconnect()
+
+time.sleep(2)
+
+# It is possible to restart a stimulation, the program automatically connect to the Rehastim
+stimulator.start_stimulation()
+time.sleep(10)
+
+# Stimulator.disconnect() must be called in order to finish the program and stop send watchdog.
+stimulator.disconnect()
