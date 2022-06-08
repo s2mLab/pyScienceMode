@@ -5,6 +5,7 @@ import crccheck.checksum
 from colorama import Fore
 import serial
 import time
+import threading
 from pyScienceMode2 import Channel
 
 # Notes :
@@ -36,7 +37,7 @@ class Stimulator:
         Contain the name of the muscle of the corresponding channel.
     given_channels: list[int]
         Contain the number of the channels that where given during __init__ or update.
-    debug_reha_show_com : bool
+    debug_reha_show_log : bool
         Tell if the communications will be displayed (True) or not (False).
     time_last_cmd : int
         Time of the last command which was sent to the Rehastim.
@@ -52,6 +53,8 @@ class Stimulator:
     init_all_channels: bool
         Tell if channels are initiated (True) or not (False). By default, 0. For now channel 2 and 4 does not work, they
         are not initialised even if ini_all_channels = 1.
+    self.__thread_watchdog: threading.Thread
+        ID of the thread responsible for sending regularly a watchdog.
 
     Class Attributes
     ----------------
@@ -124,7 +127,7 @@ class Stimulator:
         self.pulse_width = []
         self.muscle = []
         self.given_channels = []
-        self.debug_reha_show_com = False
+        self.debug_reha_show_log = False
         self.time_last_cmd = 0
         self.packet_send_history = []
         self.reha_connected = False
@@ -134,6 +137,8 @@ class Stimulator:
 
         self.check_stimulation_interval(self.list_channels)
         self.check_unique_channel(self.list_channels)
+
+        self.__thread_watchdog = threading.Thread(target=self._watchdog)
 
     def wait_for_packet(self) -> str:
         """
@@ -262,7 +267,7 @@ class Stimulator:
         param: int
             Tell if the communication is displayed.
         """
-        self.debug_reha_show_com = param
+        self.debug_reha_show_log = param
 
     def _send_packet(self, cmd: str, packet_number: int) -> str:
         """
@@ -283,8 +288,9 @@ class Stimulator:
         if cmd == 'InitAck':
             packet = self._init_ack(packet_number)
             self.port.write(packet)
+            self._start_watchdog()
         elif cmd == 'Watchdog':
-            packet = self._watchdog()
+            packet = self._packet_watchdog()
             self.port.write(packet)
         elif cmd == 'GetStimulationMode':
             packet = self._get_mode()
@@ -299,7 +305,7 @@ class Stimulator:
             packet = self._stop_stimulation()
             self.port.write(packet)
 
-        if self.debug_reha_show_com:
+        if self.debug_reha_show_log:
             self._packet_show(packet, "SEND")
 
         self.time_last_cmd = time.time()
@@ -336,7 +342,7 @@ class Stimulator:
                     current_packet = []
                     if i != len(packet) - 1:
                         self.multiple_packet_flag = 1
-            if self.debug_reha_show_com:
+            if self.debug_reha_show_log:
                 self._packet_show(self.buffer_rec[0], "RECEIVE")
             return self.buffer_rec.pop(0)
 
@@ -361,7 +367,7 @@ class Stimulator:
         else:
             for i in range(len(self.buffer_rec)):
                 print(self._calling_ack(self.buffer_rec[i]), Fore.WHITE)
-                if self.debug_reha_show_com:
+                if self.debug_reha_show_log:
                     self._packet_show(self.buffer_rec[i])
             self.multiple_packet_flag = 0
             return True
@@ -389,7 +395,6 @@ class Stimulator:
             packet = self._read_packet()
         if len(packet) >= 7:
             if int(packet[6]) == Stimulator.TYPES['Init'] and int(packet[7]) == self.VERSION:
-                self.reha_connected = True
                 return self._send_packet('InitAck', int(packet[5]))
             if int(packet[6]) == Stimulator.TYPES['Init'] and int(packet[7]) != self.VERSION:
                 print(Fore.LIGHTRED_EX, "Error initialisation: incompatible version (program version : %s"
@@ -473,7 +478,7 @@ class Stimulator:
         packet = self._packet_construction(packet_count, 'InitAck', [0])
         return packet
 
-    def _watchdog(self) -> bytes:
+    def _packet_watchdog(self) -> bytes:
         """
         Constructs the watchdog packet.
 
@@ -485,35 +490,31 @@ class Stimulator:
         packet = self._packet_construction(self.packet_count, 'Watchdog')
         return packet
 
-    def send_watchdog(self):
+    def _start_watchdog(self):
+        """
+        Start the thread which sends watchdog.
+        """
+        print("Start Watchdog")
+        self.reha_connected = True
+        self.__thread_watchdog = threading.Thread(target=self._watchdog)
+        self.__thread_watchdog.start()
+
+    def _stop_watchdog(self):
+        """
+        Stop the thread which sends watchdog.
+        """
+        print("Disconnect watchdog")
+        self.reha_connected = False
+        self.__thread_watchdog.join()
+
+    def _watchdog(self):
         """
         Send a watchdog if the last command send by the pc was more than 600ms ago and if the rehastim is connected.
         """
-        time_present = time.time()
-        if time_present - self.time_last_cmd > 0.6 and self.reha_connected:
-            self._send_packet('Watchdog', self.packet_count)
-        elif not self.reha_connected:
-            print(Fore.LIGHTRED_EX + "Error watchdog not send: Rehastim not connected" + Fore.WHITE)
-
-    def wait(self, sec: float):
-        """
-        Wait for a given time in seconds and send watchdog regularly in order not to lose the connection.
-
-        Parameters
-        ----------
-        sec: float
-            The number of second that the pc needs to wait.
-        """
-        time_start = time.time()
-        time_step = time_present = time.time()
-        while time_present < time_start + sec:
-            if time_present - time_step > 0.6:
+        print(self.is_connected())
+        while 1 and self.is_connected():
+            if time.time() - self.time_last_cmd > 0.6:
                 self._send_packet('Watchdog', self.packet_count)
-                time_step = time_present
-            time_present = time.time()
-            if self.port.in_waiting > 0:
-                print(self._calling_ack(), Fore.WHITE)
-                self._check_multiple_packet_rec()
 
     def is_connected(self) -> bool:
         """
@@ -523,11 +524,17 @@ class Stimulator:
         -------
         True if connected, False if not.
         """
-        if self.time_last_cmd > 1.2 or not self.reha_connected:
+        if self.time_last_cmd - time.time() > 1.2 or not self.reha_connected:
             self.reha_connected = False
             return False
         else:
             return True
+
+    def disconnect(self):
+        """
+        Disconnect the pc to the Rehastim by stopping sending watchdog.
+        """
+        self._stop_watchdog()
 
     def _get_mode(self) -> bytes:
         """
@@ -655,7 +662,6 @@ class Stimulator:
         Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
         """
         if str(packet[7]) == '0':
-            self.reha_connected = False
             self.packet_count = 0
             return ' Stimulation stopped'
         elif str(packet[7]) == '255':
@@ -866,7 +872,7 @@ class Stimulator:
         self._check_multiple_packet_rec()
 
         if time_stimulations is not None:
-            self.wait(time_stimulations)
+            time.sleep(5)
             if self.stop_stimulation() != 0:
                 return -3
         return 0
@@ -925,7 +931,7 @@ class Stimulator:
         self._check_multiple_packet_rec()
 
         if time_stimulations is not None:
-            self.wait(time_stimulations)
+            time.sleep(time_stimulations)
             if self.stop_stimulation() != 0:
                 return -3
         return 0
