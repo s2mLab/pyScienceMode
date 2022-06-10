@@ -92,8 +92,8 @@ class Channel:
         True if they correspond, False if not.
         """
         if 1/self.frequency != self.stimulation_interval/1000 and self.stimulation_interval != 0:
-            print(Fore.LIGHTYELLOW_EX + "Warning : amplitude and frequency are different. "
-                                        "By default, amplitude overwrite frequency " + Fore.WHITE)
+            print(Fore.LIGHTYELLOW_EX + "Warning : stimulation_interval does not correspond to frequency. "
+                                        "By default, stimulation_interval overwrite frequency " + Fore.WHITE)
             self.frequency = int(1000/self.stimulation_interval)
             return False
         return True
