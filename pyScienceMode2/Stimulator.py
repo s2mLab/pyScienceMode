@@ -51,8 +51,7 @@ class Stimulator:
     buffer_rec : list[int]
         Contain the packet receive which has not been processed.
     init_all_channels: bool
-        Tell if channels are initiated (True) or not (False). By default, 0. For now channel 2 and 4 does not work, they
-        are not initialised even if ini_all_channels = 1.
+        Tell if all channels are initiated (True) or not (False). By default, 0.
     self.__thread_watchdog: threading.Thread
         ID of the thread responsible for sending regularly a watchdog.
 
@@ -102,7 +101,7 @@ class Stimulator:
              0x22: 'StopChannelListMode', 0x23: 'StopChannelListModeAck',
              0x24: 'SinglePulse', 0x25: 'SinglePulseAck', 0x26: 'StimulationError'}
 
-    ALL_ELECTRODE_NUMBER = 245
+    ALL_ELECTRODE_NUMBER = 255
 
     # Constructor
     def __init__(self, list_channels: list[Channel], port_path: str):
@@ -611,9 +610,7 @@ class Stimulator:
         else:
             indice_given_channels = 0
             for i in range(8):
-                if i + 1 == 2 or i + 1 == 4:  # Channel 2 and 4 broken
-                    pass
-                elif i + 1 in self.given_channels:
+                if i + 1 in self.given_channels:
                     msb, lsb = self._msb_lsb_pulse_stim(self.pulse_width[indice_given_channels])
                     data_stimulation.append(mode)
                     data_stimulation.append(msb)
