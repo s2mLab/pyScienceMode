@@ -38,7 +38,11 @@ class Stimulator:
     given_channels: list[int]
         Contain the number of the channels that where given during __init__ or update.
     debug_reha_show_log : bool
-        Tell if the communications will be displayed (True) or not (False).
+        Tell if the log will be displayed (True) or not (False).
+    debug_reha_show_com : bool
+        Tell if the communication will be displayed (True) or not (False). Except watchdog.
+    debug_reha_show_watchdog : bool
+        Tell if the watchdog will be displayed (True) or not (False).
     time_last_cmd : int
         Time of the last command which was sent to the Rehastim.
     packet_send_history : list[int]
@@ -50,8 +54,6 @@ class Stimulator:
         be used after each call of _calling_ack() or wait_for_packet() in order to process those packets.
     buffer_rec : list[int]
         Contain the packet receive which has not been processed.
-    init_all_channels: bool
-        Tell if all channels are initiated (True) or not (False). By default, 0.
     self.__thread_watchdog: threading.Thread
         ID of the thread responsible for sending regularly a watchdog.
 
@@ -75,8 +77,6 @@ class Stimulator:
         Dictionary which contains Rehastim commands for protocol and their values. (Motomed command are not implemented)
     RECEIVE, SEND, ERR : int
         Packet type. Used for _packet_show() method.
-    ALL_ELECTRODE_NUMBER: int
-        Correspond to the electrode_number if all functioning electrode are activated
     """
     VERSION = 0x01
 
@@ -101,10 +101,8 @@ class Stimulator:
              0x22: 'StopChannelListMode', 0x23: 'StopChannelListModeAck',
              0x24: 'SinglePulse', 0x25: 'SinglePulseAck', 0x26: 'StimulationError'}
 
-    ALL_ELECTRODE_NUMBER = 255
-
     # Constructor
-    def __init__(self, list_channels: list[Channel], port_path: str):
+    def __init__(self, list_channels: list, port_path: str):
         """
         Creates an object stimulator.
 
@@ -127,17 +125,21 @@ class Stimulator:
         self.muscle = []
         self.given_channels = []
         self.debug_reha_show_log = False
+        self.debug_reha_show_com = False
+        self.debug_reha_show_watchdog = False
         self.time_last_cmd = 0
         self.packet_send_history = []
         self.reha_connected = False
         self.multiple_packet_flag = 0
         self.buffer_rec = []
-        self.init_all_channels = False
+        self.read_port_time = 0.0
 
         self.check_stimulation_interval(self.list_channels)
         self.check_unique_channel(self.list_channels)
 
         self.__thread_watchdog = threading.Thread(target=self._watchdog)
+        self.tic = 0
+        self.tic_total = 0.0
 
     def wait_for_packet(self) -> str:
         """
@@ -148,11 +150,14 @@ class Stimulator:
         message: str
             Message that correspond to the packet received.
         """
+        # print("Time program ",  str(time.time() - self.tic))
+        # self.tic = time.time()
         while 1:
             if self.port.in_waiting > 0:
+                # print("Time response ", str(time.time() - self.tic))
                 return self._calling_ack()
 
-    def set_stimulation_signal(self, list_channels: list[Channel]):
+    def set_stimulation_signal(self, list_channels: list):
         """
         Sets or updates the stimulation's parameters.
 
@@ -173,7 +178,7 @@ class Stimulator:
             self.pulse_width.append(list_channels[i].pulse_width)
             self.given_channels.append(list_channels[i].no_channel)
 
-    def _packet_construction(self, packet_count: int, packet_type: str, packet_data: list[int] = None) -> bytes:
+    def _packet_construction(self, packet_count: int, packet_type: str, packet_data: list = None) -> bytes:
         """
         Constructs the packet which will be sent to the Rehastim.
 
@@ -212,7 +217,7 @@ class Stimulator:
         
         return b''.join([byte.to_bytes(1, 'little') for byte in packet])
 
-    def _stuff_packet_byte(self, packet: list[int]) -> list[int]:
+    def _stuff_packet_byte(self, packet: list) -> list:
         """
         Stuffs each byte if necessary of the packet.
 
@@ -268,6 +273,12 @@ class Stimulator:
         """
         self.debug_reha_show_log = param
 
+    def show_com(self, param: bool = True):
+        self.debug_reha_show_com = param
+
+    def show_watchdog(self, param: bool = True):
+        self.debug_reha_show_watchdog = param
+
     def _send_packet(self, cmd: str, packet_number: int) -> str:
         """
         Calls the methode that construct the packet according to the command.
@@ -296,17 +307,19 @@ class Stimulator:
             self.port.write(packet)
         elif cmd == 'InitChannelListMode':
             packet = self._init_stimulation()
-            self.port.write(packet)  # quoi faire avec channel_execution
+            self.port.write(packet)
         elif cmd == 'StartChannelListMode':
             packet = self._start_stimulation()
             self.port.write(packet)
+            self.tic = time.time()
         elif cmd == 'StopChannelListMode':
             packet = self._stop_stimulation()
             self.port.write(packet)
 
-        if self.debug_reha_show_log:
+        if self.debug_reha_show_com and cmd != 'Watchdog':
             self._packet_show(packet, "SEND")
-
+        if self.debug_reha_show_watchdog and cmd == 'Watchdog':
+            self._packet_show(packet, "SEND")
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
         self.packet_count = (self.packet_count + 1) % 256
@@ -327,7 +340,12 @@ class Stimulator:
         The first packet received or an empty packet if the data does not start with a START_BYTE
         """
         # Read port
-        packet = self.port.readline()
+        # print("Time program before read ", time.time() - self.tic)
+        # self.tic = time.time()
+        # packet = self.port.readline()
+        packet = self.port.read(self.port.inWaiting())
+        # print("Time read", time.time() - self.tic)
+        # print("Time total ", time.time() - self.tic_total)
         current_packet = []
         self.buffer_rec = []
 
@@ -341,7 +359,7 @@ class Stimulator:
                     current_packet = []
                     if i != len(packet) - 1:
                         self.multiple_packet_flag = 1
-            if self.debug_reha_show_log:
+            if self.debug_reha_show_com:
                 self._packet_show(self.buffer_rec[0], "RECEIVE")
             return self.buffer_rec.pop(0)
 
@@ -366,13 +384,13 @@ class Stimulator:
         else:
             for i in range(len(self.buffer_rec)):
                 print(self._calling_ack(self.buffer_rec[i]), Fore.WHITE)
-                if self.debug_reha_show_log:
+                if self.debug_reha_show_com:
                     self._packet_show(self.buffer_rec[i])
             self.multiple_packet_flag = 0
             return True
 
     # Creates packet for every command part of dictionary TYPES
-    def _calling_ack(self, packet: list[int] = None) -> str:
+    def _calling_ack(self, packet: list = None) -> str:
         """
         Collects the packet waiting in the port if no packet is given.
         Processes the packet given or collected.
@@ -417,12 +435,14 @@ class Stimulator:
                 self._packet_show(self.packet_send_history, "SEND")
                 print(Fore.LIGHTRED_EX + "Error packet : not understood, Packet rec:")
                 self._packet_show(packet, "ERR")
+                raise RuntimeError("Error packet : not understood")
         else:
             self._packet_show(self.packet_send_history, "SEND")
             print(Fore.LIGHTRED_EX + "Error packet : packet too short, Packet rec:")
             self._packet_show(packet, "ERR")
+            raise RuntimeError("Wrong packet received, too short")
 
-    def _packet_show(self, packet: list[int], header: str = None):
+    def _packet_show(self, packet: list, header: str = None):
         """
         Print the packet given in arguments in the color corresponding to the header.
         Parameters
@@ -510,7 +530,6 @@ class Stimulator:
         """
         Send a watchdog if the last command send by the pc was more than 600ms ago and if the rehastim is connected.
         """
-        print(self.is_connected())
         while 1 and self.is_connected():
             if time.time() - self.time_last_cmd > 0.6:
                 self._send_packet('Watchdog', self.packet_count)
@@ -543,7 +562,7 @@ class Stimulator:
         return packet
 
     @staticmethod
-    def _get_mode_ack(packet: list[int]) -> str:
+    def _get_mode_ack(packet: list) -> str:
         """
         Returns the string corresponding to the information contain in the 'getModeAck' packet.
         """
@@ -566,16 +585,13 @@ class Stimulator:
         Returns the packet for the InitChannelMode.
         """
         msb, lsb = self._msb_lsb_main_stim()
-        if self.init_all_channels:
-            new_electrode_numb = self.ALL_ELECTRODE_NUMBER
-        else:
-            new_electrode_numb = self.electrode_number
+        new_electrode_numb = self.electrode_number
         data_stimulation = [0, new_electrode_numb, 0, 2, msb, lsb, 0]
         packet = self._packet_construction(self.packet_count, 'InitChannelListMode', data_stimulation)
         return packet
 
     @staticmethod
-    def _init_stimulation_ack(packet: list[int]) -> str:
+    def _init_stimulation_ack(packet: list) -> str:
         """
         Returns the string corresponding to the information contain in the 'InitChannelListModeAck' packet.
         """
@@ -600,35 +616,19 @@ class Stimulator:
         """
         data_stimulation = []
         mode = 0
-        if not self.init_all_channels:
-            for i in range(len(self.amplitude)):
-                msb, lsb = self._msb_lsb_pulse_stim(self.pulse_width[i])
-                data_stimulation.append(mode)
-                data_stimulation.append(msb)
-                data_stimulation.append(lsb)
-                data_stimulation.append(int(self.amplitude[i]))
-        else:
-            indice_given_channels = 0
-            for i in range(8):
-                if i + 1 in self.given_channels:
-                    msb, lsb = self._msb_lsb_pulse_stim(self.pulse_width[indice_given_channels])
-                    data_stimulation.append(mode)
-                    data_stimulation.append(msb)
-                    data_stimulation.append(lsb)
-                    data_stimulation.append(int(self.amplitude[indice_given_channels]))
-                    indice_given_channels += 1
-                else:
-                    data_stimulation.append(0)
-                    data_stimulation.append(0)
-                    data_stimulation.append(0)
-                    data_stimulation.append(0)
+        for i in range(len(self.amplitude)):
+            msb, lsb = self._msb_lsb_pulse_stim(self.pulse_width[i])
+            data_stimulation.append(mode)
+            data_stimulation.append(msb)
+            data_stimulation.append(lsb)
+            data_stimulation.append(int(self.amplitude[i]))
 
         packet = self._packet_construction(self.packet_count, 'StartChannelListMode', data_stimulation)
 
         return packet
 
     @staticmethod
-    def _start_stimulation_ack(packet: list[int]) -> str:
+    def _start_stimulation_ack(packet: list) -> str:
         """
         Returns the string corresponding to the information contain in the 'StartChannelListModeAck' packet.
         """
@@ -654,7 +654,7 @@ class Stimulator:
         packet = self._packet_construction(self.packet_count, 'StopChannelListMode')
         return packet
 
-    def _stop_stimulation_ack(self, packet: list[int]) -> str:
+    def _stop_stimulation_ack(self, packet: list) -> str:
         """
         Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
         """
@@ -666,7 +666,7 @@ class Stimulator:
             return ' Transfer error'
 
     @staticmethod
-    def _stimulation_error(packet: list[int]) -> str:
+    def _stimulation_error(packet: list) -> str:
         """
         Returns the string corresponding to the information contain in the 'StimulationError' packet.
         """
@@ -754,7 +754,7 @@ class Stimulator:
         return msb, lsb
 
     @staticmethod
-    def check_stimulation_interval(list_channels: list[Channel]) -> bool:
+    def check_stimulation_interval(list_channels: list) -> bool:
         """
         Checks if the stimulation interval of each active channel are the same.
 
@@ -775,7 +775,7 @@ class Stimulator:
         return True
 
     @staticmethod
-    def check_unique_channel(list_channels: list[Channel]) -> bool:
+    def check_unique_channel(list_channels: list) -> bool:
         """
         Checks if there is not 2 times the same channel in the ist given.
 
@@ -800,11 +800,11 @@ class Stimulator:
         return True
 
     @staticmethod
-    def check_list_channel_order(list_channels: list[Channel]) -> bool:
+    def check_list_channel_order(list_channels: list) -> bool:
         pass
 
     @staticmethod
-    def _calc_electrode_number(list_channels: list[Channel]) -> int:
+    def _calc_electrode_number(list_channels: list) -> int:
         """
         Calculate the number corresponding to which electrode is activated.
         During the initialisation, the computer needs to tell the Rehastim which channel needs to be activated. It is
@@ -823,28 +823,22 @@ class Stimulator:
         """
         electrode_number = 0
         for i in range(len(list_channels)):
-            if list_channels[i].amplitude != 0:
-                electrode_number += 2 ** (list_channels[i].no_channel - 1)
+            electrode_number += 2 ** (list_channels[i].no_channel - 1)
         return electrode_number
 
-    def start_stimulation(self, time_stimulations: float = None) -> int:
+    def init_channel(self, list_channels: list = None):
         """
-        Start a stimulation with the parameters in self.list_channels.
 
-        Parameters
-        ----------
-        time_stimulations: float = None
-            Time of the stimulation in seconds
-
-        Returns
-        -------
-        0 if no problems occurred
-        -1 if a problem occurred during the InitChannelListMode
-        -2 if a problem occurred during the StartChannelListMode
-        -3 if a problem occurred during the StopChannelListMode
+        :param list_channels:
+        :return:
         """
-        print(self.wait_for_packet(), Fore.WHITE)
-        self._check_multiple_packet_rec()
+        time_init = time.time()
+        if not self.is_connected():
+            print(self.wait_for_packet(), Fore.WHITE)
+            self._check_multiple_packet_rec()
+
+        if list_channels is not None:
+            self.list_channels = list_channels
 
         # Find electrode_number (according to Science_Mode2_Description_Protocol_20121212 p17)
         self.electrode_number = self._calc_electrode_number(self.list_channels)
@@ -853,23 +847,77 @@ class Stimulator:
         self._send_packet('InitChannelListMode', self.packet_count)
         init_channel_list_mode_ack = self.wait_for_packet()
         if init_channel_list_mode_ack != 'Stimulation initialized':
-            print(Fore.LIGHTRED_EX + "Error : InitChannelListMode :" + init_channel_list_mode_ack + Fore.WHITE)
+            # print(Fore.LIGHTRED_EX + "Error : InitChannelListMode :" + init_channel_list_mode_ack + Fore.WHITE)
+            raise RuntimeError("Error channel initialisation." + str(init_channel_list_mode_ack))
             self._check_multiple_packet_rec()
             return -1
-        print(Fore.WHITE, init_channel_list_mode_ack)
+        if self.debug_reha_show_log:
+            print(Fore.WHITE, init_channel_list_mode_ack)
         self._check_multiple_packet_rec()
+        print("Time init ", time.time() - time_init)
+        return 0
+
+    def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None,
+                          wait_rehastim_response: bool = True) -> int:
+        """
+        Update a stimulation.
+        Warning: only the channel that has been initiated can be updated.
+
+        Parameters
+        ----------
+        upd_list_channels: Channel]
+            List of the channels that will be updated
+        stimulation_duration: float
+            Time of the stimulation after the update.
+        Returns
+        -------
+        0 if no problems occurred
+        -1 if all the channels have not been initialised
+        -2 if a problem occurred during the StartChannelListMode
+        -3 if a problem occurred during the StopChannelListMode
+        """
+        time_start_stim = time.time()
+        if upd_list_channels is not None:
+            new_electrode_number = self._calc_electrode_number(upd_list_channels)
+
+            # Verify if the updated channels have been initialised
+            if new_electrode_number != self.electrode_number:
+                print(Fore.LIGHTRED_EX + "Error update: all channels have not been initialised" + Fore.WHITE)
+                raise RuntimeError("Error update: all channels have not been initialised")
+                return -1
+            self.list_channels = upd_list_channels
+            self.set_stimulation_signal(self.list_channels)
 
         self._send_packet('StartChannelListMode', self.packet_count)
-        start_channel_list_mode_ack = self.wait_for_packet()
-        if start_channel_list_mode_ack != ' Stimulation started':
-            print(Fore.LIGHTRED_EX + "Error : StartChannelListMode" + start_channel_list_mode_ack + Fore.WHITE)
-            self._check_multiple_packet_rec()
-            return -2
-        print(Fore.WHITE, start_channel_list_mode_ack)
-        self._check_multiple_packet_rec()
+        if wait_rehastim_response:
+            start_channel_list_mode_ack = self.wait_for_packet()
+            if start_channel_list_mode_ack != ' Stimulation started':
+                # print(Fore.LIGHTRED_EX + "Error : StartChannelListMode" + start_channel_list_mode_ack + Fore.WHITE)
+                raise RuntimeError("Error : StartChannelListMode" + str(start_channel_list_mode_ack))
+                self._check_multiple_packet_rec()
+                return -2
 
-        if time_stimulations is not None:
-            time.sleep(5)
+            print(Fore.WHITE, end='')
+            self._check_multiple_packet_rec()
+        if upd_list_channels is None:
+            print("Stimulation started")
+        else:
+            stop = True
+            for i in range(len(self.list_channels)):
+                if self.list_channels[i].amplitude != 0:
+                    stop = False
+                    break
+            if not stop:
+                print("Stimulation updated and started")
+            if stop:
+                print("Stimulation stopped")
+
+        print("Time start ", wait_rehastim_response,time.time() - time_start_stim, )
+
+        if stimulation_duration is not None:
+            if stimulation_duration < time.time() - time_start_stim:
+                raise RuntimeError("Stimulation duration too short")
+            time.sleep(stimulation_duration)
             if self.stop_stimulation() != 0:
                 return -3
         return 0
@@ -883,64 +931,6 @@ class Stimulator:
         0 if no problems occurred
         -1 if a problem occurred
         """
-        self._send_packet('StopChannelListMode', self.packet_count)
-        stop_channel_list_mode_ack = self.wait_for_packet()
-        if stop_channel_list_mode_ack != ' Stimulation stopped':
-            print(Fore.LIGHTRED_EX + "Error : StopChannelListMode" + stop_channel_list_mode_ack + Fore.WHITE)
-            self._check_multiple_packet_rec()
-            return -1
-        print(Fore.WHITE, stop_channel_list_mode_ack)
-        self._check_multiple_packet_rec()
-        return 0
-
-    def update_stimulation(self, upd_list_channels: list[Channel], time_stimulations: float = None) -> int:
-        """
-        Update a stimulation.
-        Warning: only the channel that has been initiated can be updated.
-
-        Parameters
-        ----------
-        upd_list_channels: list[Channel]
-            List of the channels that will be updated
-        time_stimulations: float
-            Time of the stimulation after the update.
-        Returns
-        -------
-        0 if no problems occurred
-        -1 if all the channels have not been initialised
-        -2 if a problem occurred during the StartChannelListMode
-        -3 if a problem occurred during the StopChannelListMode
-        """
-        new_electrode_number = self._calc_electrode_number(upd_list_channels)
-
-        # Verify if the updated channels have been initialised
-        if new_electrode_number != self.electrode_number and not self.init_all_channels:
-            print(Fore.LIGHTRED_EX + "Error update: all channels have not been initialised" + Fore.WHITE)
-            return -1
-        self.set_stimulation_signal(upd_list_channels)
-        self._send_packet('StartChannelListMode', self.packet_count)
-        start_channel_list_mode_ack = self.wait_for_packet()
-        if start_channel_list_mode_ack != ' Stimulation started':
-            print(Fore.LIGHTRED_EX + "Error : StartChannelListMode" + start_channel_list_mode_ack + Fore.WHITE)
-            self._check_multiple_packet_rec()
-            return -2
-        print(Fore.WHITE, "Stimulation updated")
-        self._check_multiple_packet_rec()
-
-        if time_stimulations is not None:
-            time.sleep(time_stimulations)
-            if self.stop_stimulation() != 0:
-                return -3
-        return 0
-
-    def initialise_all_channels(self, value: bool = True):
-        """
-        Set the variable ini_all_channels to the value given.
-        1 for the initialisation of all channels, 0 otherwise.
-
-        Parameters
-        ----------
-        value: bool
-            Value given.
-        """
-        self.init_all_channels = value
+        for i in range(len(self.list_channels)):
+            self.list_channels[i].amplitude = 0
+        return self.start_stimulation(upd_list_channels=self.list_channels, wait_rehastim_response=True)

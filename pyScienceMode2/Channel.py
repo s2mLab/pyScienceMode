@@ -16,8 +16,6 @@ class Channel:
         Number of the channel [1,8].
     amplitude: int
         Current to send in the channel. [0,130] Amp
-    frequency: int
-        Frequency of the main stimulation. [1,50] Hz
     pulse_width: int
         Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
     stimulation_interval: int
@@ -35,7 +33,7 @@ class Channel:
 
     MODE = {'Single': 0, 'Doublet': 1, 'Triplet': 2}
 
-    def __init__(self, mode: str = 'Single', no_channel: int = 1, amplitude: int = 0, frequency: int = 1,
+    def __init__(self, mode: str = 'Single', no_channel: int = 1, amplitude: int = 0,
                  pulse_width: int = 1, stimulation_interval: int = 8, inter_pulse_interval: int = 2, name: str = None):
         """
         Create an object Channel.
@@ -49,8 +47,6 @@ class Channel:
             Number of the channel [1,8].
         amplitude: int
             Current to send in the channel. [0,130] Amp
-        frequency: int
-            Frequency of the main stimulation. [1,50] Hz
         pulse_width: int
             Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
         stimulation_interval: int
@@ -63,14 +59,12 @@ class Channel:
         self.mode = mode
         self.no_channel = no_channel
         self.amplitude = amplitude
-        self.frequency = frequency
         self.pulse_width = pulse_width
         self.stimulation_interval = stimulation_interval
         self.inter_pulse_interval = inter_pulse_interval
         self.name = name if name else f"muscle_{self.no_channel}"
 
         self.check_value_param()
-        self.check_same_period_freq()
 
     def __str__(self) -> str:
         """
@@ -80,23 +74,8 @@ class Channel:
         -------
         A string representing all parameters of Class Channel.
         """
-        return f"Channel {self.no_channel} {self.name}: {self.mode=}, {self.amplitude=}, {self.frequency=}, " \
-               f"{self.stimulation_interval}, {self.pulse_width=}, {self.inter_pulse_interval=}"
-
-    def check_same_period_freq(self) -> bool:
-        """
-        Checks if the stimulation interval given correspond to the frequency given.
-
-        Returns
-        -------
-        True if they correspond, False if not.
-        """
-        if 1/self.frequency != self.stimulation_interval/1000 and self.stimulation_interval != 0:
-            print(Fore.LIGHTYELLOW_EX + "Warning : stimulation_interval does not correspond to frequency. "
-                                        "By default, stimulation_interval overwrite frequency " + Fore.WHITE)
-            self.frequency = int(1000/self.stimulation_interval)
-            return False
-        return True
+        return f"Channel {self.no_channel} {self.name}: {self.mode=}, {self.amplitude=}, " \
+               f"{self.stimulation_interval=}, {self.pulse_width=}, {self.inter_pulse_interval=}"
 
     def check_value_param(self):
         """
@@ -105,9 +84,6 @@ class Channel:
         try:
             if self.amplitude < 0 or self.amplitude > 130:
                 raise ValueError(Fore.LIGHTRED_EX + "Error : Amplitude min = 0, max = 130. Amplitude given : %s"
-                                 % self.amplitude + Fore.WHITE)
-            if self.frequency < 1 or self.frequency > 50:
-                raise ValueError(Fore.LIGHTRED_EX + "Error : Frequency [1,50]. Freq given : %s"
                                  % self.amplitude + Fore.WHITE)
             if self.no_channel < 1 or self.no_channel > 8:
                 raise ValueError(Fore.LIGHTRED_EX + "Error : 8 channel possible. Channel given : %s"
@@ -160,18 +136,6 @@ class Channel:
         Returns no_channel.
         """
         return self.no_channel
-
-    def set_frequency(self, frequency: int):
-        """
-        Set frequency.
-        """
-        self.frequency = frequency
-
-    def get_frequency(self) -> int:
-        """
-        Returns frequency.
-        """
-        return self.frequency
 
     def set_pulse_width(self, pulse_width: int):
         """
