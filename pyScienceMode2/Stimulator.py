@@ -138,6 +138,7 @@ class Stimulator:
         self.check_unique_channel(self.list_channels)
 
         self.__thread_watchdog = threading.Thread(target=self._watchdog)
+        self.lock = threading.Lock()
         self.tic = 0
         self.tic_total = 0.0
 
@@ -297,24 +298,21 @@ class Stimulator:
         packet = [-1]
         if cmd == 'InitAck':
             packet = self._init_ack(packet_number)
-            self.port.write(packet)
             self._start_watchdog()
         elif cmd == 'Watchdog':
             packet = self._packet_watchdog()
-            self.port.write(packet)
         elif cmd == 'GetStimulationMode':
             packet = self._get_mode()
-            self.port.write(packet)
         elif cmd == 'InitChannelListMode':
             packet = self._init_stimulation()
-            self.port.write(packet)
         elif cmd == 'StartChannelListMode':
             packet = self._start_stimulation()
-            self.port.write(packet)
-            self.tic = time.time()
         elif cmd == 'StopChannelListMode':
             packet = self._stop_stimulation()
-            self.port.write(packet)
+
+        self.lock.acquire()
+        self.port.write(packet)
+        self.lock.release()
 
         if self.debug_reha_show_com and cmd != 'Watchdog':
             self._packet_show(packet, "SEND")
