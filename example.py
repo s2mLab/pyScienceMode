@@ -102,4 +102,4 @@ while 1:
 
     # Stimulator.disconnect() must be called in order to finish the program and stop send watchdog.
     stimulator.disconnect()
-    stimulator.close()
+    stimulator.close_port()
