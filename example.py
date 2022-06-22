@@ -50,54 +50,55 @@ stimulator.show_log()
 # used again.
 
 stimulator.init_channel()
-n = 0
-while n < 10:
-    print(n % 2)
-    if n % 2 == 0:
-        stimulator.start_stimulation(stimulation_duration=1, wait_rehastim_response=False)
-    else:
-        stimulator.start_stimulation(stimulation_duration=1)
-    sleep(3)
-    n += 1
+# n = 0
+# while n < 10:
+#     print(n % 2)
+#     if n % 2 == 0:
+#         stimulator.start_stimulation(stimulation_duration=1, wait_rehastim_response=False)
+#     else:
+#         stimulator.start_stimulation(stimulation_duration=1)
+#     sleep(3)
+#     n += 1
 
-# # Modify some parameters,
-# list_channels[2].amplitude = 10
-# list_channels[3].amplitude = 15
+stimulator.start_stimulation(stimulation_duration=1)
+# Modify some parameters,
+list_channels[2].amplitude = 10
+list_channels[3].amplitude = 15
+
+# print("     Wait for 5 sec")
+# Wait a given time in seconds
+sleep(1)
+
+# print("     Update signal")
+# Update the parameters of the stimulation
+stimulator.start_stimulation(upd_list_channels=list_channels)
+
+# Wait a given time in seconds
+# sleep(5)
 #
-# # print("     Wait for 5 sec")
-# # Wait a given time in seconds
-# sleep(1)
-#
-# # print("     Update signal")
-# # Update the parameters of the stimulation
-# stimulator.start_stimulation(upd_list_channels=list_channels)
-#
-# # Wait a given time in seconds
-# # sleep(5)
-# #
-# # # Stop the stimulation
-# # print("     Stop stimulation")
-# stimulator.stop_stimulation()
-#
-# # print("     Wait 5 sec")
-# sleep(1)
-#
-# # print("     Restart stimulation for 10 sec")
-# # Disconnect the Rehastim, stop sending watchdog
-# stimulator.start_stimulation(2)
-#
-# # print("     Disconnect")
-# stimulator.disconnect()
-#
-# # print("     Sleep 2 sec")
-# sleep(1)
-#
-# # print("     Init")
-# stimulator.init_channel()
-#
-# # print("     Start for 5 sec")
-# # It is possible to restart a stimulation, the program automatically connect to the Rehastim
-# stimulator.start_stimulation(2, list_channels, False)
-#
-# # Stimulator.disconnect() must be called in order to finish the program and stop send watchdog.
+# # Stop the stimulation
+# print("     Stop stimulation")
+stimulator.stop_stimulation()
+
+# print("     Wait 5 sec")
+sleep(1)
+
+# print("     Restart stimulation for 10 sec")
+# Disconnect the Rehastim, stop sending watchdog
+stimulator.start_stimulation(2)
+
+# print("     Disconnect")
+stimulator.disconnect()
+
+# print("     Sleep 2 sec")
+sleep(1)
+
+# print("     Init")
+stimulator.init_channel()
+
+# print("     Start for 5 sec")
+# It is possible to restart a stimulation, the program automatically connect to the Rehastim
+stimulator.start_stimulation(2, list_channels, False)
+
+# Stimulator.disconnect() must be called in order to finish the program and stop send watchdog.
 stimulator.disconnect()
