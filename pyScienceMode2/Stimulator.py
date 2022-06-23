@@ -776,7 +776,8 @@ class Stimulator:
         Checks if the stimulation interval is within limits.
         """
         if self.stimulation_interval < 8 or self.stimulation_interval > 1025:
-            raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s" % self.stimulation_interval)
+            raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s"
+                             % self.stimulation_interval)
 
     @staticmethod
     def check_unique_channel(list_channels: list) -> bool:
@@ -875,7 +876,7 @@ class Stimulator:
             print(Fore.WHITE + init_channel_list_mode_ack)
         self._check_multiple_packet_rec()
 
-    def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None) -> int:
+    def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
         """
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
@@ -927,7 +928,7 @@ class Stimulator:
             time.sleep(stimulation_duration - (time.time() - time_start_stim))
             self.stop_stimulation()
 
-    def stop_stimulation(self) -> int:
+    def stop_stimulation(self):
         """
         Stop a stimulation by setting all amplitudes to 0.
         """
@@ -935,9 +936,9 @@ class Stimulator:
             self.list_channels[i].amplitude = 0
         self.start_stimulation(upd_list_channels=self.list_channels)
 
-    def _stop_stimulation(self) -> int:
+    def _stop_stimulation(self):
         """
-        Stop a stimulation, after the use of this method, init_channel must be used if stimulations need to be restart.
+        Stop a stimulation, after calling this method, init_channel must be used if stimulations need to be restarted.
         """
         self._send_packet('StopChannelListMode', self.packet_count)
         stop_channel_list_mode_ack = self.wait_for_packet()
