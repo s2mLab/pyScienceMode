@@ -5,6 +5,9 @@ from pyScienceMode2 import Channel as Ch
 
 from time import sleep
 
+# Create a list of channels
+list_channels = []
+
 # Create all channels possible
 channel_1 = Ch.Channel(mode='Single', no_channel=1, amplitude=5, pulse_width=100, inter_pulse_interval=10,
                        name='Biceps')
