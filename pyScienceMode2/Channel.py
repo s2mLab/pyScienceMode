@@ -1,8 +1,5 @@
 # Class Channel
 
-from colorama import Fore
-import sys
-
 
 class Channel:
     """
@@ -18,8 +15,6 @@ class Channel:
         Current to send in the channel. [0,130] Amp
     pulse_width: int
         Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
-    stimulation_interval: int
-        Period of the main stimulation. [8,1025] ms
     inter_pulse_interval: int
         Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
     name: str
@@ -34,7 +29,7 @@ class Channel:
     MODE = {'Single': 0, 'Doublet': 1, 'Triplet': 2}
 
     def __init__(self, mode: str = 'Single', no_channel: int = 1, amplitude: int = 0,
-                 pulse_width: int = 1, stimulation_interval: int = 8, inter_pulse_interval: int = 2, name: str = None):
+                 pulse_width: int = 1, inter_pulse_interval: int = 2, name: str = None):
         """
         Create an object Channel.
         Check if the values given are in limits.
@@ -49,8 +44,6 @@ class Channel:
             Current to send in the channel. [0,130] Amp
         pulse_width: int
             Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
-        stimulation_interval: int
-            Period of the main stimulation. [8,1025] ms
         inter_pulse_interval: int
             Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
         name: str
@@ -60,7 +53,6 @@ class Channel:
         self.no_channel = no_channel
         self.amplitude = amplitude
         self.pulse_width = pulse_width
-        self.stimulation_interval = stimulation_interval
         self.inter_pulse_interval = inter_pulse_interval
         self.name = name if name else f"muscle_{self.no_channel}"
 
@@ -74,32 +66,21 @@ class Channel:
         -------
         A string representing all parameters of Class Channel.
         """
-        return f"Channel {self.no_channel} {self.name}: {self.mode=}, {self.amplitude=}, " \
-               f"{self.stimulation_interval=}, {self.pulse_width=}, {self.inter_pulse_interval=}"
+        return f"Channel {self.no_channel} {self.name}: {self.mode=}, {self.amplitude=}, {self.pulse_width=}, " \
+               f"{self.inter_pulse_interval=}"
 
     def check_value_param(self):
         """
         Checks if the values given correspond are in limits.
         """
-        try:
-            if self.amplitude < 0 or self.amplitude > 130:
-                raise ValueError(Fore.LIGHTRED_EX + "Error : Amplitude min = 0, max = 130. Amplitude given : %s"
-                                 % self.amplitude + Fore.WHITE)
-            if self.no_channel < 1 or self.no_channel > 8:
-                raise ValueError(Fore.LIGHTRED_EX + "Error : 8 channel possible. Channel given : %s"
-                                 % self.no_channel + Fore.WHITE)
-            if self.stimulation_interval < 8 or self.stimulation_interval > 1025:
-                raise ValueError(Fore.LIGHTRED_EX + "Error : Stimulation interval [8,1025]. Stimulation given : %s"
-                                 % self.stimulation_interval + Fore.WHITE)
-            if self.pulse_width < 0 or self.pulse_width > 500:
-                raise ValueError(Fore.LIGHTRED_EX + "Error : Impulsion time [0,500], given : %s"
-                                 % self.pulse_width + Fore.WHITE)
-            if self.inter_pulse_interval < 2 or self.inter_pulse_interval > 129:
-                raise ValueError(Fore.LIGHTRED_EX + "Error : Inter pulse interval [2,129], given : %s"
-                                 % self.inter_pulse_interval + Fore.WHITE)
-        except ValueError as e:
-            print(e)
-            sys.exit()
+        if self.amplitude < 0 or self.amplitude > 130:
+            raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self.amplitude)
+        if self.no_channel < 1 or self.no_channel > 8:
+            raise ValueError("Error : 8 channel possible. Channel given : %s" % self.no_channel)
+        if self.pulse_width < 0 or self.pulse_width > 500:
+            raise ValueError("Error : Impulsion time [0,500], given : %s" % self.pulse_width)
+        if self.inter_pulse_interval < 2 or self.inter_pulse_interval > 129:
+            raise ValueError("Error : Inter pulse interval [2,129], given : %s" % self.inter_pulse_interval)
 
     def set_mode(self, mode: MODE):
         """
@@ -148,18 +129,6 @@ class Channel:
         Returns pulse_width.
         """
         return self.pulse_width
-
-    def set_stimulation_interval(self, stimulation_interval: int):
-        """
-        Set stimulation_interval.
-        """
-        self.stimulation_interval = stimulation_interval
-
-    def get_stimulation_interval(self) -> int:
-        """
-        Returns stimulation_interval.
-        """
-        return self.stimulation_interval
 
     def set_inter_pulse_interval(self, inter_pulse_interval: int):
         """
