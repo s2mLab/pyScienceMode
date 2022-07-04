@@ -3,6 +3,7 @@
 # Imports
 import crccheck.checksum
 from colorama import Fore
+from typing import Tuple
 import serial
 import time
 import threading
@@ -698,7 +699,7 @@ class Stimulator:
             print(Fore.LIGHTRED_EX, end='')
             return 'Stimulation module error'
 
-    def _msb_lsb_main_stim(self) -> tuple[int, int]:
+    def _msb_lsb_main_stim(self) -> Tuple[int, int]:
         """
         Returns the most significant bit (msb) and least significant bit (lsb) corresponding to the main stimulation
         interval.
@@ -746,7 +747,7 @@ class Stimulator:
         return msb, int(lsb)
 
     @staticmethod
-    def _msb_lsb_pulse_stim(pulse_width: int) -> tuple[int, int]:
+    def _msb_lsb_pulse_stim(pulse_width: int) -> Tuple[int, int]:
         """
         Returns MSB and LSB corresponding to the pulse width given.
         Range: [0, 500] μs (in current version [20, 500] μs, if (pw < 20) then pw = 20)
