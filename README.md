@@ -11,9 +11,9 @@ python setup.py install
 ## Dependencies
 There are some dependencies. You can install them by running the following command :
 
-- crccheck, colorama, serial and typing
+- crccheck, colorama, pyserial and typing
 ```bash
-pip install crccheck colorama serial typing
+pip install crccheck colorama pyserial typing
 ```
 
 ## How to use
