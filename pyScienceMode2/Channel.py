@@ -12,7 +12,7 @@ class Channel:
     no_channel: int
         Number of the channel [1,8].
     amplitude: int
-        Current to send in the channel. [0,130] Amp
+        Current to send in the channel. [0,130] milli amp
     pulse_width: int
         Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
     inter_pulse_interval: int
@@ -41,7 +41,7 @@ class Channel:
         no_channel: int
             Number of the channel [1,8].
         amplitude: int
-            Current to send in the channel. [0,130] Amp
+            Current to send in the channel. [0,130] milli amp
         pulse_width: int
             Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
         inter_pulse_interval: int
