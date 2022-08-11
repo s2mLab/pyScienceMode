@@ -25,12 +25,18 @@ class Stimulator:
         Contain the number of packet sent to the Rehastim since the Init.
     electrode_number : int
         Number corresponding to which electrode is activated during InitChannelListMode.
+    electrode_number_low_frequency: int
+        Number corresponding to which electrode has low frequency factor enabled.
     port : class Serial
         Used to control the COM port.
     amplitude : list[int]
         Contain the amplitude of each corresponding channel.
+    low_frequency_factor: int
+        Number of stimulation skipped by low frequency channels. [0, 7]
     stimulation_interval : int
         Main stimulation period in ms.
+    inter_pulse_interval: int
+        Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
     pulse_width : list[int]
         Contain all pulse width of the corresponding channel.
     muscle : list[int]
@@ -56,7 +62,7 @@ class Stimulator:
         be used after each call of _calling_ack() or wait_for_packet() in order to process those packets.
     buffer_rec : list[int]
         Contain the packet receive which has not been processed.
-    self.__thread_watchdog: threading.Thread
+    __thread_watchdog: threading.Thread
         ID of the thread responsible for sending regularly a watchdog.
 
     Class Attributes
@@ -101,7 +107,11 @@ class Stimulator:
              0x26: 'StimulationError', 0x5A: 'MotomedError'}
 
     # Constructor
-    def __init__(self, list_channels: list, stimulation_interval: int, port_path: str):
+    def __init__(self, list_channels: list,
+                 stimulation_interval: int,
+                 port_path: str,
+                 inter_pulse_interval: int = 2,
+                 low_frequency_factor: int = 0):
         """
         Creates an object stimulator.
 
@@ -113,17 +123,25 @@ class Stimulator:
             Main stimulation period in ms.
         port_path : str
             Port of the computer connected to the Rehastim.
+        inter_pulse_interval: int
+            Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
+        low_frequency_factor: int
+            Number of stimulation skipped by low frequency channels. [0, 7]
         """
 
         self.list_channels = list_channels
         self.stimulation_interval = stimulation_interval
+        self.inter_pulse_interval = inter_pulse_interval
+        self.low_frequency_factor = low_frequency_factor
         self.port = serial.Serial(port_path, self.BAUD_RATE, bytesize=serial.EIGHTBITS, parity=serial.PARITY_EVEN,
                                   stopbits=serial.STOPBITS_ONE, timeout=0.1)
         self.packet_count = 0
         self.electrode_number = 0
+        self.electrode_number_low_frequency = 0
 
         self.amplitude = []
         self.pulse_width = []
+        self.mode = []
         self.muscle = []
         self.given_channels = []
         self.debug_reha_show_log = False
@@ -138,6 +156,7 @@ class Stimulator:
         self.read_port_time = 0.0
 
         self.check_stimulation_interval()
+        self.check_low_frequency_factor()
         self.check_unique_channel(self.list_channels)
 
         self.__thread_watchdog = threading.Thread(target=self._watchdog)
@@ -167,15 +186,17 @@ class Stimulator:
         """
         self.amplitude = []
         self.pulse_width = []
+        self.mode = []
         self.muscle = []
         self.given_channels = []
 
         self.check_list_channel_order()
 
         for i in range(len(list_channels)):
-            self.amplitude.append(list_channels[i].amplitude)
-            self.pulse_width.append(list_channels[i].pulse_width)
-            self.given_channels.append(list_channels[i].no_channel)
+            self.amplitude.append(list_channels[i].get_amplitude())
+            self.pulse_width.append(list_channels[i].get_pulse_width())
+            self.mode.append(list_channels[i].get_mode())
+            self.given_channels.append(list_channels[i].get_no_channel())
 
     def _packet_construction(self, packet_count: int, packet_type: str, packet_data: list = None) -> bytes:
         """
@@ -602,9 +623,17 @@ class Stimulator:
         """
         Returns the packet for the InitChannelMode.
         """
+        coded_inter_pulse_interval = self._code_inter_pulse_interval()
         msb, lsb = self._msb_lsb_main_stim()
-        new_electrode_numb = self.electrode_number
-        data_stimulation = [0, new_electrode_numb, 0, 2, msb, lsb, 0]
+
+        data_stimulation = [self.low_frequency_factor,
+                            self.electrode_number,
+                            self.electrode_number_low_frequency,
+                            coded_inter_pulse_interval,
+                            msb,
+                            lsb,
+                            0]
+
         packet = self._packet_construction(self.packet_count, 'InitChannelListMode', data_stimulation)
         return packet
 
@@ -636,7 +665,7 @@ class Stimulator:
         mode = 0
         for i in range(len(self.amplitude)):
             msb, lsb = self._msb_lsb_pulse_stim(self.pulse_width[i])
-            data_stimulation.append(mode)
+            data_stimulation.append(self.mode[i])
             data_stimulation.append(msb)
             data_stimulation.append(lsb)
             data_stimulation.append(int(self.amplitude[i]))
@@ -699,14 +728,28 @@ class Stimulator:
             print(Fore.LIGHTRED_EX, end='')
             return 'Stimulation module error'
 
+    def _code_inter_pulse_interval(self) -> int:
+        """
+        Returns the "inter pulse interval" value encoded as follows :
+        Inter pulse interval = [0, 255] ∙ 0.5 ms + 1.5
+        Inter pulse interval = = [1.5, 129] ms
+        Coded Inter pulse interval = (Inter pulse interval - 1.5) * 2
+        Note that in the current software version the minimum inter pulse interval is 8 ms.
+
+        Returns
+        -------
+        coded_inter_pulse_interval: int
+            Coded value of inter pulse interval [0, 255].
+        """
+        return int((self.inter_pulse_interval - 1.5) * 2)
+
     def _msb_lsb_main_stim(self) -> Tuple[int, int]:
         """
         Returns the most significant bit (msb) and least significant bit (lsb) corresponding to the main stimulation
         interval.
         Main stimulation interval = [0, 2048] ∙ 0.5 ms + 1 ms
         Main stimulation interval = [1, 1025] ms
-        Note that in the current software version the minimum
-        main stimulation interval is 8 ms.
+        Note that in the current software version the minimum main stimulation interval is 8 ms.
         (ScienceMode2 - Description and Protocol, 4.3 Stimulation Commands, InitChannelListMode)
 
         Returns
@@ -780,6 +823,20 @@ class Stimulator:
             raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s"
                              % self.stimulation_interval)
 
+    def check_inter_pulse_interval(self):
+        """
+        Checks if the "inter pulse interval" is within limits.
+        """
+        if self.inter_pulse_interval < 2 or self.inter_pulse_interval > 129:
+            raise ValueError("Error : Inter pulse interval [2,129], given : %s" % self.inter_pulse_interval)
+
+    def check_low_frequency_factor(self):
+        """
+        Checks if the low frequency factor is within limits.
+        """
+        if self.low_frequency_factor < 0 or self.low_frequency_factor > 7:
+            raise ValueError("Error : Low frequency factor [0,7], given : %s" % self.low_frequency_factor)
+
     @staticmethod
     def check_unique_channel(list_channels: list) -> bool:
         """
@@ -796,13 +853,13 @@ class Stimulator:
         """
         active_channel = []
         for i in range(len(list_channels)):
-            if list_channels[i].no_channel in active_channel:
-                print(Fore.LIGHTYELLOW_EX + "Warning : 2 channel no%s" % list_channels[i].no_channel +
+            if list_channels[i].get_no_channel() in active_channel:
+                print(Fore.LIGHTYELLOW_EX + "Warning : 2 channel no%s" % list_channels[i].get_no_channel() +
                       " in list_channels given. The first one given will be used." + Fore.WHITE)
                 list_channels.pop(i)
                 return False
             else:
-                active_channel.append(list_channels[i].no_channel)
+                active_channel.append(list_channels[i].get_no_channel())
         return True
 
     def check_list_channel_order(self):
@@ -811,22 +868,29 @@ class Stimulator:
         """
         number_previous_channel = 0
         for i in range(len(self.list_channels)):
-            if self.list_channels[i].no_channel < number_previous_channel:
+            if self.list_channels[i].get_no_channel() < number_previous_channel:
                 raise RuntimeError("Error: channels in list_channels given are not in order.")
-            number_previous_channel = self.list_channels[i].no_channel
+            number_previous_channel = self.list_channels[i].get_no_channel()
 
     @staticmethod
-    def _calc_electrode_number(list_channels: list) -> int:
+    def _calc_electrode_number(list_channels: list, enable_low_frequency: bool = False) -> int:
         """
+        When enable_low_frequency = False :
         Calculates the number corresponding to which electrode is activated.
         During the initialisation, the computer needs to tell the Rehastim which channel needs to be activated. It is
         done through the addition of 2 pow the number of the channel.
         For example if the channel 1 and 4 needs to be activated, electrode_number = 2**1 + 2**4
 
+        When enable_low_frequency = True :
+        Calculates the number corresponding to which electrode has the low_frequency_factor enabled.
+
         Parameters
         ----------
         list_channels: list[Channel]
-            Contain the channels that will be activated.
+            Contains the channels that will be activated.
+        enable_low_frequency: bool
+            Choose whether the number correspond to active channel (False) or correspond to channel with low frequency
+            factor enabled (True).
 
         Returns
         -------
@@ -835,10 +899,17 @@ class Stimulator:
         """
         electrode_number = 0
         for i in range(len(list_channels)):
-            electrode_number += 2 ** (list_channels[i].no_channel - 1)
+            if enable_low_frequency:
+                if list_channels[i].get_enable_low_frequency():
+                    electrode_number += 2 ** (list_channels[i].get_no_channel() - 1)
+            if not enable_low_frequency:
+                electrode_number += 2 ** (list_channels[i].get_no_channel() - 1)
         return electrode_number
 
-    def init_channel(self, stimulation_interval: int = None, list_channels: list = None):
+    def init_channel(self, stimulation_interval: int = None,
+                     list_channels: list = None,
+                     inter_pulse_interval: int = None,
+                     low_frequency_factor: int = None):
         """
         Initialize the requested channel.
         Can update stimulation interval if one is given.
@@ -865,8 +936,17 @@ class Stimulator:
         if list_channels is not None:
             self.list_channels = list_channels
 
+        if inter_pulse_interval is not None:
+            self.inter_pulse_interval = inter_pulse_interval
+            self.check_inter_pulse_interval()
+
+        if low_frequency_factor is not None:
+            self.low_frequency_factor = low_frequency_factor
+            self.check_low_frequency_factor()
+
         # Find electrode_number (according to Science_Mode2_Description_Protocol_20121212 p17)
         self.electrode_number = self._calc_electrode_number(self.list_channels)
+        self.electrode_number_low_frequency = self._calc_electrode_number(self.list_channels, enable_low_frequency=True)
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet('InitChannelListMode', self.packet_count)
@@ -915,7 +995,7 @@ class Stimulator:
             else:
                 stop = True
                 for i in range(len(self.list_channels)):
-                    if self.list_channels[i].amplitude != 0:
+                    if self.list_channels[i].get_amplitude() != 0:
                         stop = False
                         break
                 if not stop:
@@ -934,7 +1014,7 @@ class Stimulator:
         Stop a stimulation by setting all amplitudes to 0.
         """
         for i in range(len(self.list_channels)):
-            self.list_channels[i].amplitude = 0
+            self.list_channels[i].set_amplitude(0)
         self.start_stimulation(upd_list_channels=self.list_channels)
 
     def _stop_stimulation(self):
