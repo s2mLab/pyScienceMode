@@ -662,7 +662,6 @@ class Stimulator:
         Returns the packet for the StartChannelListMode.
         """
         data_stimulation = []
-        mode = 0
         for i in range(len(self.amplitude)):
             msb, lsb = self._msb_lsb_pulse_stim(self.pulse_width[i])
             data_stimulation.append(self.mode[i])
@@ -1019,7 +1018,7 @@ class Stimulator:
 
     def _stop_stimulation(self):
         """
-        Stop a stimulation, after calling this method, init_channel must be used if stimulations need to be restarted.
+        Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
         self._send_packet('StopChannelListMode', self.packet_count)
         stop_channel_list_mode_ack = self.wait_for_packet()
