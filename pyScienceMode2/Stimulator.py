@@ -193,6 +193,9 @@ class Stimulator:
         self.check_list_channel_order()
 
         for i in range(len(list_channels)):
+            list_channels[i].check_value_param()
+
+        for i in range(len(list_channels)):
             self.amplitude.append(list_channels[i].get_amplitude())
             self.pulse_width.append(list_channels[i].get_pulse_width())
             self.mode.append(list_channels[i].get_mode())

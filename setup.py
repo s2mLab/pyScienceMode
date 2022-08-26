@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyScienceMode2',
-    version='1.0',
+    version='1.1',
     packages=['pyScienceMode2'],
     url='https://github.com/ArseneBA/pyScienceMode2.git',
     license='',
