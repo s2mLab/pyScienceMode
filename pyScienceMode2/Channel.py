@@ -99,6 +99,7 @@ class Channel:
         Set amplitude.
         """
         self._amplitude = amp
+        self.check_value_param()
 
     def get_amplitude(self) -> int:
         """
@@ -111,6 +112,7 @@ class Channel:
         Set no_channel.
         """
         self._no_channel = no_channel
+        self.check_value_param()
 
     def get_no_channel(self) -> int:
         """
@@ -123,6 +125,7 @@ class Channel:
         Set pulse_width.
         """
         self._pulse_width = pulse_width
+        self.check_value_param()
 
     def get_pulse_width(self) -> int:
         """
