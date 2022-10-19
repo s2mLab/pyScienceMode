@@ -1,5 +1,4 @@
 # Stimulator class
-import time
 from pyScienceMode2.acks import *
 from pyScienceMode2.utils import *
 from pyScienceMode2.sciencemode import RehastimGeneric
@@ -9,7 +8,7 @@ from pyScienceMode2.sciencemode import RehastimGeneric
 
 
 class Motomed(RehastimGeneric):
-    def __init__(self, port):
+    def __init__(self, port, show_log=False):
         self.port = port
         self.speed = 0
         self.gear = 0
@@ -26,11 +25,11 @@ class Motomed(RehastimGeneric):
         self.last_phase_result = 0
         self.is_phase_training = False
 
-        super().__init__(port, True)
+        super().__init__(port, show_log, True)
         # Connect to rehastim
         packet = None
         while packet is None:
-            packet = self.last_init_ack
+            packet = self._get_last_ack(init=True)
         self._send_generic_packet("InitAck", packet=[], packet_number=packet[5])
 
     def _send_packet(self, cmd: str) -> str:
@@ -330,6 +329,7 @@ class Motomed(RehastimGeneric):
         -------
         A string which is the message corresponding to the processing of the packet.
         """
+        self.event_ack.wait()
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == self.Type["GetMotomedModeAck"].value:

@@ -70,10 +70,11 @@ class RehastimGeneric:
     STUFFING_BYTE = 0x81
     STUFFING_KEY = 0x55
     MAX_PACKET_BYTES = 69
+    STUFFED_BYTES = [240, 15, 129, 85, 10]
 
     BAUD_RATE = 460800
 
-    def __init__(self, port, with_motomed: bool = False):
+    def __init__(self, port, show_log=False, with_motomed: bool = False):
         self.port = serial.Serial(
             port,
             self.BAUD_RATE,
@@ -89,6 +90,7 @@ class RehastimGeneric:
         self.time_last_cmd = 0
         self.packet_count = 0
         self.reha_connected = False
+        self.show_log = show_log
 
         self.time_last_cmd = 0
         self.packet_send_history = []
@@ -108,6 +110,7 @@ class RehastimGeneric:
         self.__thread_watchdog = None
         self.lock = threading.Lock()
         self.event = threading.Event()
+        self.event_ack = threading.Event()
         if self.is_motomed_connected:
             self._start_motomed_thread()
         self.Type = Type
@@ -130,6 +133,8 @@ class RehastimGeneric:
                 packet = self._read_packet()
                 if packet and len(packet) != 0:
                     break
+            if self.show_log and self.Type(packet[-1][6]).value in [t.value for t in self.Type]:
+                print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
             return packet[-1]
 
     def _start_motomed_thread(self):
@@ -149,6 +154,8 @@ class RehastimGeneric:
             if packets:
                 for packet in packets:
                     if len(packet) > 7:
+                        if self.show_log and packet[6] in [t.value for t in self.Type]:
+                            print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
                         if packet[6] == self.Type["PhaseResult"].value:
                             self._phase_result_ack(packet)
                         elif packet[6] == self.Type["ActualValues"].value:
@@ -157,19 +164,37 @@ class RehastimGeneric:
                             pass
                         elif packet[6] == self.Type["MotomedCommandDone"].value:
                             self.event.set()
-                        elif self.Type(packet[6]) in [t.value for t in self.Type]:
+                        elif packet[6] in [t.value for t in self.Type]:
                             if packet[6] == 1:
                                 self.last_init_ack = packet
+                                self.event_ack.set()
                             else:
                                 self.last_ack = packet
+                                self.event_ack.set()
+
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
 
     def _actual_values_ack(self, packet: (list, str)):
-        # handle the LSB and MSB
-        angle = 255 * signed_int(packet[7:8]) + packet[8]
-        speed = signed_int(packet[10:11])
-        torque = signed_int(packet[12:13])
+        # handle the LSB and MSB and stuffed bytes
+        count = 0
+        if packet[8] == 129:
+            angle = 255 * signed_int(packet[7:8]) + packet[9] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            angle = 255 * signed_int(packet[7:8]) + packet[8]
+
+        if packet[10 + count] == 129:
+            speed = signed_int(packet[10 + count + 1:10 + count + 2]) ^ self.STUFFING_KEY
+            count += 1
+        else:
+            speed = signed_int(packet[10:11])
+
+        if packet[12 + count] == 129:
+            torque = signed_int(packet[12 + count + 1:12 + count + 2]) ^ self.STUFFING_KEY
+            count += 1
+        else:
+            torque = signed_int(packet[12:13])
 
         actual_values = np.array([angle, speed, torque])[:, np.newaxis]
         if self.motomed_values is None:
@@ -250,17 +275,24 @@ class RehastimGeneric:
         """ """
         if cmd == "InitAck":
             packet = self._init_ack(packet_number)
+            self.event.set()
             self._start_watchdog()
         elif cmd == "Watchdog":
             packet = self._packet_watchdog()
+        if self.show_log:
+            if self.Type(packet[6]).name != "Watchdog":
+                print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
         self.lock.acquire()
         self.port.write(packet)
         if cmd == "InitAck":
             self.reha_connected = True
+        # if self.is_motomed_connected and cmd != "Watchdog":
+        #     self.event.wait()
         self.lock.release()
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
         self.packet_count = (self.packet_count + 1) % 256
+        self.event_ack.clear()
         self.event.clear()
         if cmd == "InitAck":
             self.event.set()
@@ -334,17 +366,18 @@ class RehastimGeneric:
         """
         # Stuff the byte equal to 0xf0 (240), 0x0f (15), 0x81(129), 0x55 (85) and 0x0a(10)
         # (for more details check : Science_Mode2_Description_Protocol_20121212.pdf, 2.2 PacketStructure)
+
         if command_data:
             packet_tmp = []
             for i in range(len(packet)):
-                if packet[i] == 240 or packet[i] == 15 or packet[i] == 129 or packet[i] == 85 or packet[i] == 10:
+                if packet[i] in self.STUFFED_BYTES:
                     packet_tmp = packet_tmp + [self.STUFFING_BYTE, self._stuff_byte(packet[i])]
                 else:
                     packet_tmp.append(packet[i])
             return packet_tmp
         else:
             for i in range(len(packet)):
-                if packet[i] == 240 or packet[i] == 15 or packet[i] == 129 or packet[i] == 85 or packet[i] == 10:
+                if packet[i] in self.STUFFED_BYTES:
                     packet[i] = (self._stuff_byte(packet[i]))
             return packet
 
@@ -383,7 +416,6 @@ class RehastimGeneric:
         -------
         The first packet received or an empty packet if the data does not start with a START_BYTE
         """
-        ack_packet_size = [7, 8, 9, 13, 14, 23, 24]
         packet = bytes()
         while True:
             packet_tmp = self.port.read(self.port.inWaiting())
@@ -397,23 +429,9 @@ class RehastimGeneric:
             first_start_byte = packet.index(self.START_BYTE)
             packet_tmp = packet[first_start_byte:]
             while len(packet_tmp) != 0:
-                stop = 0
-                count = 0
-                while stop == 0 and count < len(ack_packet_size):
-                    try:
-                        if packet_tmp[ack_packet_size[count]] == self.STOP_BYTE:
-                            if (
-                                len(packet_tmp) > ack_packet_size[count] + 1
-                                and packet_tmp[ack_packet_size[count] + 1] != self.START_BYTE
-                            ):
-                                pass
-                            else:
-                                packet_list.append(packet_tmp[: ack_packet_size[count] + 1])
-                                packet_tmp = packet_tmp[ack_packet_size[count] + 1:]
-                                stop = 1
-                        count += 1
-                    except:
-                        pass
+                next_stop_byte = packet_tmp.index(self.STOP_BYTE)
+                packet_list.append(packet_tmp[:next_stop_byte + 1])
+                packet_tmp = packet_tmp[next_stop_byte + 1:]
             return packet_list
 
     def disconnect(self):

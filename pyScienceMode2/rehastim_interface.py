@@ -72,6 +72,7 @@ class Stimulator(RehastimGeneric):
         port: str,
         inter_pulse_interval: int = 2,
         low_frequency_factor: int = 0,
+        show_log=False,
         with_motomed: bool = False,
     ):
         """
@@ -107,7 +108,7 @@ class Stimulator(RehastimGeneric):
         check_low_frequency_factor(self.low_frequency_factor)
         check_unique_channel(self.list_channels)
         self.stimulation_started = None
-        super().__init__(port, with_motomed)
+        super().__init__(port, show_log, with_motomed)
         # Connect to rehastim
         packet = None
         while packet is None:
@@ -197,6 +198,8 @@ class Stimulator(RehastimGeneric):
             return start_stimulation_ack(packet)
         elif packet[6] == self.Type["StimulationError"].value:
             return rehastim_error(signed_int(packet[7:8]))
+        elif packet[6] == self.Type["ActualValues"].value:
+            raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
         else:
             raise RuntimeError("Error packet : not understood")
 
