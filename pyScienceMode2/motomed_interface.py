@@ -332,33 +332,33 @@ class Motomed(RehastimGeneric):
         """
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
-        elif packet[6] == self._type("GetMotomedModeAck"):
+        elif packet[6] == self.Type["GetMotomedModeAck"].value:
             return get_motomed_mode_ack(packet)
-        elif packet[6] == self._type("InitPhaseTrainingAck"):
+        elif packet[6] == self.Type["InitPhaseTrainingAck"].value:
             return init_phase_training_ack(packet)
-        elif packet[6] == self._type("StartPhaseAck"):
+        elif packet[6] == self.Type["StartPhaseAck"].value:
             return start_phase_ack(packet)
-        elif packet[6] == self._type("PausePhaseAck"):
+        elif packet[6] == self.Type["PausePhaseAck"].value:
             return pause_phase_ack(packet)
-        elif packet[6] == self._type("StopPhaseTrainingAck"):
+        elif packet[6] == self.Type["StopPhaseTrainingAck"].value:
             return stop_phase_training_ack(packet)
-        elif packet[6] == self._type("SetRotationDirectionAck"):
+        elif packet[6] == self.Type["SetRotationDirectionAck"].value:
             return set_rotation_direction_ack(packet)
-        elif packet[6] == self._type("SetSpeedAck"):
+        elif packet[6] == self.Type["SetSpeedAck"].value:
             return set_speed_ack(packet)
-        elif packet[6] == self._type("SetGearAck"):
+        elif packet[6] == self.Type["SetGearAck"].value:
             return set_gear_ack(packet)
-        elif packet[6] == self._type("StartBasicTrainingAck"):
+        elif packet[6] == self.Type["StartBasicTrainingAck"].value:
             return start_basic_training_ack(packet)
-        elif packet[6] == self._type("PauseBasicTrainingAck"):
+        elif packet[6] == self.Type["PauseBasicTrainingAck"].value:
             return pause_basic_training_ack(packet)
-        elif packet[6] == self._type("ContinueBasicTrainingAck"):
+        elif packet[6] == self.Type["ContinueBasicTrainingAck"].value:
             return continue_basic_training_ack(packet)
-        elif packet[6] == self._type("StopBasicTrainingAck"):
+        elif packet[6] == self.Type["StopBasicTrainingAck"].value:
             return stop_basic_training_ack(packet)
-        elif packet[6] == self._type("MotomedCommandDone"):
+        elif packet[6] == self.Type["MotomedCommandDone"].value:
             return stop_basic_training_ack(packet)
-        elif packet[6] == self._type("MotomedError"):
+        elif packet[6] == self.Type["MotomedError"].value:
             return motomed_error_values(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")

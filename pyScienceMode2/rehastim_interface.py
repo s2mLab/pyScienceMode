@@ -185,17 +185,17 @@ class Stimulator(RehastimGeneric):
         -------
         A string which is the message corresponding to the processing of the packet.
         """
-        if packet == "InitAck":
+        if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
-        elif packet[6] == self._type("GetStimulationModeAck"):
+        elif packet[6] == self.Type["GetStimulationModeAck"].value:
             return get_mode_ack(packet)
-        elif packet[6] == self._type("InitChannelListModeAck"):
+        elif packet[6] == self.Type["InitChannelListModeAck"].value:
             return init_stimulation_ack(packet)
-        elif packet[6] == self._type("StopChannelListModeAck"):
+        elif packet[6] == self.Type["StopChannelListModeAck"].value:
             return stop_stimulation_ack(packet)
-        elif packet[6] == self._type("StartChannelListModeAck"):
+        elif packet[6] == self.Type["StartChannelListModeAck"].value:
             return start_stimulation_ack(packet)
-        elif packet[6] == self._type("StimulationError"):
+        elif packet[6] == self.Type["StimulationError"].value:
             return rehastim_error(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")
