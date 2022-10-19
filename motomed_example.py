@@ -1,16 +1,27 @@
 import time
+from pyScienceMode2.motomed_interface import Motomed
 
-from pyScienceMode2.Stimulator import Motomed
-import numpy as np
-import serial
-
-BAUD_RATE = 460800
 port = "/dev/ttyUSB0"
-# port = serial.Serial(port, BAUD_RATE, bytesize=serial.EIGHTBITS, parity=serial.PARITY_EVEN,
-#                           stopbits=serial.STOPBITS_ONE, timeout=0.1)
-# while 1:
-#     print(port.read(port.inWaiting()))
-#     time.sleep(1)
 motomed = Motomed(port)
-print(motomed.get_motomed_mode())
-motomed.debug_reha_show_com = False
+# time.sleep(5)
+# print(motomed.get_motomed_mode())
+# time.sleep(2)
+# motomed.init_phase_training(arm_training=True)
+# time.sleep(10)
+# motomed.start_phase(speed=20, gear=5, passive=True)
+# time.sleep(25)
+# motomed.stop_training()
+# motomed.start_phase(gear=1, speed=20)
+motomed.start_basic_training(arm_training=True)
+time.sleep(5)
+motomed.set_speed(12)
+motomed.set_gear(8)
+time.sleep(8)
+motomed.pause_training()
+time.sleep(8)
+motomed.continue_training()
+time.sleep(8)
+motomed.stop_training()
+motomed.disconnect()
+
+# motomed.debug_reha_show_com = False

@@ -41,7 +41,7 @@ list_channels.append(channel_8)
 # Create our object Stimulator
 stimulator = St.Stimulator(list_channels=list_channels,
                            stimulation_interval=1000,
-                           port_path='COM5',
+                           port='/dev/ttyUSB0',
                            inter_pulse_interval=120,
                            low_frequency_factor=1)
 

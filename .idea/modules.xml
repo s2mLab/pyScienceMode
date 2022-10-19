@@ -2,6 +2,14 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../OsimToBiomod/.idea/OsimToBiomod.iml" filepath="$PROJECT_DIR$/../OsimToBiomod/.idea/OsimToBiomod.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../bioptim/.idea/bioptim.iml" filepath="$PROJECT_DIR$/../bioptim/.idea/bioptim.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../biosiglive/.idea/biosiglive.iml" filepath="$PROJECT_DIR$/../biosiglive/.idea/biosiglive.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../bioviz/.idea/bioviz.iml" filepath="$PROJECT_DIR$/../bioviz/.idea/bioviz.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../code_paper_mhe/.idea/code_paper_mhe.iml" filepath="$PROJECT_DIR$/../code_paper_mhe/.idea/code_paper_mhe.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../cycling/.idea/cycling.iml" filepath="$PROJECT_DIR$/../cycling/.idea/cycling.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../muscle_moment_arm/.idea/muscle_moment_arm.iml" filepath="$PROJECT_DIR$/../muscle_moment_arm/.idea/muscle_moment_arm.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../osim_to_biomod/.idea/osim_to_biomod.iml" filepath="$PROJECT_DIR$/../osim_to_biomod/.idea/osim_to_biomod.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/packaging_4.iml" filepath="$PROJECT_DIR$/.idea/packaging_4.iml" />
     </modules>
   </component>
