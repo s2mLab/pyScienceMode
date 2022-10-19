@@ -1,6 +1,4 @@
-# Stimulator class
-
-import sys
+import os
 import crccheck.checksum
 import serial
 import time
@@ -119,6 +117,7 @@ class RehastimGeneric:
         self.__wait_for_ack = False
         self.__thread_watchdog = None
         self.lock = threading.Lock()
+        self.event = threading.Event()
         if self.is_motomed_connected:
             self._start_motomed_thread()
 
@@ -128,15 +127,25 @@ class RehastimGeneric:
         else:
             return [key for key, value in self.TYPES.items() if value == val]
 
-    def _get_last_ack(self):
+    def _get_last_ack(self, init=False):
         if self.is_motomed_connected:
-            while not self.last_ack:
-                pass
-            last_ack = self.last_ack
-            self.last_ack = None
+            if init:
+                while not self.last_init_ack:
+                    pass
+                last_ack = self.last_init_ack
+                self.last_init_ack = None
+            else:
+                while not self.last_ack:
+                    pass
+                last_ack = self.last_ack
+                self.last_ack = None
             return last_ack
         else:
-            return self._read_packet()[-1]
+            while 1:
+                packet = self._read_packet()
+                if packet and len(packet) != 0:
+                    break
+            return packet[-1]
 
     def _start_motomed_thread(self):
         """
@@ -149,7 +158,7 @@ class RehastimGeneric:
 
     def _catch_motomed_data(self):
         time_to_sleep = 0.05
-        while 1:
+        while 1 and self.is_motomed_connected:
             packets = self._read_packet()
             tic = time.time()
             if packets:
@@ -162,7 +171,8 @@ class RehastimGeneric:
                         elif packet[6] == 90:
                             pass
                         elif packet[6] == self._type('MotomedCommandDone'):
-                            self._motomed_command_done = True
+                            self.event.set()
+                            # self._motomed_command_done = True
                         elif len(self._type(packet[6])) != 0:
                             if packet[6] == 1:
                                 self.last_init_ack = packet
@@ -266,9 +276,9 @@ class RehastimGeneric:
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
         self.packet_count = (self.packet_count + 1) % 256
-        self._motomed_command_done = False
+        self.event.clear()
         if cmd == 'InitAck':
-            self._motomed_command_done = True
+            self.event.set()
             return 'InitAck'
 
     def _init_ack(self, packet_count: int) -> bytes:
@@ -418,7 +428,8 @@ class RehastimGeneric:
         Disconnect the pc to the Rehastim by stopping sending watchdog.
         """
         self._stop_watchdog()
-        self._stop_motomed()
+        if self.is_motomed_connected:
+            self._stop_motomed()
 
     def _start_watchdog(self):
         """
@@ -434,8 +445,6 @@ class RehastimGeneric:
         """
         Stop the thread which sends watchdog.
         """
-        if self.debug_reha_show_log:
-            print("Disconnect watchdog")
         self.reha_connected = False
         self.__thread_watchdog.join()
 
@@ -443,6 +452,7 @@ class RehastimGeneric:
         """
         Stop the thread which sends watchdog.
         """
+        self.is_motomed_connected = False
         self.__thread_motomed.join()
 
     def _packet_watchdog(self) -> bytes:

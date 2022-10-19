@@ -1,5 +1,5 @@
 # Import Stimulator class
-from pyScienceMode2 import Stimulator as St
+from pyScienceMode2.rehastim_interface import Stimulator as St
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
 
@@ -32,21 +32,19 @@ channel_8 = Ch.Channel('Single', 8, 50, 100)
 
 # Choose which channel will be used
 list_channels.append(channel_1)
-list_channels.append(channel_3)
-list_channels.append(channel_5)
-list_channels.append(channel_6)
-list_channels.append(channel_7)
-list_channels.append(channel_8)
+# list_channels.append(channel_3)
+# list_channels.append(channel_5)
+# list_channels.append(channel_6)
+# list_channels.append(channel_7)
+# list_channels.append(channel_8)
 
 # Create our object Stimulator
-stimulator = St.Stimulator(list_channels=list_channels,
+stimulator = St(list_channels=list_channels,
                            stimulation_interval=1000,
                            port='/dev/ttyUSB0',
                            inter_pulse_interval=120,
                            low_frequency_factor=1)
 
-# Display log, communication or/and watchdog, by default True if called, to deactivate : stimulator.show_log(False)
-stimulator.show_log()
 # stimulator.show_com()
 # stimulator.show_watchdog()
 
@@ -68,8 +66,8 @@ stimulator.start_stimulation()
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,
-list_channels[2].set_amplitude(10)
-list_channels[3].set_amplitude(15)
+list_channels[0].set_amplitude(10)
+# list_channels[3].set_amplitude(15)
 
 # Wait a given time in seconds
 sleep(10)

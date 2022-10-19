@@ -1,5 +1,7 @@
 from pyScienceMode2.utils import signed_int
 
+# Errors messages
+
 
 def motomed_error_values(error_code: int):
     if error_code == -1:
@@ -18,7 +20,7 @@ def motomed_error_values(error_code: int):
         return f'Unknown error. Error code : {str(error_code)}'
 
 
-def stimulation_error(error_code: int) -> str:
+def rehastim_error(error_code: int) -> str:
     """
     Returns the string corresponding to the information contain in the 'StimulationError' packet.
     """
@@ -28,7 +30,23 @@ def stimulation_error(error_code: int) -> str:
         return 'Electrode error'
     elif error_code == -3:
         return 'Stimulation module error'
-    
+
+
+def stimulation_error(error_code: int) -> str:
+    """
+    Returns the string corresponding to the information contain in the 'StimulationError' packet.
+    """
+    if error_code == -1:
+        return 'Transfer error'
+    elif error_code == -2:
+        return 'Parameter error'
+    elif error_code == -3:
+        return 'Wrong mode error'
+    elif error_code == -8:
+        return ' Busy error'
+
+
+# Acks Motomed
     
 def get_motomed_mode_ack(packet: (list, str)) -> str:
     """
@@ -172,3 +190,49 @@ def motomed_error_ack(packet):
         return 'Motomed connection error'
     elif str(packet[7]) == '-6':
         return 'Invalid Motomed trainer'
+
+
+# Acks Stimulators
+def get_mode_ack(packet: list) -> str:
+    """
+    Returns the string corresponding to the information contain in the 'getModeAck' packet.
+    """
+    if packet[7] == 0:
+        if packet[8] == 0:
+            return 'Start Mode'
+        elif packet[8] == 1:
+            return 'Stimulation initialized'
+        elif packet[8] == 2:
+            return 'Stimulation started'
+    else:
+        return stimulation_error(signed_int(packet[7:8]))
+
+
+def init_stimulation_ack(packet: list) -> str:
+    """
+    Returns the string corresponding to the information contain in the 'InitChannelListModeAck' packet.
+    """
+    if packet[7] == 0:
+        return 'Stimulation initialized'
+    else:
+        return stimulation_error(signed_int(packet[7:8]))
+
+
+def start_stimulation_ack(packet: list) -> str:
+    """
+    Returns the string corresponding to the information contain in the 'StartChannelListModeAck' packet.
+    """
+    if packet[7] == 0:
+        return 'Stimulation started'
+    else:
+        return stimulation_error(signed_int(packet[7:8]))
+
+
+def stop_stimulation_ack(packet: list) -> str:
+    """
+    Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
+    """
+    if packet[7] == 0:
+        return ' Stimulation stopped'
+    else:
+        return stimulation_error(signed_int(packet[7:8]))
