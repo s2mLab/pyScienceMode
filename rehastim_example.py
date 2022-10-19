@@ -1,5 +1,6 @@
 # Import Stimulator class
 from pyScienceMode2.rehastim_interface import Stimulator as St
+
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
 
@@ -9,26 +10,23 @@ from time import sleep
 list_channels = []
 
 # Create all channels possible
-channel_1 = Ch.Channel(mode='Single',
-                       no_channel=1,
-                       amplitude=50,
-                       pulse_width=100,
-                       enable_low_frequency=False,
-                       name='Biceps')
+channel_1 = Ch.Channel(
+    mode="Single", no_channel=1, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps"
+)
 
 channel_2 = Ch.Channel()
-channel_2.set_mode('Single')
+channel_2.set_mode("Single")
 channel_2.set_no_channel(2)
 channel_2.set_amplitude(2)
 channel_2.set_pulse_width(100)
-channel_2.set_name('Triceps')
+channel_2.set_name("Triceps")
 
-channel_3 = Ch.Channel('Doublet', 3, 50, 100)
-channel_4 = Ch.Channel('Single', 4, 50, 100)
-channel_5 = Ch.Channel('Triplet', 5, 50, 100)
-channel_6 = Ch.Channel('Single', 6, 50, 100, True)
-channel_7 = Ch.Channel('Single', 7, 50, 100)
-channel_8 = Ch.Channel('Single', 8, 50, 100)
+channel_3 = Ch.Channel("Doublet", 3, 50, 100)
+channel_4 = Ch.Channel("Single", 4, 50, 100)
+channel_5 = Ch.Channel("Triplet", 5, 50, 100)
+channel_6 = Ch.Channel("Single", 6, 50, 100, True)
+channel_7 = Ch.Channel("Single", 7, 50, 100)
+channel_8 = Ch.Channel("Single", 8, 50, 100)
 
 # Choose which channel will be used
 list_channels.append(channel_1)
@@ -39,11 +37,13 @@ list_channels.append(channel_7)
 list_channels.append(channel_8)
 
 # Create our object Stimulator
-stimulator = St(list_channels=list_channels,
-                           stimulation_interval=1000,
-                           port='/dev/ttyUSB0',
-                           inter_pulse_interval=120,
-                           low_frequency_factor=1)
+stimulator = St(
+    list_channels=list_channels,
+    stimulation_interval=1000,
+    port="/dev/ttyUSB0",
+    inter_pulse_interval=120,
+    low_frequency_factor=1,
+)
 
 """
 Initialise the channels given.

@@ -12,55 +12,56 @@ import numpy as np
 
 class RehastimGeneric:
     """
-        Class used for the communication with Rehastim.
+    Class used for the communication with Rehastim.
 
-        Attributes
-        ----------
-        packet_count : int
-            Contain the number of packet sent to the Rehastim since the Init.
-        port : class Serial
-            Used to control the COM port.
-        debug_reha_show_log : bool
-            Tell if the log will be displayed (True) or not (False).
-        debug_reha_show_com : bool
-            Tell if the communication will be displayed (True) or not (False). Except watchdog.
-        debug_reha_show_watchdog : bool
-            Tell if the watchdog will be displayed (True) or not (False).
-        time_last_cmd : int
-            Time of the last command which was sent to the Rehastim.
-        packet_send_history : list[int]
-            Last packet sent to the Rehastim. Used for error and debugging purposes.
-        reha_connected : bool
-            Tell if the computer is connected (True) to the Rehastim or not (False).
-        multiple_packet_flag : int
-            Flag raised when multiple packet are waiting in the port COM. The methode _check_multiple_packet_rec() needs to
-            be used after each call of _calling_ack() or wait_for_packet() in order to process those packets.
-        buffer_rec : list[int]
-            Contain the packet receive which has not been processed.
-        __thread_watchdog: threading.Thread
-            ID of the thread responsible for sending regularly a watchdog.
+    Attributes
+    ----------
+    packet_count : int
+        Contain the number of packet sent to the Rehastim since the Init.
+    port : class Serial
+        Used to control the COM port.
+    debug_reha_show_log : bool
+        Tell if the log will be displayed (True) or not (False).
+    debug_reha_show_com : bool
+        Tell if the communication will be displayed (True) or not (False). Except watchdog.
+    debug_reha_show_watchdog : bool
+        Tell if the watchdog will be displayed (True) or not (False).
+    time_last_cmd : int
+        Time of the last command which was sent to the Rehastim.
+    packet_send_history : list[int]
+        Last packet sent to the Rehastim. Used for error and debugging purposes.
+    reha_connected : bool
+        Tell if the computer is connected (True) to the Rehastim or not (False).
+    multiple_packet_flag : int
+        Flag raised when multiple packet are waiting in the port COM. The methode _check_multiple_packet_rec() needs to
+        be used after each call of _calling_ack() or wait_for_packet() in order to process those packets.
+    buffer_rec : list[int]
+        Contain the packet receive which has not been processed.
+    __thread_watchdog: threading.Thread
+        ID of the thread responsible for sending regularly a watchdog.
 
-        Class Attributes
-        ----------------
-        VERSION : int
-            version of software of Rehastim.
-        START_BYTE : int
-            Start byte of protocol. (Science Mode2 Description Protocol, 2.2 Packet structure)
-        STOP_BYTE : int
-            Stop byte of protocol.
-        STUFFING_BYTE : int
-            Stuffing byte of protocol.
-        STUFFING_KEY : int
-            Stuffing key of protocol.
-        MAX_PACKET_BYTES : int
-            Number max of bytes per packet in protocol.
-        BAUD_RATE : int
-            Baud rate of protocol.
-        TYPES : dict
-            Dictionary which contains Rehastim commands for protocol and their values. (Motomed command are not implemented)
-        RECEIVE, SEND, ERR : int
-            Packet type. Used for _packet_show() method.
-        """
+    Class Attributes
+    ----------------
+    VERSION : int
+        version of software of Rehastim.
+    START_BYTE : int
+        Start byte of protocol. (Science Mode2 Description Protocol, 2.2 Packet structure)
+    STOP_BYTE : int
+        Stop byte of protocol.
+    STUFFING_BYTE : int
+        Stuffing byte of protocol.
+    STUFFING_KEY : int
+        Stuffing key of protocol.
+    MAX_PACKET_BYTES : int
+        Number max of bytes per packet in protocol.
+    BAUD_RATE : int
+        Baud rate of protocol.
+    TYPES : dict
+        Dictionary which contains Rehastim commands for protocol and their values. (Motomed command are not implemented)
+    RECEIVE, SEND, ERR : int
+        Packet type. Used for _packet_show() method.
+    """
+
     VERSION = 0x01
 
     START_BYTE = 0xF0
@@ -73,25 +74,63 @@ class RehastimGeneric:
 
     TYPES = {
         # Rehastim command
-        'Init': 1, 'InitAck': 2, 'UnknownCommand': 3, 'Watchdog': 4, 'GetStimulationMode': 10,
-        'GetStimulationModeAck': 11, 'InitChannelListMode': 30, 'InitChannelListModeAck': 31,
-        'StartChannelListMode': 32, 'StartChannelListModeAck': 33, 'StopChannelListMode': 34,
-        'StopChannelListModeAck': 35, 'SinglePulse': 36, 'SinglePulseAck': 37, 'StimulationError': 38,
+        "Init": 1,
+        "InitAck": 2,
+        "UnknownCommand": 3,
+        "Watchdog": 4,
+        "GetStimulationMode": 10,
+        "GetStimulationModeAck": 11,
+        "InitChannelListMode": 30,
+        "InitChannelListModeAck": 31,
+        "StartChannelListMode": 32,
+        "StartChannelListModeAck": 33,
+        "StopChannelListMode": 34,
+        "StopChannelListModeAck": 35,
+        "SinglePulse": 36,
+        "SinglePulseAck": 37,
+        "StimulationError": 38,
         #  Motomed commmand
-        'MotomedError': 90, "InitPhaseTraining": 50, "InitPhaseTrainingAck": 51, "StartPhase": 52,
-        "StartPhaseAck": 53, "PausePhase": 54, "PausePhaseAck": 55, "StopPhaseTraining": 56, "StopPhaseTrainingAck": 57,
-        "PhaseResult": 58, "ActualValues": 60, "SetRotationDirection": 70, "SetRotationDirectionAck": 71,
-        "SetSpeed": 72, "SetSpeedAck": 73, "SetGear": 74, "SetGearAck": 75, "SetKeyboardLock": 76, "SetKeyboardLockAck": 77,
-        "StartBasicTraining": 80, "StartBasicTrainingAck": 81, "PauseBasicTraining": 82,
-        "PauseBasicTrainingAck": 83, "ContinueBasicTraining": 84,
-        "ContinueBasicTrainingAck": 85, "StopBasicTraining": 86, "StopBasicTrainingAck": 87,
-        "MotomedCommandDone": 89, "GetMotomedModeAck": 13,
-        "GetMotomedMode": 12
+        "MotomedError": 90,
+        "InitPhaseTraining": 50,
+        "InitPhaseTrainingAck": 51,
+        "StartPhase": 52,
+        "StartPhaseAck": 53,
+        "PausePhase": 54,
+        "PausePhaseAck": 55,
+        "StopPhaseTraining": 56,
+        "StopPhaseTrainingAck": 57,
+        "PhaseResult": 58,
+        "ActualValues": 60,
+        "SetRotationDirection": 70,
+        "SetRotationDirectionAck": 71,
+        "SetSpeed": 72,
+        "SetSpeedAck": 73,
+        "SetGear": 74,
+        "SetGearAck": 75,
+        "SetKeyboardLock": 76,
+        "SetKeyboardLockAck": 77,
+        "StartBasicTraining": 80,
+        "StartBasicTrainingAck": 81,
+        "PauseBasicTraining": 82,
+        "PauseBasicTrainingAck": 83,
+        "ContinueBasicTraining": 84,
+        "ContinueBasicTrainingAck": 85,
+        "StopBasicTraining": 86,
+        "StopBasicTrainingAck": 87,
+        "MotomedCommandDone": 89,
+        "GetMotomedModeAck": 13,
+        "GetMotomedMode": 12,
     }
 
     def __init__(self, port, with_motomed: bool = False):
-        self.port = serial.Serial(port, self.BAUD_RATE, bytesize=serial.EIGHTBITS, parity=serial.PARITY_EVEN,
-                                  stopbits=serial.STOPBITS_ONE, timeout=0.1)
+        self.port = serial.Serial(
+            port,
+            self.BAUD_RATE,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_EVEN,
+            stopbits=serial.STOPBITS_ONE,
+            timeout=0.1,
+        )
         self.port_open = True
         self.debug_reha_show_log = False
         self.debug_reha_show_com = False
@@ -164,13 +203,13 @@ class RehastimGeneric:
             if packets:
                 for packet in packets:
                     if len(packet) > 7:
-                        if packet[6] == self._type('PhaseResult'):
+                        if packet[6] == self._type("PhaseResult"):
                             self._phase_result_ack(packet)
-                        elif packet[6] == self._type('ActualValues'):
+                        elif packet[6] == self._type("ActualValues"):
                             self._actual_values_ack(packet)
                         elif packet[6] == 90:
                             pass
-                        elif packet[6] == self._type('MotomedCommandDone'):
+                        elif packet[6] == self._type("MotomedCommandDone"):
                             self.event.set()
                             # self._motomed_command_done = True
                         elif len(self._type(packet[6])) != 0:
@@ -217,18 +256,20 @@ class RehastimGeneric:
         phase_duration = None
         active_phase_duration = None
         phase_work = None
-        last_phase_result = np.array([
-            passive_distance,
-            active_distance,
-            average_power,
-            maximum_power,
-            phase_duration,
-            active_phase_duration,
-            phase_work,
-            success_value,
-            symmetry,
-            average_muscle_tone,
-        ])[:, np.newaxis]
+        last_phase_result = np.array(
+            [
+                passive_distance,
+                active_distance,
+                average_power,
+                maximum_power,
+                phase_duration,
+                active_phase_duration,
+                phase_work,
+                success_value,
+                symmetry,
+                average_muscle_tone,
+            ]
+        )[:, np.newaxis]
 
         if self.last_phase_result is None:
             self.last_phase_result = last_phase_result
@@ -243,7 +284,7 @@ class RehastimGeneric:
         """
         while 1 and self.is_connected():
             if time.time() - self.time_last_cmd > 0.5:
-                self._send_generic_packet('Watchdog', packet=[], packet_number=self.packet_count)
+                self._send_generic_packet("Watchdog", packet=[], packet_number=self.packet_count)
                 time.sleep(0.5)
 
     def is_connected(self) -> bool:
@@ -261,12 +302,11 @@ class RehastimGeneric:
             return True
 
     def _send_generic_packet(self, cmd: str, packet: list, packet_number: int = None):
-        """
-        """
-        if cmd == 'InitAck':
+        """ """
+        if cmd == "InitAck":
             packet = self._init_ack(packet_number)
             self._start_watchdog()
-        elif cmd == 'Watchdog':
+        elif cmd == "Watchdog":
             packet = self._packet_watchdog()
         self.lock.acquire()
         self.port.write(packet)
@@ -277,9 +317,9 @@ class RehastimGeneric:
         self.packet_send_history = packet
         self.packet_count = (self.packet_count + 1) % 256
         self.event.clear()
-        if cmd == 'InitAck':
+        if cmd == "InitAck":
             self.event.set()
-            return 'InitAck'
+            return "InitAck"
 
     def _init_ack(self, packet_count: int) -> bytes:
         """
@@ -295,7 +335,7 @@ class RehastimGeneric:
         packet: list
             Packet corresponding to an InitAck.
         """
-        packet = self._packet_construction(packet_count, 'InitAck', [0])
+        packet = self._packet_construction(packet_count, "InitAck", [0])
         return packet
 
     def _packet_construction(self, packet_count: int, packet_type: str, packet_data: list = None) -> bytes:
@@ -335,7 +375,7 @@ class RehastimGeneric:
         packet_end = [stop_byte]
         packet = packet_lead + packet_payload + packet_end
         # packet = [abs(byte) for byte in packet]
-        return b''.join([byte.to_bytes(1, 'little') for byte in packet])
+        return b"".join([byte.to_bytes(1, "little") for byte in packet])
 
     def _stuff_packet_byte(self, packet: list) -> list:
         """
@@ -412,11 +452,14 @@ class RehastimGeneric:
                 while stop == 0 and count < len(ack_packet_size):
                     try:
                         if packet_tmp[ack_packet_size[count]] == self.STOP_BYTE:
-                            if len(packet_tmp) > ack_packet_size[count] + 1 and packet_tmp[ack_packet_size[count] + 1] != self.START_BYTE:
+                            if (
+                                len(packet_tmp) > ack_packet_size[count] + 1
+                                and packet_tmp[ack_packet_size[count] + 1] != self.START_BYTE
+                            ):
                                 pass
                             else:
-                                packet_list.append(packet_tmp[:ack_packet_size[count] + 1])
-                                packet_tmp = packet_tmp[ack_packet_size[count] + 1:]
+                                packet_list.append(packet_tmp[: ack_packet_size[count] + 1])
+                                packet_tmp = packet_tmp[ack_packet_size[count] + 1 :]
                                 stop = 1
                         count += 1
                     except:
@@ -464,5 +507,5 @@ class RehastimGeneric:
         packet: list
             Packet corresponding to the watchdog
         """
-        packet = self._packet_construction(self.packet_count, 'Watchdog')
+        packet = self._packet_construction(self.packet_count, "Watchdog")
         return packet

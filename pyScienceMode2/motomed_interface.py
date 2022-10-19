@@ -31,7 +31,7 @@ class Motomed(RehastimGeneric):
         packet = None
         while packet is None:
             packet = self.last_init_ack
-        self._send_generic_packet('InitAck', packet=[], packet_number=packet[5])
+        self._send_generic_packet("InitAck", packet=[], packet_number=packet[5])
 
     def _send_packet(self, cmd: str) -> str:
         """
@@ -81,95 +81,70 @@ class Motomed(RehastimGeneric):
                 return init_ack
 
     def _packet_get_motomed_mode(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "GetMotomedMode"
-                                           )
+        packet = self._packet_construction(self.packet_count, "GetMotomedMode")
         return packet
 
     def _packet_init_phase_training(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "InitPhaseTraining",
-                                           [self.body_training]
-                                           )
+        packet = self._packet_construction(self.packet_count, "InitPhaseTraining", [self.body_training])
         return packet
 
     def _packet_start_phase(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "StartPhase",
-                                           [self.phase_variant,
-                                            self.passive_speed,
-                                            self.gear,
-                                            self.direction,
-                                            self.fly_wheel,
-                                            self.spasm_detection,
-                                            self.training_side,
-                                            self.crank_orientation
-                                            ]
-                                           )
+        packet = self._packet_construction(
+            self.packet_count,
+            "StartPhase",
+            [
+                self.phase_variant,
+                self.passive_speed,
+                self.gear,
+                self.direction,
+                self.fly_wheel,
+                self.spasm_detection,
+                self.training_side,
+                self.crank_orientation,
+            ],
+        )
         return packet
 
     def _packet_pause_phase(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "PausePhase"
-                                           )
+        packet = self._packet_construction(self.packet_count, "PausePhase")
         return packet
 
     def _packet_stop_phase_training(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "StopPhaseTraining"
-                                           )
+        packet = self._packet_construction(self.packet_count, "StopPhaseTraining")
         return packet
 
     def _packet_set_rotation_direction(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "SetRotationDirection",
-                                           [self.direction]
-                                           )
+        packet = self._packet_construction(self.packet_count, "SetRotationDirection", [self.direction])
         return packet
 
     def _packet_set_speed(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "SetSpeed",
-                                           [self.passive_speed]
-                                           )
+        packet = self._packet_construction(self.packet_count, "SetSpeed", [self.passive_speed])
         return packet
 
     def _packet_set_gear(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "SetGear",
-                                           [self.gear]
-                                           )
+        packet = self._packet_construction(self.packet_count, "SetGear", [self.gear])
         return packet
 
     def _packet_start_basic_training(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "StartBasicTraining",
-                                           [self.body_training]
-                                           )
+        packet = self._packet_construction(self.packet_count, "StartBasicTraining", [self.body_training])
         return packet
 
     def _packet_stop_basic_training(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "StopBasicTraining"
-                                           )
+        packet = self._packet_construction(self.packet_count, "StopBasicTraining")
         return packet
 
     def _packet_continue_basic_training(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "ContinueBasicTraining"
-                                           )
+        packet = self._packet_construction(self.packet_count, "ContinueBasicTraining")
         return packet
 
     def _packet_pause_basic_training(self):
-        packet = self._packet_construction(self.packet_count,
-                                           "PauseBasicTraining"
-                                           )
+        packet = self._packet_construction(self.packet_count, "PauseBasicTraining")
         return packet
 
     def get_motomed_mode(self):
         self._send_packet("GetMotomedMode")
         get_motomed_mode_ack = self._calling_ack(self._get_last_ack())
-        if get_motomed_mode_ack in ['Transfer error', 'Busy error', "Motomed busy", "Motomed connection error"]:
+        if get_motomed_mode_ack in ["Transfer error", "Busy error", "Motomed busy", "Motomed connection error"]:
             raise RuntimeError("Error getting motomed mode : " + str(get_motomed_mode_ack))
         else:
             return get_motomed_mode_ack
@@ -178,29 +153,31 @@ class Motomed(RehastimGeneric):
         self.body_training = 1 if arm_training else 0
         self._send_packet("InitPhaseTraining")
         init_phase_training_ack = self._calling_ack(self._get_last_ack())
-        if init_phase_training_ack != 'Phase training initialized':
+        if init_phase_training_ack != "Phase training initialized":
             raise RuntimeError("Error initializing phase : " + str(init_phase_training_ack))
         self.is_phase_initialize = True
 
-    def start_phase(self,
-                    arm_training: bool = True,
-                    go_forward: bool = True,
-                    active: bool = False,
-                    passive: bool = False,
-                    symmetry_training: bool = False,
-                    motomedmax_game: bool = False,
-                    gear: int = 0,
-                    speed: int = 0,
-                    fly_wheel: int = 0,
-                    spasm_detection: bool = False,
-                    direction_restoration: bool = False,
-                    training_side: str = "both",
-                    crank_equal_orientation: bool = True,
-                    ):
+    def start_phase(
+        self,
+        arm_training: bool = True,
+        go_forward: bool = True,
+        active: bool = False,
+        passive: bool = False,
+        symmetry_training: bool = False,
+        motomedmax_game: bool = False,
+        gear: int = 0,
+        speed: int = 0,
+        fly_wheel: int = 0,
+        spasm_detection: bool = False,
+        direction_restoration: bool = False,
+        training_side: str = "both",
+        crank_equal_orientation: bool = True,
+    ):
 
         if active + symmetry_training + motomedmax_game + passive != 1:
-            raise RuntimeError("Please chose one option between 'active', 'passive',"
-                               " 'symmetry_training' and 'Motomedmax_game'.")
+            raise RuntimeError(
+                "Please chose one option between 'active', 'passive'," " 'symmetry_training' and 'Motomedmax_game'."
+            )
         if active:
             self.phase_variant = 0
         elif passive:
@@ -245,8 +222,7 @@ class Motomed(RehastimGeneric):
         elif training_side == "right":
             self.training_side = 2
         else:
-            raise RuntimeError("Training side must be 'both', 'right' or 'left'."
-                               f"You have : {training_side}.")
+            raise RuntimeError("Training side must be 'both', 'right' or 'left'." f"You have : {training_side}.")
         self.crank_orientation = 1 if crank_equal_orientation else 0
         self._send_packet("StartPhase")
         start_phase_ack = self._calling_ack(self._get_last_ack())
@@ -256,19 +232,19 @@ class Motomed(RehastimGeneric):
     def _pause_phase_training(self):
         self._send_packet("PausePhase")
         pause_phase_ack = self._calling_ack(self._get_last_ack())
-        if pause_phase_ack != 'Start pause sent to MOTOmed':
+        if pause_phase_ack != "Start pause sent to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(pause_phase_ack))
 
     def _stop_phase_training(self):
         self._send_packet("StopPhaseTraining")
         start_phase_ack = self._calling_ack(self._get_last_ack())
-        if start_phase_ack != 'Stop phase training sent to MOTOmed':
+        if start_phase_ack != "Stop phase training sent to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(start_phase_ack))
 
     def _continue_phase_training(self):
         self._send_packet("ContinuePhaseTraining")
         start_phase_ack = self._calling_ack(self._get_last_ack())
-        if start_phase_ack != 'Stop phase training sent to MOTOmed':
+        if start_phase_ack != "Stop phase training sent to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(start_phase_ack))
 
     def stop_training(self):
@@ -294,46 +270,46 @@ class Motomed(RehastimGeneric):
         self.body_training = 1 if arm_training else 0
         self._send_packet("StartBasicTraining")
         start_basic_training_ack = self._calling_ack(self._get_last_ack())
-        if start_basic_training_ack != 'Sent start basic training to MOTOmed':
+        if start_basic_training_ack != "Sent start basic training to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(start_basic_training_ack))
 
     def _stop_basic_training(self):
         self._send_packet("StopBasicTraining")
         stop_basic_training_ack = self._calling_ack(self._get_last_ack())
-        if stop_basic_training_ack != 'Sent stop basic training to MOTOmed':
+        if stop_basic_training_ack != "Sent stop basic training to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(stop_basic_training_ack))
 
     def _pause_basic_training(self):
         self._send_packet("PauseBasicTraining")
         pause_basic_training_ack = self._calling_ack(self._get_last_ack())
-        if pause_basic_training_ack != 'Sent basic pause to MOTOmed':
+        if pause_basic_training_ack != "Sent basic pause to MOTOmed":
             raise RuntimeError("Error pause phase : " + str(pause_basic_training_ack))
 
     def _continue_basic_training(self):
         self._send_packet("ContinueBasicTraining")
         start_basic_training_ack = self._calling_ack(self._get_last_ack())
-        if start_basic_training_ack != 'Sent continue basic training to MOTOmed':
+        if start_basic_training_ack != "Sent continue basic training to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(start_basic_training_ack))
 
     def set_direction(self, go_forward: bool = True):
         self.direction = 1 if go_forward else 0
         self._send_packet("SetRotationDirection")
         rotation_ack = self._calling_ack(self._get_last_ack())
-        if rotation_ack != 'Sent rotation direction to MOTOmed':
+        if rotation_ack != "Sent rotation direction to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(rotation_ack))
 
     def set_speed(self, passive_speed: int):
         self.passive_speed = passive_speed
         self._send_packet("SetSpeed")
         speed_ack = self._calling_ack(self._get_last_ack())
-        if speed_ack != 'Sent speed to MOTOmed':
+        if speed_ack != "Sent speed to MOTOmed":
             raise RuntimeError("Error sending speed : " + str(speed_ack))
 
     def set_gear(self, gear: int):
         self.gear = gear
         self._send_packet("SetGear")
         gear_ack = self._calling_ack(self._get_last_ack())
-        if gear_ack != 'Set Gear to MOTOmed':
+        if gear_ack != "Set Gear to MOTOmed":
             raise RuntimeError("Error sending gear : " + str(gear_ack))
 
     def _calling_ack(self, packet: list):
@@ -356,33 +332,33 @@ class Motomed(RehastimGeneric):
         """
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
-        elif packet[6] == self._type('GetMotomedModeAck'):
+        elif packet[6] == self._type("GetMotomedModeAck"):
             return get_motomed_mode_ack(packet)
-        elif packet[6] == self._type('InitPhaseTrainingAck'):
+        elif packet[6] == self._type("InitPhaseTrainingAck"):
             return init_phase_training_ack(packet)
-        elif packet[6] == self._type('StartPhaseAck'):
+        elif packet[6] == self._type("StartPhaseAck"):
             return start_phase_ack(packet)
-        elif packet[6] == self._type('PausePhaseAck'):
+        elif packet[6] == self._type("PausePhaseAck"):
             return pause_phase_ack(packet)
-        elif packet[6] == self._type('StopPhaseTrainingAck'):
+        elif packet[6] == self._type("StopPhaseTrainingAck"):
             return stop_phase_training_ack(packet)
-        elif packet[6] == self._type('SetRotationDirectionAck'):
+        elif packet[6] == self._type("SetRotationDirectionAck"):
             return set_rotation_direction_ack(packet)
-        elif packet[6] == self._type('SetSpeedAck'):
+        elif packet[6] == self._type("SetSpeedAck"):
             return set_speed_ack(packet)
-        elif packet[6] == self._type('SetGearAck'):
+        elif packet[6] == self._type("SetGearAck"):
             return set_gear_ack(packet)
-        elif packet[6] == self._type('StartBasicTrainingAck'):
+        elif packet[6] == self._type("StartBasicTrainingAck"):
             return start_basic_training_ack(packet)
-        elif packet[6] == self._type('PauseBasicTrainingAck'):
+        elif packet[6] == self._type("PauseBasicTrainingAck"):
             return pause_basic_training_ack(packet)
-        elif packet[6] == self._type('ContinueBasicTrainingAck'):
+        elif packet[6] == self._type("ContinueBasicTrainingAck"):
             return continue_basic_training_ack(packet)
-        elif packet[6] == self._type('StopBasicTrainingAck'):
+        elif packet[6] == self._type("StopBasicTrainingAck"):
             return stop_basic_training_ack(packet)
-        elif packet[6] == self._type('MotomedCommandDone'):
+        elif packet[6] == self._type("MotomedCommandDone"):
             return stop_basic_training_ack(packet)
-        elif packet[6] == self._type('MotomedError'):
+        elif packet[6] == self._type("MotomedError"):
             return motomed_error_values(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")

@@ -28,10 +28,17 @@ class Channel:
         Contain the different names of the different modes
     """
 
-    MODE = {'Single': 0, 'Doublet': 1, 'Triplet': 2}
+    MODE = {"Single": 0, "Doublet": 1, "Triplet": 2}
 
-    def __init__(self, mode: str = 'Single', no_channel: int = 1, amplitude: int = 0,
-                 pulse_width: int = 1, enable_low_frequency: bool = False, name: str = None):
+    def __init__(
+        self,
+        mode: str = "Single",
+        no_channel: int = 1,
+        amplitude: int = 0,
+        pulse_width: int = 1,
+        enable_low_frequency: bool = False,
+        name: str = None,
+    ):
         """
         Create an object Channel.
         Check if the values given are in limits.
@@ -68,8 +75,10 @@ class Channel:
         -------
         A string representing all parameters of Class Channel._
         """
-        return f"Channel {self._no_channel} {self._name}: {self._mode=}, {self._amplitude=}, {self._pulse_width=}, " \
-               f"{self._enable_low_frequency=}"
+        return (
+            f"Channel {self._no_channel} {self._name}: {self._mode=}, {self._amplitude=}, {self._pulse_width=}, "
+            f"{self._enable_low_frequency=}"
+        )
 
     def check_value_param(self):
         """

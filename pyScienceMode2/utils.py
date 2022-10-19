@@ -1,5 +1,3 @@
-
-
 def signed_int(packet: bytes):
     return int.from_bytes(packet, "big", signed=True)
 
@@ -9,8 +7,7 @@ def check_stimulation_interval(stimulation_interval):
     Checks if the stimulation interval is within limits.
     """
     if stimulation_interval < 8 or stimulation_interval > 1025:
-        raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s"
-                         % stimulation_interval)
+        raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s" % stimulation_interval)
 
 
 def check_inter_pulse_interval(inter_pulse_interval):
@@ -21,7 +18,7 @@ def check_inter_pulse_interval(inter_pulse_interval):
         raise ValueError("Error : Inter pulse interval [2,129], given : %s" % inter_pulse_interval)
 
 
-def check_low_frequency_factor(low_frequency_factor ):
+def check_low_frequency_factor(low_frequency_factor):
     """
     Checks if the low frequency factor is within limits.
     """
@@ -45,8 +42,10 @@ def check_unique_channel(list_channels: list) -> bool:
     active_channel = []
     for i in range(len(list_channels)):
         if list_channels[i].get_no_channel() in active_channel:
-            print("Warning : 2 channel no%s" % list_channels[i].get_no_channel() +
-                  " in list_channels given. The first one given will be used.")
+            print(
+                "Warning : 2 channel no%s" % list_channels[i].get_no_channel()
+                + " in list_channels given. The first one given will be used."
+            )
             list_channels.pop(i)
             return False
         else:

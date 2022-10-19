@@ -5,19 +5,19 @@ from pyScienceMode2.utils import signed_int
 
 def motomed_error_values(error_code: int):
     if error_code == -1:
-        return 'Transfer error'
+        return "Transfer error"
     elif error_code == -2:
-        return 'Parameter error'
+        return "Parameter error"
     elif error_code == -3:
-        return 'Wrong mode error'
+        return "Wrong mode error"
     elif error_code == -4:
-        return 'Motomed connection error'
+        return "Motomed connection error"
     elif error_code == -7:
-        return 'Motomed busy error'
+        return "Motomed busy error"
     elif error_code == -8:
-        return 'Busy error'
+        return "Busy error"
     else:
-        return f'Unknown error. Error code : {str(error_code)}'
+        return f"Unknown error. Error code : {str(error_code)}"
 
 
 def rehastim_error(error_code: int) -> str:
@@ -25,11 +25,11 @@ def rehastim_error(error_code: int) -> str:
     Returns the string corresponding to the information contain in the 'StimulationError' packet.
     """
     if error_code == -1:
-        return 'Emergency switch activated/not connected'
+        return "Emergency switch activated/not connected"
     elif error_code == -2:
-        return 'Electrode error'
+        return "Electrode error"
     elif error_code == -3:
-        return 'Stimulation module error'
+        return "Stimulation module error"
 
 
 def stimulation_error(error_code: int) -> str:
@@ -37,17 +37,18 @@ def stimulation_error(error_code: int) -> str:
     Returns the string corresponding to the information contain in the 'StimulationError' packet.
     """
     if error_code == -1:
-        return 'Transfer error'
+        return "Transfer error"
     elif error_code == -2:
-        return 'Parameter error'
+        return "Parameter error"
     elif error_code == -3:
-        return 'Wrong mode error'
+        return "Wrong mode error"
     elif error_code == -8:
-        return ' Busy error'
+        return " Busy error"
 
 
 # Acks Motomed
-    
+
+
 def get_motomed_mode_ack(packet: (list, str)) -> str:
     """
     Returns the string corresponding to the information contain in the 'InitPhaseTrainingAck' packet.
@@ -70,17 +71,17 @@ def get_motomed_mode_ack(packet: (list, str)) -> str:
         elif signed_int(packet[8:9]) == -1:
             return "Motomed connection error"
     elif signed_int(packet[7:8]) == -1:
-        return 'Transfer error'
+        return "Transfer error"
     elif signed_int(packet[7:8]) == -8:
-        return 'Busy error'
+        return "Busy error"
 
 
 def init_phase_training_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'InitPhaseTrainingAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Phase training initialized'
+    if str(packet[7]) == "0":
+        return "Phase training initialized"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -89,8 +90,8 @@ def start_phase_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Start phase training / change phase sent to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Start phase training / change phase sent to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -99,8 +100,8 @@ def pause_phase_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Start pause sent to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Start pause sent to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -109,8 +110,8 @@ def stop_phase_training_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Stop phase training sent to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Stop phase training sent to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -119,8 +120,8 @@ def set_rotation_direction_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Sent rotation direction to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Sent rotation direction to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -129,8 +130,8 @@ def set_speed_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Sent speed to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Sent speed to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -139,8 +140,8 @@ def set_gear_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Set Gear to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Set Gear to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -149,8 +150,8 @@ def start_basic_training_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Sent start basic training to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Sent start basic training to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -159,8 +160,8 @@ def pause_basic_training_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Sent basic pause to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Sent basic pause to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -169,8 +170,8 @@ def continue_basic_training_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Sent continue basic training to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Sent continue basic training to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
@@ -179,17 +180,17 @@ def stop_basic_training_ack(packet: list) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
-    if str(packet[7]) == '0':
-        return 'Sent stop basic training to MOTOmed'
+    if str(packet[7]) == "0":
+        return "Sent stop basic training to MOTOmed"
     else:
         motomed_error_values(signed_int(packet[7:8]))
 
 
 def motomed_error_ack(packet):
-    if str(packet[7]) == '-4':
-        return 'Motomed connection error'
-    elif str(packet[7]) == '-6':
-        return 'Invalid Motomed trainer'
+    if str(packet[7]) == "-4":
+        return "Motomed connection error"
+    elif str(packet[7]) == "-6":
+        return "Invalid Motomed trainer"
 
 
 # Acks Stimulators
@@ -199,11 +200,11 @@ def get_mode_ack(packet: list) -> str:
     """
     if packet[7] == 0:
         if packet[8] == 0:
-            return 'Start Mode'
+            return "Start Mode"
         elif packet[8] == 1:
-            return 'Stimulation initialized'
+            return "Stimulation initialized"
         elif packet[8] == 2:
-            return 'Stimulation started'
+            return "Stimulation started"
     else:
         return stimulation_error(signed_int(packet[7:8]))
 
@@ -213,7 +214,7 @@ def init_stimulation_ack(packet: list) -> str:
     Returns the string corresponding to the information contain in the 'InitChannelListModeAck' packet.
     """
     if packet[7] == 0:
-        return 'Stimulation initialized'
+        return "Stimulation initialized"
     else:
         return stimulation_error(signed_int(packet[7:8]))
 
@@ -223,7 +224,7 @@ def start_stimulation_ack(packet: list) -> str:
     Returns the string corresponding to the information contain in the 'StartChannelListModeAck' packet.
     """
     if packet[7] == 0:
-        return 'Stimulation started'
+        return "Stimulation started"
     else:
         return stimulation_error(signed_int(packet[7:8]))
 
@@ -233,6 +234,6 @@ def stop_stimulation_ack(packet: list) -> str:
     Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
     """
     if packet[7] == 0:
-        return ' Stimulation stopped'
+        return " Stimulation stopped"
     else:
         return stimulation_error(signed_int(packet[7:8]))

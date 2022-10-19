@@ -65,8 +65,15 @@ class Stimulator(RehastimGeneric):
     """
 
     # Constructor
-    def __init__(self, list_channels: list, stimulation_interval: int, port: str,
-                 inter_pulse_interval: int = 2, low_frequency_factor: int = 0, with_motomed: bool = False):
+    def __init__(
+        self,
+        list_channels: list,
+        stimulation_interval: int,
+        port: str,
+        inter_pulse_interval: int = 2,
+        low_frequency_factor: int = 0,
+        with_motomed: bool = False,
+    ):
         """
         Creates an object stimulator.
 
@@ -105,7 +112,7 @@ class Stimulator(RehastimGeneric):
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
-        self._send_generic_packet('InitAck', packet=[], packet_number=packet[5])
+        self._send_generic_packet("InitAck", packet=[], packet_number=packet[5])
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -147,13 +154,13 @@ class Stimulator(RehastimGeneric):
         """
 
         packet = [-1]
-        if cmd == 'GetStimulationMode':
+        if cmd == "GetStimulationMode":
             packet = self._packet_get_mode()
-        elif cmd == 'InitChannelListMode':
+        elif cmd == "InitChannelListMode":
             packet = self._packet_init_stimulation()
-        elif cmd == 'StartChannelListMode':
+        elif cmd == "StartChannelListMode":
             packet = self._packet_start_stimulation()
-        elif cmd == 'StopChannelListMode':
+        elif cmd == "StopChannelListMode":
             packet = self._packet_stop_stimulation()
         init_ack = self._send_generic_packet(cmd, packet)
         if init_ack:
@@ -180,15 +187,15 @@ class Stimulator(RehastimGeneric):
         """
         if packet == "InitAck":
             return "InitAck"
-        elif packet[6] == self._type('GetStimulationModeAck'):
+        elif packet[6] == self._type("GetStimulationModeAck"):
             return get_mode_ack(packet)
-        elif packet[6] == self._type('InitChannelListModeAck'):
+        elif packet[6] == self._type("InitChannelListModeAck"):
             return init_stimulation_ack(packet)
-        elif packet[6] == self._type('StopChannelListModeAck'):
+        elif packet[6] == self._type("StopChannelListModeAck"):
             return stop_stimulation_ack(packet)
-        elif packet[6] == self._type('StartChannelListModeAck'):
+        elif packet[6] == self._type("StartChannelListModeAck"):
             return start_stimulation_ack(packet)
-        elif packet[6] == self._type('StimulationError'):
+        elif packet[6] == self._type("StimulationError"):
             return rehastim_error(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")
@@ -197,7 +204,7 @@ class Stimulator(RehastimGeneric):
         """
         Returns the packet corresponding to the GetStimulationMode command.
         """
-        packet = self._packet_construction(self.packet_count, 'GetStimulationMode')
+        packet = self._packet_construction(self.packet_count, "GetStimulationMode")
         return packet
 
     def _packet_init_stimulation(self) -> bytes:
@@ -207,15 +214,17 @@ class Stimulator(RehastimGeneric):
         coded_inter_pulse_interval = self._code_inter_pulse_interval()
         msb, lsb = self._msb_lsb_main_stim()
 
-        data_stimulation = [self.low_frequency_factor,
-                            self.electrode_number,
-                            self.electrode_number_low_frequency,
-                            coded_inter_pulse_interval,
-                            msb,
-                            lsb,
-                            0]
+        data_stimulation = [
+            self.low_frequency_factor,
+            self.electrode_number,
+            self.electrode_number_low_frequency,
+            coded_inter_pulse_interval,
+            msb,
+            lsb,
+            0,
+        ]
 
-        packet = self._packet_construction(self.packet_count, 'InitChannelListMode', data_stimulation)
+        packet = self._packet_construction(self.packet_count, "InitChannelListMode", data_stimulation)
         return packet
 
     def _packet_start_stimulation(self) -> bytes:
@@ -230,7 +239,7 @@ class Stimulator(RehastimGeneric):
             data_stimulation.append(lsb)
             data_stimulation.append(int(self.amplitude[i]))
 
-        packet = self._packet_construction(self.packet_count, 'StartChannelListMode', data_stimulation)
+        packet = self._packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
 
         return packet
 
@@ -238,7 +247,7 @@ class Stimulator(RehastimGeneric):
         """
         Returns the packet for the StopChannelListMode.
         """
-        packet = self._packet_construction(self.packet_count, 'StopChannelListMode')
+        packet = self._packet_construction(self.packet_count, "StopChannelListMode")
         return packet
 
     def _code_inter_pulse_interval(self) -> int:
@@ -328,10 +337,13 @@ class Stimulator(RehastimGeneric):
             msb = 1
         return msb, lsb
 
-    def init_channel(self, stimulation_interval: int = None,
-                     list_channels: list = None,
-                     inter_pulse_interval: int = None,
-                     low_frequency_factor: int = None):
+    def init_channel(
+        self,
+        stimulation_interval: int = None,
+        list_channels: list = None,
+        inter_pulse_interval: int = None,
+        low_frequency_factor: int = None,
+    ):
         """
         Initialize the requested channel.
         Can update stimulation interval if one is given.
@@ -365,9 +377,9 @@ class Stimulator(RehastimGeneric):
         self.electrode_number_low_frequency = calc_electrode_number(self.list_channels, enable_low_frequency=True)
 
         self.set_stimulation_signal(self.list_channels)
-        self._send_packet('InitChannelListMode', self.packet_count)
+        self._send_packet("InitChannelListMode", self.packet_count)
         init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if init_channel_list_mode_ack != 'Stimulation initialized':
+        if init_channel_list_mode_ack != "Stimulation initialized":
             raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
 
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
@@ -391,12 +403,12 @@ class Stimulator(RehastimGeneric):
             self.list_channels = upd_list_channels
             self.set_stimulation_signal(self.list_channels)
 
-        self._send_packet('StartChannelListMode', self.packet_count)
+        self._send_packet("StartChannelListMode", self.packet_count)
 
         time_start_stim = time.time()
 
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if start_channel_list_mode_ack != 'Stimulation started':
+        if start_channel_list_mode_ack != "Stimulation started":
             raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         else:
             self.stimulation_started = True
@@ -433,9 +445,9 @@ class Stimulator(RehastimGeneric):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
-        self._send_packet('StopChannelListMode', self.packet_count)
+        self._send_packet("StopChannelListMode", self.packet_count)
         stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if stop_channel_list_mode_ack != ' Stimulation stopped':
+        if stop_channel_list_mode_ack != " Stimulation stopped":
             raise RuntimeError("Error : StopChannelListMode" + stop_channel_list_mode_ack)
         else:
             self.packet_count = 0
