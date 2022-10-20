@@ -13,6 +13,7 @@ class Motomed(RehastimGeneric):
     """
     Class to control the motomed
     """
+
     def __init__(self, port: str, show_log: bool = False):
         """
         Parameters
@@ -63,15 +64,15 @@ class Motomed(RehastimGeneric):
             packet = self._packet_construction(self.packet_count, "InitPhaseTraining", [self.body_training])
         elif cmd == "StartPhase":
             data_command = [
-                    self.phase_variant,
-                    self.passive_speed,
-                    self.gear,
-                    self.direction,
-                    self.fly_wheel,
-                    self.spasm_detection,
-                    self.training_side,
-                    self.crank_orientation,
-                ]
+                self.phase_variant,
+                self.passive_speed,
+                self.gear,
+                self.direction,
+                self.fly_wheel,
+                self.spasm_detection,
+                self.training_side,
+                self.crank_orientation,
+            ]
             packet = self._packet_construction(self.packet_count, "StartPhase", data_command)
         elif cmd == "SetRotationDirection":
             packet = self._packet_construction(self.packet_count, "SetRotationDirection", [self.direction])
@@ -162,9 +163,7 @@ class Motomed(RehastimGeneric):
             If True, the phase will be done with a symetric crank.
         """
         if active + symmetry_training + motomedmax_game != 1:
-            raise RuntimeError(
-                "Please chose one option between 'active' 'symmetry_training' and 'Motomedmax_game'."
-            )
+            raise RuntimeError("Please chose one option between 'active' 'symmetry_training' and 'Motomedmax_game'.")
         if active:
             self.phase_variant = 0
         elif not active and not symmetry_training and not motomedmax_game:
@@ -212,7 +211,7 @@ class Motomed(RehastimGeneric):
         self.crank_orientation = 1 if crank_symetric else 0
         self._send_packet("StartPhase")
         start_phase_train_ack = self._calling_ack(self._get_last_ack())
-        if start_phase_train_ack != 'Start phase training / change phase sent to MOTOmed':
+        if start_phase_train_ack != "Start phase training / change phase sent to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(start_phase_train_ack))
 
     def _pause_phase_training(self):

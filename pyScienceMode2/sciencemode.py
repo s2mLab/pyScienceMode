@@ -189,13 +189,13 @@ class RehastimGeneric:
             angle = 255 * signed_int(packet[7:8]) + packet[8]
 
         if packet[10 + count] == 129:
-            speed = signed_int(packet[10 + count + 1:10 + count + 2]) ^ self.STUFFING_KEY
+            speed = signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
             speed = signed_int(packet[10:11])
 
         if packet[12 + count] == 129:
-            torque = signed_int(packet[12 + count + 1:12 + count + 2]) ^ self.STUFFING_KEY
+            torque = signed_int(packet[12 + count + 1 : 12 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
             torque = signed_int(packet[12:13])
@@ -302,7 +302,15 @@ class RehastimGeneric:
         checksum = self._stuff_byte(checksum)
         data_length = self._stuff_byte(len(packet_payload))
 
-        packet = packet + [self.STUFFING_BYTE] + [checksum] + [self.STUFFING_BYTE] + [data_length] + packet_payload + [self.STOP_BYTE]
+        packet = (
+            packet
+            + [self.STUFFING_BYTE]
+            + [checksum]
+            + [self.STUFFING_BYTE]
+            + [data_length]
+            + packet_payload
+            + [self.STOP_BYTE]
+        )
         return b"".join([byte.to_bytes(1, "little") for byte in packet])
 
     def _stuff_packet_byte(self, packet: list, command_data: bool = False) -> list:
@@ -331,7 +339,7 @@ class RehastimGeneric:
         else:
             for i in range(len(packet)):
                 if packet[i] in self.STUFFED_BYTES:
-                    packet[i] = (self._stuff_byte(packet[i]))
+                    packet[i] = self._stuff_byte(packet[i])
             return packet
 
     def _stuff_byte(self, byte: int) -> int:
@@ -376,8 +384,8 @@ class RehastimGeneric:
             packet_tmp = packet[first_start_byte:]
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
-                packet_list.append(packet_tmp[:next_stop_byte + 1])
-                packet_tmp = packet_tmp[next_stop_byte + 1:]
+                packet_list.append(packet_tmp[: next_stop_byte + 1])
+                packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
 
     def disconnect(self):
