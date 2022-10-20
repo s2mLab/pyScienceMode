@@ -76,7 +76,7 @@ def get_motomed_mode_ack(packet: (list, str)) -> str:
         return "Busy error"
 
 
-def init_phase_training_ack(packet: list) -> str:
+def init_phase_training_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'InitPhaseTrainingAck' packet.
     """
@@ -86,7 +86,7 @@ def init_phase_training_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def start_phase_ack(packet: list) -> str:
+def start_phase_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -96,7 +96,7 @@ def start_phase_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def pause_phase_ack(packet: list) -> str:
+def pause_phase_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -106,7 +106,7 @@ def pause_phase_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def stop_phase_training_ack(packet: list) -> str:
+def stop_phase_training_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -116,7 +116,7 @@ def stop_phase_training_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def set_rotation_direction_ack(packet: list) -> str:
+def set_rotation_direction_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -126,7 +126,7 @@ def set_rotation_direction_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def set_speed_ack(packet: list) -> str:
+def set_speed_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -136,7 +136,7 @@ def set_speed_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def set_gear_ack(packet: list) -> str:
+def set_gear_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -146,7 +146,7 @@ def set_gear_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def start_basic_training_ack(packet: list) -> str:
+def start_basic_training_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -156,7 +156,7 @@ def start_basic_training_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def pause_basic_training_ack(packet: list) -> str:
+def pause_basic_training_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -166,7 +166,7 @@ def pause_basic_training_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def continue_basic_training_ack(packet: list) -> str:
+def continue_basic_training_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -176,7 +176,7 @@ def continue_basic_training_ack(packet: list) -> str:
         motomed_error_values(signed_int(packet[7:8]))
 
 
-def stop_basic_training_ack(packet: list) -> str:
+def stop_basic_training_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
@@ -194,7 +194,7 @@ def motomed_error_ack(packet):
 
 
 # Acks Stimulators
-def get_mode_ack(packet: list) -> str:
+def get_mode_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'getModeAck' packet.
     """
@@ -209,7 +209,7 @@ def get_mode_ack(packet: list) -> str:
         return stimulation_error(signed_int(packet[7:8]))
 
 
-def init_stimulation_ack(packet: list) -> str:
+def init_stimulation_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'InitChannelListModeAck' packet.
     """
@@ -219,7 +219,7 @@ def init_stimulation_ack(packet: list) -> str:
         return stimulation_error(signed_int(packet[7:8]))
 
 
-def start_stimulation_ack(packet: list) -> str:
+def start_stimulation_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StartChannelListModeAck' packet.
     """
@@ -229,7 +229,7 @@ def start_stimulation_ack(packet: list) -> str:
         return stimulation_error(signed_int(packet[7:8]))
 
 
-def stop_stimulation_ack(packet: list) -> str:
+def stop_stimulation_ack(packet: bytes) -> str:
     """
     Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
     """

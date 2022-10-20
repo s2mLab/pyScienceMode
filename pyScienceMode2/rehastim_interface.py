@@ -1,70 +1,20 @@
-# Stimulator class
+"""
+Stimulator Interface class used to control the rehamove2.
+See ScienceMode2 - Description and protocol for more information.
+"""
 from typing import Tuple
 import time
-import threading
 from pyScienceMode2.acks import *
 from pyScienceMode2 import Channel
 from pyScienceMode2.utils import *
 from pyScienceMode2.sciencemode import RehastimGeneric
 
-# Notes :
-# This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
-
 
 class Stimulator(RehastimGeneric):
     """
     Class used for the communication with Rehastim.
-
-    Attributes
-    ----------
-    list_channels : list[Channel]
-        A list of Channel object. The Channel must be in order.
-    packet_count : int
-        Contain the number of packet sent to the Rehastim since the Init.
-    electrode_number : int
-        Number corresponding to which electrode is activated during InitChannelListMode.
-    electrode_number_low_frequency: int
-        Number corresponding to which electrode has low frequency factor enabled.
-    port : class Serial
-        Used to control the COM port.
-    amplitude : list[int]
-        Contain the amplitude of each corresponding channel.
-    low_frequency_factor: int
-        Number of stimulation skipped by low frequency channels. [0, 7]
-    stimulation_interval : int
-        Main stimulation period in ms.
-    inter_pulse_interval: int
-        Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
-    pulse_width : list[int]
-        Contain all pulse width of the corresponding channel.
-    muscle : list[int]
-        Contain the name of the muscle of the corresponding channel.
-    given_channels: list[int]
-        Contain the number of the channels that where given during __init__ or update.
-    debug_reha_show_log : bool
-        Tell if the log will be displayed (True) or not (False).
-    debug_reha_show_com : bool
-        Tell if the communication will be displayed (True) or not (False). Except watchdog.
-    debug_reha_show_watchdog : bool
-        Tell if the watchdog will be displayed (True) or not (False).
-    time_last_cmd : int
-        Time of the last command which was sent to the Rehastim.
-    packet_send_history : list[int]
-        Last packet sent to the Rehastim. Used for error and debugging purposes.
-    reha_connected : bool
-        Tell if the computer is connected (True) to the Rehastim or not (False).
-    stimulation_started : bool
-        Tell if a stimulation is started (True) or not (False).
-    multiple_packet_flag : int
-        Flag raised when multiple packet are waiting in the port COM. The methode _check_multiple_packet_rec() needs to
-        be used after each call of _calling_ack() or wait_for_packet() in order to process those packets.
-    buffer_rec : list[int]
-        Contain the packet receive which has not been processed.
-    __thread_watchdog: threading.Thread
-        ID of the thread responsible for sending regularly a watchdog.
     """
 
-    # Constructor
     def __init__(
         self,
         list_channels: list,
@@ -72,7 +22,7 @@ class Stimulator(RehastimGeneric):
         port: str,
         inter_pulse_interval: int = 2,
         low_frequency_factor: int = 0,
-        show_log=False,
+        show_log: bool = False,
         with_motomed: bool = False,
     ):
         """
@@ -84,12 +34,16 @@ class Stimulator(RehastimGeneric):
             Contain the channels that wille be used. The Channels must be placed in order.
         stimulation_interval : int
             Main stimulation period in ms.
-        port_path : str
+        port : str
             Port of the computer connected to the Rehastim.
         inter_pulse_interval: int
             Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
         low_frequency_factor: int
             Number of stimulation skipped by low frequency channels. [0, 7]
+        show_log: bool
+            If True, the log of the communication will be printed.
+        with_motomed: bool
+            If the motomed is connected to the Rehastim, put this flag to True.
         """
         self.list_channels = list_channels
         self.stimulation_interval = stimulation_interval
@@ -109,11 +63,12 @@ class Stimulator(RehastimGeneric):
         check_unique_channel(self.list_channels)
         self.stimulation_started = None
         super().__init__(port, show_log, with_motomed)
+
         # Connect to rehastim
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
-        self._send_generic_packet("InitAck", packet=[], packet_number=packet[5])
+        self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]), packet_number=packet[5])
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -138,7 +93,7 @@ class Stimulator(RehastimGeneric):
             self.mode.append(list_channels[i].get_mode())
             self.given_channels.append(list_channels[i].get_no_channel())
 
-    def _send_packet(self, cmd: str, packet_number: int) -> str:
+    def _send_packet(self, cmd: str) -> str:
         """
         Calls the methode that construct the packet according to the command.
 
@@ -146,8 +101,6 @@ class Stimulator(RehastimGeneric):
         ----------
         cmd: str
             Command that will be sent.
-        packet_number: int
-            Correspond to self.packet_count.
 
         Returns
         -------
@@ -156,13 +109,13 @@ class Stimulator(RehastimGeneric):
 
         packet = [-1]
         if cmd == "GetStimulationMode":
-            packet = self._packet_get_mode()
+            packet = self._packet_construction(self.packet_count, "GetStimulationMode")
         elif cmd == "InitChannelListMode":
             packet = self._packet_init_stimulation()
         elif cmd == "StartChannelListMode":
             packet = self._packet_start_stimulation()
         elif cmd == "StopChannelListMode":
-            packet = self._packet_stop_stimulation()
+            packet = self._packet_construction(self.packet_count, "StopChannelListMode")
         init_ack = self._send_generic_packet(cmd, packet)
         if init_ack:
             return init_ack
@@ -170,12 +123,7 @@ class Stimulator(RehastimGeneric):
     # Creates packet for every command part of dictionary TYPES
     def _calling_ack(self, packet) -> str:
         """
-        Collects the packet waiting in the port if no packet is given.
-        Processes the packet given or collected.
-
-        _check_multiple_packet_rec() must be called after the call of _calling_ack.
-        After calling _calling_ack() must print(Fore.WHITE) because some error messages are written in red and the print
-        function needs to be reset to WHITE after a print in another coloured occurred.
+        Processing ack from rehastim
 
         Parameters
         ----------
@@ -202,13 +150,6 @@ class Stimulator(RehastimGeneric):
             raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
         else:
             raise RuntimeError("Error packet : not understood")
-
-    def _packet_get_mode(self) -> bytes:
-        """
-        Returns the packet corresponding to the GetStimulationMode command.
-        """
-        packet = self._packet_construction(self.packet_count, "GetStimulationMode")
-        return packet
 
     def _packet_init_stimulation(self) -> bytes:
         """
@@ -244,13 +185,6 @@ class Stimulator(RehastimGeneric):
 
         packet = self._packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
 
-        return packet
-
-    def _packet_stop_stimulation(self) -> bytes:
-        """
-        Returns the packet for the StopChannelListMode.
-        """
-        packet = self._packet_construction(self.packet_count, "StopChannelListMode")
         return packet
 
     def _code_inter_pulse_interval(self) -> int:
@@ -380,7 +314,7 @@ class Stimulator(RehastimGeneric):
         self.electrode_number_low_frequency = calc_electrode_number(self.list_channels, enable_low_frequency=True)
 
         self.set_stimulation_signal(self.list_channels)
-        self._send_packet("InitChannelListMode", self.packet_count)
+        self._send_packet("InitChannelListMode")
         init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
         if init_channel_list_mode_ack != "Stimulation initialized":
             raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
@@ -406,7 +340,7 @@ class Stimulator(RehastimGeneric):
             self.list_channels = upd_list_channels
             self.set_stimulation_signal(self.list_channels)
 
-        self._send_packet("StartChannelListMode", self.packet_count)
+        self._send_packet("StartChannelListMode")
 
         time_start_stim = time.time()
 
@@ -448,7 +382,7 @@ class Stimulator(RehastimGeneric):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
-        self._send_packet("StopChannelListMode", self.packet_count)
+        self._send_packet("StopChannelListMode")
         stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
         if stop_channel_list_mode_ack != " Stimulation stopped":
             raise RuntimeError("Error : StopChannelListMode" + stop_channel_list_mode_ack)

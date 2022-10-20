@@ -13,33 +13,7 @@ import numpy as np
 
 class RehastimGeneric:
     """
-    Class used for the communication with Rehastim.
-
-    Attributes
-    ----------
-    packet_count : int
-        Contain the number of packet sent to the Rehastim since the Init.
-    port : class Serial
-        Used to control the COM port.
-    debug_reha_show_log : bool
-        Tell if the log will be displayed (True) or not (False).
-    debug_reha_show_com : bool
-        Tell if the communication will be displayed (True) or not (False). Except watchdog.
-    debug_reha_show_watchdog : bool
-        Tell if the watchdog will be displayed (True) or not (False).
-    time_last_cmd : int
-        Time of the last command which was sent to the Rehastim.
-    packet_send_history : list[int]
-        Last packet sent to the Rehastim. Used for error and debugging purposes.
-    reha_connected : bool
-        Tell if the computer is connected (True) to the Rehastim or not (False).
-    multiple_packet_flag : int
-        Flag raised when multiple packet are waiting in the port COM. The methode _check_multiple_packet_rec() needs to
-        be used after each call of _calling_ack() or wait_for_packet() in order to process those packets.
-    buffer_rec : list[int]
-        Contain the packet receive which has not been processed.
-    __thread_watchdog: threading.Thread
-        ID of the thread responsible for sending regularly a watchdog.
+    Class used for the sciencemode communication protocol.
 
     Class Attributes
     ----------------
@@ -57,10 +31,8 @@ class RehastimGeneric:
         Number max of bytes per packet in protocol.
     BAUD_RATE : int
         Baud rate of protocol.
-    TYPES : dict
-        Dictionary which contains Rehastim commands for protocol and their values. (Motomed command are not implemented)
-    RECEIVE, SEND, ERR : int
-        Packet type. Used for _packet_show() method.
+    STUFFING_BYTE : list
+        Stuffed byte of protocol.
     """
 
     VERSION = 0x01
@@ -74,7 +46,19 @@ class RehastimGeneric:
 
     BAUD_RATE = 460800
 
-    def __init__(self, port, show_log=False, with_motomed: bool = False):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False):
+        """
+        Init the class.
+
+        Parameters
+        ----------
+        port : str
+            COM port of the Rehastim.
+        show_log : bool
+            Tell if the log will be displayed (True) or not (False).
+        with_motomed : bool
+            If the motomed is connected to the Rehastim, put this flag to True.
+        """
         self.port = serial.Serial(
             port,
             self.BAUD_RATE,
@@ -115,7 +99,18 @@ class RehastimGeneric:
             self._start_motomed_thread()
         self.Type = Type
 
-    def _get_last_ack(self, init=False):
+    def _get_last_ack(self, init: bool = False) -> bytes:
+        """
+        Get the last ack received.
+
+        Parameters
+        ----------
+        init : bool
+            If True, get the last ack of the init packet. If False, get the last ack of the normal packet.
+        Returns
+        -------
+        bytes
+        """
         if self.is_motomed_connected:
             if init:
                 while not self.last_init_ack:
@@ -133,13 +128,13 @@ class RehastimGeneric:
                 packet = self._read_packet()
                 if packet and len(packet) != 0:
                     break
-            if self.show_log and self.Type(packet[-1][6]).value in [t.value for t in self.Type]:
+            if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                 print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
             return packet[-1]
 
     def _start_motomed_thread(self):
         """
-        Start the thread which sends watchdog.
+        Start the thread which catch motomed data.
         """
         if self.debug_reha_show_log:
             print("Start Motomed data thread")
@@ -147,6 +142,9 @@ class RehastimGeneric:
         self.__thread_motomed.start()
 
     def _catch_motomed_data(self):
+        """
+        Catch the motomed data.
+        """
         time_to_sleep = 0.05
         while 1 and self.is_motomed_connected:
             packets = self._read_packet()
@@ -156,9 +154,7 @@ class RehastimGeneric:
                     if len(packet) > 7:
                         if self.show_log and packet[6] in [t.value for t in self.Type]:
                             print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
-                        if packet[6] == self.Type["PhaseResult"].value:
-                            self._phase_result_ack(packet)
-                        elif packet[6] == self.Type["ActualValues"].value:
+                        if packet[6] == self.Type["ActualValues"].value:
                             self._actual_values_ack(packet)
                         elif packet[6] == 90:
                             pass
@@ -175,7 +171,15 @@ class RehastimGeneric:
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
 
-    def _actual_values_ack(self, packet: (list, str)):
+    def _actual_values_ack(self, packet: bytes):
+        """
+        Ack of the actual values packet.
+
+        Parameters
+        ----------
+        packet : bytes
+            Packet received.
+        """
         # handle the LSB and MSB and stuffed bytes
         count = 0
         if packet[8] == 129:
@@ -204,81 +208,34 @@ class RehastimGeneric:
         else:
             self.motomed_values = np.append(self.motomed_values[:, 1:], actual_values, axis=1)
 
-    def _phase_result_ack(self, packet: (list, str)):
-        msb_passive_distance = int(packet[8])
-        lsb_passive_distance = int(packet[9])
-        msb_active_distance = int(packet[10])
-        lsb_active_distance = int(packet[11])
-        average_power = int(packet[12])
-        maximum_power = int(packet[13])
-        msb_phase_duration = int(packet[14])
-        lsb_phase_duration = int(packet[15])
-        msb_active_phase_duration = int(packet[16])
-        lsb_active_phase_duration = int(packet[17])
-        msb_phase_work = int(packet[18])
-        lsb_phase_work = int(packet[19])
-        success_value = int(packet[20])
-        symmetry = int(packet[21])
-        average_muscle_tone = int(packet[22])
-
-        passive_distance = msb_passive_distance * 255 + lsb_passive_distance
-        active_distance = None
-        phase_duration = None
-        active_phase_duration = None
-        phase_work = None
-        last_phase_result = np.array(
-            [
-                passive_distance,
-                active_distance,
-                average_power,
-                maximum_power,
-                phase_duration,
-                active_phase_duration,
-                phase_work,
-                success_value,
-                symmetry,
-                average_muscle_tone,
-            ]
-        )[:, np.newaxis]
-
-        if self.last_phase_result is None:
-            self.last_phase_result = last_phase_result
-        elif self.last_phase_result.shape[1] < self.max_phase_result:
-            self.last_phase_result = np.append(self.last_phase_result, last_phase_result, axis=1)
-        else:
-            self.last_phase_result = np.append(self.last_phase_result[:, 1:], last_phase_result, axis=1)
-
     def _watchdog(self):
         """
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
-        while 1 and self.is_connected():
+        while 1 and self.reha_connected:
             if time.time() - self.time_last_cmd > 0.5:
-                self._send_generic_packet("Watchdog", packet=[], packet_number=self.packet_count)
+                self._send_generic_packet("Watchdog", packet=self._packet_watchdog(), packet_number=self.packet_count)
                 time.sleep(0.5)
 
-    def is_connected(self) -> bool:
+    def _send_generic_packet(self, cmd: str, packet: bytes, packet_number: int = None) -> (None, str):
         """
-        Checks if the pc and the rehastim are connected.
+        Send a packet to the rehastim.
 
+        Parameters
+        ----------
+        cmd : str
+            Command to send.
+        packet : bytes
+            Packet to send.
+        packet_number : int
+            Packet number.
         Returns
         -------
-        True if connected, False if not.
+            "InitAck" if the cmd are "InitAck". None otherwise.
         """
-        if self.time_last_cmd - time.time() > 1.2 or not self.reha_connected:
-            self.reha_connected = False
-            return False
-        else:
-            return True
-
-    def _send_generic_packet(self, cmd: str, packet: list, packet_number: int = None):
-        """ """
         if cmd == "InitAck":
-            packet = self._init_ack(packet_number)
             self.event.set()
             self._start_watchdog()
-        elif cmd == "Watchdog":
-            packet = self._packet_watchdog()
         if self.show_log:
             if self.Type(packet[6]).name != "Watchdog":
                 print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
@@ -322,12 +279,10 @@ class RehastimGeneric:
         Parameters
         ----------
         packet_count: int
-            Correspond to the number of packet sent to the Rehastim since the Init if the packet that will be sent.
-            In the case of an acknowledged of a command of the Rehastim. The packet_count represent the number of packet
-            that the rehastim has sent to the pc since the init.
+            Correspond to the number of packet sent to the Rehastim.
         packet_type: str
-            Correspond to the command that will be sent. The str is coded into an int with the class attributes TYPES.
-        packet_data: list[int]
+            Correspond to the command that will be sent.
+        packet_data: list
             Contain the data of the packet.
 
         Returns
@@ -350,23 +305,21 @@ class RehastimGeneric:
         packet = packet + [self.STUFFING_BYTE] + [checksum] + [self.STUFFING_BYTE] + [data_length] + packet_payload + [self.STOP_BYTE]
         return b"".join([byte.to_bytes(1, "little") for byte in packet])
 
-    def _stuff_packet_byte(self, packet: list, command_data=False) -> list:
+    def _stuff_packet_byte(self, packet: list, command_data: bool = False) -> list:
         """
         Stuffs each byte if necessary of the packet.
 
         Parameters
         ----------
-        packet: list[int]
+        packet: list
             Packet containing the bytes that will be checked and stuffed if necessary.
-
+        command_data: bool
+            True if the packet is a command data, False if not.
         Returns
         -------
-        packet: list[int]
+        packet: list
             Packet returned with stuffed byte.
         """
-        # Stuff the byte equal to 0xf0 (240), 0x0f (15), 0x81(129), 0x55 (85) and 0x0a(10)
-        # (for more details check : Science_Mode2_Description_Protocol_20121212.pdf, 2.2 PacketStructure)
-
         if command_data:
             packet_tmp = []
             for i in range(len(packet)):
@@ -383,19 +336,16 @@ class RehastimGeneric:
 
     def _stuff_byte(self, byte: int) -> int:
         """
-        Stuffs the byte given. (Science_Mode2_Description_Protocol, 2.2 Packet Structure)
-
+        Stuffs the byte given.
         Parameters
         ----------
         byte: int
             Byte which needs to be stuffed.
-
         Returns
         -------
         byte_stuffed: int
             The byte stuffed.
         """
-        # return bytes(a ^ b for (a, b) in zip(byte, bitarray(self.STUFFING_KEY)))
         return (byte & ~self.STUFFING_KEY) | (~byte & self.STUFFING_KEY)
 
     def close_port(self):
@@ -404,17 +354,13 @@ class RehastimGeneric:
         """
         self.port.close()
 
-    def _read_packet(self):
+    def _read_packet(self) -> list:
         """
-        Processes packet(s) that are waiting in the port.
-        If there is only one packet, the packet is returned.
-        If they are multiples packet, the first one is returned, the other are stored into self.buffer_rec and a flag
-        (self.multiple_packet_flag) is raised.
-        If the data received does not start with a START_BYTE, an empty packet is returned.
-
+        Read the bytes are waiting in the serial port.
         Returns
         -------
-        The first packet received or an empty packet if the data does not start with a START_BYTE
+        packet: list
+            List of command sent by rehastim.
         """
         packet = bytes()
         while True:
@@ -436,7 +382,7 @@ class RehastimGeneric:
 
     def disconnect(self):
         """
-        Disconnect the pc to the Rehastim by stopping sending watchdog.
+        Disconnect the pc to the Rehastim by stopping sending watchdog and motomed threads (if applicable).
         """
         self._stop_watchdog()
         if self.is_motomed_connected:
@@ -461,7 +407,7 @@ class RehastimGeneric:
 
     def _stop_motomed(self):
         """
-        Stop the thread which sends watchdog.
+        Stop the motomed thread.
         """
         self.is_motomed_connected = False
         self.__thread_motomed.join()

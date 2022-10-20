@@ -1,26 +1,11 @@
-# Class Channel
+"""
+Class used to construct a channel for each different electrode.
+"""
 
 
 class Channel:
     """
     Class representing a channel.
-
-    Attributes
-    ----------
-    mode: MODE
-        Tell which mode is used.
-    no_channel: int
-        Number of the channel [1,8].
-    amplitude: int
-        Current to send in the channel. [0,130] milli amp
-    pulse_width: int
-        Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
-    enable_low_frequency: bool
-        Choose if the channel skip (True) or not (False) a given number of stimulation. The number of stimulation which
-        can be skipped is chosen with Stimulator class and is the same for all channels with low frequency factor
-        activated.
-    name: str
-        Name of the muscle corresponding to the channel.
 
     Class Attributes
     ----------------

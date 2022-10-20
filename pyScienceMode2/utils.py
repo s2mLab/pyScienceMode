@@ -1,4 +1,16 @@
-def signed_int(packet: bytes):
+def signed_int(packet: bytes) -> int:
+    """
+    Converts a signed int from the packet received from the Rehastim.
+
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Rehastim.
+    Returns
+    -------
+    signed_int: int
+        Signed int converted.
+    """
     return int.from_bytes(packet, "big", signed=True)
 
 
