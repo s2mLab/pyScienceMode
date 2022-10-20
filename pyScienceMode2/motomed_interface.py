@@ -44,7 +44,7 @@ class Motomed(RehastimGeneric):
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
-        self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]), packet_number=packet[5])
+        self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 
     def _send_packet(self, cmd: str) -> (None, str):
         """

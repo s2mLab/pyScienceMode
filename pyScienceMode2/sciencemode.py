@@ -1,4 +1,7 @@
-import os
+"""
+Class to control the RehaMove 2 device from the ScienceMode 2 protocol.
+See ScienceMode2 - Description and protocol for more information.
+"""
 import crccheck.checksum
 import serial
 from pyScienceMode2.enums import Type
@@ -68,9 +71,6 @@ class RehastimGeneric:
             timeout=0.1,
         )
         self.port_open = True
-        self.debug_reha_show_log = False
-        self.debug_reha_show_com = False
-        self.debug_reha_show_watchdog = False
         self.time_last_cmd = 0
         self.packet_count = 0
         self.reha_connected = False
@@ -79,8 +79,6 @@ class RehastimGeneric:
         self.time_last_cmd = 0
         self.packet_send_history = []
 
-        self.multiple_packet_flag = 0
-        self.buffer_rec = []
         self.read_port_time = 0.0
         self.last_ack = None
         self.last_init_ack = None
@@ -90,7 +88,6 @@ class RehastimGeneric:
         self.is_motomed_connected = with_motomed
         self.max_motomed_values = 100
         self.max_phase_result = 1
-        self.__wait_for_ack = False
         self.__thread_watchdog = None
         self.lock = threading.Lock()
         self.event = threading.Event()
@@ -136,8 +133,6 @@ class RehastimGeneric:
         """
         Start the thread which catch motomed data.
         """
-        if self.debug_reha_show_log:
-            print("Start Motomed data thread")
         self.__thread_motomed = threading.Thread(target=self._catch_motomed_data)
         self.__thread_motomed.start()
 
@@ -214,10 +209,10 @@ class RehastimGeneric:
         """
         while 1 and self.reha_connected:
             if time.time() - self.time_last_cmd > 0.5:
-                self._send_generic_packet("Watchdog", packet=self._packet_watchdog(), packet_number=self.packet_count)
+                self._send_generic_packet("Watchdog", packet=self._packet_watchdog())
                 time.sleep(0.5)
 
-    def _send_generic_packet(self, cmd: str, packet: bytes, packet_number: int = None) -> (None, str):
+    def _send_generic_packet(self, cmd: str, packet: bytes) -> (None, str):
         """
         Send a packet to the rehastim.
 
@@ -227,8 +222,6 @@ class RehastimGeneric:
             Command to send.
         packet : bytes
             Packet to send.
-        packet_number : int
-            Packet number.
         Returns
         -------
             "InitAck" if the cmd are "InitAck". None otherwise.
@@ -400,8 +393,6 @@ class RehastimGeneric:
         """
         Start the thread which sends watchdog.
         """
-        if self.debug_reha_show_log:
-            print("Start Watchdog")
         self.reha_connected = True
         self.__thread_watchdog = threading.Thread(target=self._watchdog)
         self.__thread_watchdog.start()

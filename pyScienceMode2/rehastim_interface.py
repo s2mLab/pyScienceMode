@@ -68,7 +68,7 @@ class Stimulator(RehastimGeneric):
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
-        self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]), packet_number=packet[5])
+        self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -349,20 +349,6 @@ class Stimulator(RehastimGeneric):
             raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         else:
             self.stimulation_started = True
-
-        if self.debug_reha_show_log:
-            if upd_list_channels is None:
-                print("Stimulation started")
-            else:
-                stop = True
-                for i in range(len(self.list_channels)):
-                    if self.list_channels[i].get_amplitude() != 0:
-                        stop = False
-                        break
-                if not stop:
-                    print("Stimulation updated and started")
-                if stop:
-                    print("Stimulation stopped")
 
         if stimulation_duration is not None:
             if stimulation_duration < time.time() - time_start_stim:
