@@ -30,27 +30,23 @@ channel_8 = Ch.Channel("Single", 8, 50, 100)
 
 # Choose which channel will be used
 list_channels.append(channel_1)
-list_channels.append(channel_3)
-list_channels.append(channel_5)
-list_channels.append(channel_6)
-list_channels.append(channel_7)
-list_channels.append(channel_8)
+# list_channels.append(channel_3)
+# list_channels.append(channel_5)
+# list_channels.append(channel_6)
+# list_channels.append(channel_7)
+# list_channels.append(channel_8)
 
 # Create our object Stimulator
 stimulator = St(
-    list_channels=list_channels,
-    stimulation_interval=1000,
     port="/dev/ttyUSB0",
-    inter_pulse_interval=120,
-    low_frequency_factor=1,
+    show_log=True,
 )
 
 """
 Initialise the channels given.
 It is possible to modify the list of channels, the stimulation interval and the low_frequency_factor
 """
-stimulator.init_channel()
-# stimulator.init_channel(stimulation_interval=200, list_channels=nv_list_channel, low_frequency_factor=2)
+stimulator.init_channel(stimulation_interval=200, list_channels=list_channels, low_frequency_factor=2)
 
 """
 Start the stimulation.
@@ -63,8 +59,8 @@ stimulator.start_stimulation()
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,
-list_channels[1].set_amplitude(10)
-list_channels[3].set_amplitude(15)
+list_channels[0].set_amplitude(10)
+# list_channels[3].set_amplitude(15)
 
 # Wait a given time in seconds
 sleep(10)
@@ -88,7 +84,7 @@ stimulator.start_stimulation(stimulation_duration=2)
 """
 The method init_channel must be called to update the stimulation interval (period).
 """
-stimulator.init_channel(stimulation_interval=10)
+stimulator.init_channel(stimulation_interval=10, list_channels=list_channels)
 stimulator.start_stimulation(stimulation_duration=2)
 
 """
@@ -99,7 +95,7 @@ stimulator.disconnect()
 """
 After a disconnection, init_channel must be called.  
 """
-stimulator.init_channel(stimulation_interval=15)
+stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
 stimulator.start_stimulation(2, list_channels)
 stimulator.disconnect()
 

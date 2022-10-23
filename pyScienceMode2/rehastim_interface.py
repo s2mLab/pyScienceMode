@@ -8,6 +8,7 @@ from pyScienceMode2.acks import *
 from pyScienceMode2 import Channel
 from pyScienceMode2.utils import *
 from pyScienceMode2.sciencemode import RehastimGeneric
+from pyScienceMode2.motomed_interface import _Motomed
 
 
 class Stimulator(RehastimGeneric):
@@ -17,11 +18,7 @@ class Stimulator(RehastimGeneric):
 
     def __init__(
         self,
-        list_channels: list,
-        stimulation_interval: int,
         port: str,
-        inter_pulse_interval: int = 2,
-        low_frequency_factor: int = 0,
         show_log: bool = False,
         with_motomed: bool = False,
     ):
@@ -30,25 +27,17 @@ class Stimulator(RehastimGeneric):
 
         Parameters
         ----------
-        list_channels : list[Channel]
-            Contain the channels that wille be used. The Channels must be placed in order.
-        stimulation_interval : int
-            Main stimulation period in ms.
         port : str
             Port of the computer connected to the Rehastim.
-        inter_pulse_interval: int
-            Interval between the start of to stimulation in Doublet or Triplet mode. [2, 129] ms
-        low_frequency_factor: int
-            Number of stimulation skipped by low frequency channels. [0, 7]
         show_log: bool
             If True, the log of the communication will be printed.
         with_motomed: bool
             If the motomed is connected to the Rehastim, put this flag to True.
         """
-        self.list_channels = list_channels
-        self.stimulation_interval = stimulation_interval
-        self.inter_pulse_interval = inter_pulse_interval
-        self.low_frequency_factor = low_frequency_factor
+        self.list_channels = None
+        self.stimulation_interval = None
+        self.inter_pulse_interval = None
+        self.low_frequency_factor = None
         self.electrode_number = 0
         self.electrode_number_low_frequency = 0
 
@@ -60,15 +49,15 @@ class Stimulator(RehastimGeneric):
 
         check_stimulation_interval(self.stimulation_interval)
         check_low_frequency_factor(self.low_frequency_factor)
-        check_unique_channel(self.list_channels)
         self.stimulation_started = None
         super().__init__(port, show_log, with_motomed)
-
+        if with_motomed:
+            self.motomed = _Motomed(self)
         # Connect to rehastim
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
-        self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
+        self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -109,18 +98,17 @@ class Stimulator(RehastimGeneric):
 
         packet = [-1]
         if cmd == "GetStimulationMode":
-            packet = self._packet_construction(self.packet_count, "GetStimulationMode")
+            packet = packet_construction(self.packet_count, "GetStimulationMode")
         elif cmd == "InitChannelListMode":
             packet = self._packet_init_stimulation()
         elif cmd == "StartChannelListMode":
             packet = self._packet_start_stimulation()
         elif cmd == "StopChannelListMode":
-            packet = self._packet_construction(self.packet_count, "StopChannelListMode")
-        init_ack = self._send_generic_packet(cmd, packet)
+            packet = packet_construction(self.packet_count, "StopChannelListMode")
+        init_ack = self.send_generic_packet(cmd, packet)
         if init_ack:
             return init_ack
 
-    # Creates packet for every command part of dictionary TYPES
     def _calling_ack(self, packet) -> str:
         """
         Processing ack from rehastim
@@ -168,7 +156,7 @@ class Stimulator(RehastimGeneric):
             0,
         ]
 
-        packet = self._packet_construction(self.packet_count, "InitChannelListMode", data_stimulation)
+        packet = packet_construction(self.packet_count, "InitChannelListMode", data_stimulation)
         return packet
 
     def _packet_start_stimulation(self) -> bytes:
@@ -183,7 +171,7 @@ class Stimulator(RehastimGeneric):
             data_stimulation.append(lsb)
             data_stimulation.append(int(self.amplitude[i]))
 
-        packet = self._packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
+        packet = packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
 
         return packet
 
@@ -276,8 +264,8 @@ class Stimulator(RehastimGeneric):
 
     def init_channel(
         self,
-        stimulation_interval: int = None,
-        list_channels: list = None,
+        stimulation_interval: int,
+        list_channels: list,
         inter_pulse_interval: int = None,
         low_frequency_factor: int = None,
     ):
@@ -294,20 +282,16 @@ class Stimulator(RehastimGeneric):
         if self.stimulation_started:
             self._stop_stimulation()
 
-        if stimulation_interval is not None:
-            self.stimulation_interval = stimulation_interval
-            check_stimulation_interval(stimulation_interval)
+        check_stimulation_interval(stimulation_interval)
+        check_unique_channel(list_channels)
+        self.stimulation_interval = stimulation_interval
+        self.list_channels = list_channels
 
-        if list_channels is not None:
-            self.list_channels = list_channels
+        self.inter_pulse_interval = inter_pulse_interval
+        check_inter_pulse_interval(inter_pulse_interval)
 
-        if inter_pulse_interval is not None:
-            self.inter_pulse_interval = inter_pulse_interval
-            check_inter_pulse_interval(inter_pulse_interval)
-
-        if low_frequency_factor is not None:
-            self.low_frequency_factor = low_frequency_factor
-            check_low_frequency_factor(low_frequency_factor)
+        self.low_frequency_factor = low_frequency_factor
+        check_low_frequency_factor(low_frequency_factor)
 
         # Find electrode_number (according to Science_Mode2_Description_Protocol_20121212 p17)
         self.electrode_number = calc_electrode_number(self.list_channels)
@@ -375,3 +359,36 @@ class Stimulator(RehastimGeneric):
         else:
             self.packet_count = 0
             self.stimulation_started = False
+
+    def get_motomed_angle(self) -> float:
+        """
+        Get the angle of the Motomed.
+
+        Returns
+        -------
+        angle: float
+            Angle of the Motomed.
+        """
+        return self.get_angle()
+
+    def get_motomed_speed(self) -> float:
+        """
+        Get the angle of the Motomed.
+
+        Returns
+        -------
+        angle: float
+            Angle of the Motomed.
+        """
+        return self.get_speed()
+
+    def get_motomed_torque(self) -> float:
+        """
+        Get the angle of the Motomed.
+
+        Returns
+        -------
+        angle: float
+            Angle of the Motomed.
+        """
+        return self.get_torque()

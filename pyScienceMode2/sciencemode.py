@@ -2,9 +2,8 @@
 Class to control the RehaMove 2 device from the ScienceMode 2 protocol.
 See ScienceMode2 - Description and protocol for more information.
 """
-import crccheck.checksum
+
 import serial
-from pyScienceMode2.enums import Type
 import time
 import threading
 from pyScienceMode2.utils import *
@@ -90,9 +89,12 @@ class RehastimGeneric:
         self.max_phase_result = 1
         self.__thread_watchdog = None
         self.lock = threading.Lock()
-        self.event = threading.Event()
+        self.motomed_done = threading.Event()
         self.event_ack = threading.Event()
-        if self.is_motomed_connected:
+        self.__motomed_thread_started = False
+        self.__watchdog_thread_started = False
+
+        if self.is_motomed_connected and not self.__motomed_thread_started:
             self._start_motomed_thread()
         self.Type = Type
 
@@ -133,6 +135,7 @@ class RehastimGeneric:
         """
         Start the thread which catch motomed data.
         """
+        self.__motomed_thread_started = True
         self.__thread_motomed = threading.Thread(target=self._catch_motomed_data)
         self.__thread_motomed.start()
 
@@ -154,7 +157,7 @@ class RehastimGeneric:
                         elif packet[6] == 90:
                             pass
                         elif packet[6] == self.Type["MotomedCommandDone"].value:
-                            self.event.set()
+                            self.motomed_done.set()
                         elif packet[6] in [t.value for t in self.Type]:
                             if packet[6] == 1:
                                 self.last_init_ack = packet
@@ -184,13 +187,13 @@ class RehastimGeneric:
             angle = 255 * signed_int(packet[7:8]) + packet[8]
 
         if packet[10 + count] == 129:
-            speed = signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
+            speed = signed_int(packet[10 + count + 1: 10 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
             speed = signed_int(packet[10:11])
 
         if packet[12 + count] == 129:
-            torque = signed_int(packet[12 + count + 1 : 12 + count + 2]) ^ self.STUFFING_KEY
+            torque = signed_int(packet[12 + count + 1: 12 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
             torque = signed_int(packet[12:13])
@@ -209,10 +212,10 @@ class RehastimGeneric:
         """
         while 1 and self.reha_connected:
             if time.time() - self.time_last_cmd > 0.5:
-                self._send_generic_packet("Watchdog", packet=self._packet_watchdog())
+                self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
                 time.sleep(0.5)
 
-    def _send_generic_packet(self, cmd: str, packet: bytes) -> (None, str):
+    def send_generic_packet(self, cmd: str, packet: bytes) -> (None, str):
         """
         Send a packet to the rehastim.
 
@@ -227,7 +230,7 @@ class RehastimGeneric:
             "InitAck" if the cmd are "InitAck". None otherwise.
         """
         if cmd == "InitAck":
-            self.event.set()
+            self.motomed_done.set()
             self._start_watchdog()
         if self.show_log:
             if self.Type(packet[6]).name != "Watchdog":
@@ -237,18 +240,19 @@ class RehastimGeneric:
         if cmd == "InitAck":
             self.reha_connected = True
         # if self.is_motomed_connected and cmd != "Watchdog":
-        #     self.event.wait()
+        #     self.motomed_done.wait()
         self.lock.release()
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
         self.packet_count = (self.packet_count + 1) % 256
         self.event_ack.clear()
-        self.event.clear()
+        self.motomed_done.clear()
         if cmd == "InitAck":
-            self.event.set()
+            self.motomed_done.set()
             return "InitAck"
 
-    def _init_ack(self, packet_count: int) -> bytes:
+    @staticmethod
+    def _init_ack(packet_count: int) -> bytes:
         """
         Returns the packet corresponding to an InitAck.
 
@@ -262,92 +266,8 @@ class RehastimGeneric:
         packet: list
             Packet corresponding to an InitAck.
         """
-        packet = self._packet_construction(packet_count, "InitAck", [0])
+        packet = packet_construction(packet_count, "InitAck", [0])
         return packet
-
-    def _packet_construction(self, packet_count: int, packet_type: str, packet_data: list = None) -> bytes:
-        """
-        Constructs the packet which will be sent to the Rehastim.
-
-        Parameters
-        ----------
-        packet_count: int
-            Correspond to the number of packet sent to the Rehastim.
-        packet_type: str
-            Correspond to the command that will be sent.
-        packet_data: list
-            Contain the data of the packet.
-
-        Returns
-        -------
-        packet_construct: bytes
-            Packet constructed which will be sent.
-        """
-        packet = [self.START_BYTE]
-        packet_command = self.Type[packet_type].value
-        packet_payload = [packet_count, packet_command]
-        packet_payload = self._stuff_packet_byte(packet_payload)
-        if packet_data is not None:
-            packet_data = self._stuff_packet_byte(packet_data, command_data=True)
-            packet_payload += packet_data
-
-        checksum = crccheck.crc.Crc8.calc(packet_payload)
-        checksum = self._stuff_byte(checksum)
-        data_length = self._stuff_byte(len(packet_payload))
-
-        packet = (
-            packet
-            + [self.STUFFING_BYTE]
-            + [checksum]
-            + [self.STUFFING_BYTE]
-            + [data_length]
-            + packet_payload
-            + [self.STOP_BYTE]
-        )
-        return b"".join([byte.to_bytes(1, "little") for byte in packet])
-
-    def _stuff_packet_byte(self, packet: list, command_data: bool = False) -> list:
-        """
-        Stuffs each byte if necessary of the packet.
-
-        Parameters
-        ----------
-        packet: list
-            Packet containing the bytes that will be checked and stuffed if necessary.
-        command_data: bool
-            True if the packet is a command data, False if not.
-        Returns
-        -------
-        packet: list
-            Packet returned with stuffed byte.
-        """
-        if command_data:
-            packet_tmp = []
-            for i in range(len(packet)):
-                if packet[i] in self.STUFFED_BYTES:
-                    packet_tmp = packet_tmp + [self.STUFFING_BYTE, self._stuff_byte(packet[i])]
-                else:
-                    packet_tmp.append(packet[i])
-            return packet_tmp
-        else:
-            for i in range(len(packet)):
-                if packet[i] in self.STUFFED_BYTES:
-                    packet[i] = self._stuff_byte(packet[i])
-            return packet
-
-    def _stuff_byte(self, byte: int) -> int:
-        """
-        Stuffs the byte given.
-        Parameters
-        ----------
-        byte: int
-            Byte which needs to be stuffed.
-        Returns
-        -------
-        byte_stuffed: int
-            The byte stuffed.
-        """
-        return (byte & ~self.STUFFING_KEY) | (~byte & self.STUFFING_KEY)
 
     def close_port(self):
         """
@@ -378,7 +298,7 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
-                packet_tmp = packet_tmp[next_stop_byte + 1 :]
+                packet_tmp = packet_tmp[next_stop_byte + 1:]
             return packet_list
 
     def disconnect(self):
@@ -394,8 +314,9 @@ class RehastimGeneric:
         Start the thread which sends watchdog.
         """
         self.reha_connected = True
-        self.__thread_watchdog = threading.Thread(target=self._watchdog)
-        self.__thread_watchdog.start()
+        if not self.__watchdog_thread_started:
+            self.__thread_watchdog = threading.Thread(target=self._watchdog)
+            self.__thread_watchdog.start()
 
     def _stop_watchdog(self):
         """
@@ -420,5 +341,38 @@ class RehastimGeneric:
         packet: list
             Packet corresponding to the watchdog
         """
-        packet = self._packet_construction(self.packet_count, "Watchdog")
+        packet = packet_construction(self.packet_count, "Watchdog")
         return packet
+
+    def get_angle(self) -> float:
+        """
+        Returns the angle of the Rehastim.
+
+        Returns
+        -------
+        angle: float
+            Angle of the Rehastim.
+        """
+        return self.motomed_values[0, -1]
+
+    def get_speed(self) -> float:
+        """
+        Returns the angle of the Rehastim.
+
+        Returns
+        -------
+        angle: float
+            Angle of the Rehastim.
+        """
+        return self.motomed_values[1, -1]
+
+    def get_torque(self) -> float:
+        """
+        Returns the angle of the Rehastim.
+
+        Returns
+        -------
+        angle: float
+            Angle of the Rehastim.
+        """
+        return self.motomed_values[2, -1]
