@@ -36,8 +36,8 @@ class Stimulator(RehastimGeneric):
         """
         self.list_channels = None
         self.stimulation_interval = None
-        self.inter_pulse_interval = None
-        self.low_frequency_factor = None
+        self.inter_pulse_interval = 2
+        self.low_frequency_factor = 0
         self.electrode_number = 0
         self.electrode_number_low_frequency = 0
 
@@ -46,9 +46,6 @@ class Stimulator(RehastimGeneric):
         self.mode = []
         self.muscle = []
         self.given_channels = []
-
-        check_stimulation_interval(self.stimulation_interval)
-        check_low_frequency_factor(self.low_frequency_factor)
         self.stimulation_started = None
         super().__init__(port, show_log, with_motomed)
         if with_motomed:
@@ -105,6 +102,7 @@ class Stimulator(RehastimGeneric):
             packet = self._packet_start_stimulation()
         elif cmd == "StopChannelListMode":
             packet = packet_construction(self.packet_count, "StopChannelListMode")
+        self.motomed_done.set()
         init_ack = self.send_generic_packet(cmd, packet)
         if init_ack:
             return init_ack
@@ -137,13 +135,13 @@ class Stimulator(RehastimGeneric):
         elif packet[6] == self.Type["ActualValues"].value:
             raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
         else:
-            raise RuntimeError("Error packet : not understood")
+            raise RuntimeError(f"Error packet : not understood {packet[6]}")
 
     def _packet_init_stimulation(self) -> bytes:
         """
         Returns the packet for the InitChannelMode.
         """
-        coded_inter_pulse_interval = self._code_inter_pulse_interval()
+        coded_inter_pulse_interval = int((self.inter_pulse_interval - 1.5) * 2)
         msb, lsb = self._msb_lsb_main_stim()
 
         data_stimulation = [
@@ -174,21 +172,6 @@ class Stimulator(RehastimGeneric):
         packet = packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
 
         return packet
-
-    def _code_inter_pulse_interval(self) -> int:
-        """
-        Returns the "inter pulse interval" value encoded as follows :
-        Inter pulse interval = [0, 255] ∙ 0.5 ms + 1.5
-        Inter pulse interval = = [1.5, 129] ms
-        Coded Inter pulse interval = (Inter pulse interval - 1.5) * 2
-        Note that in the current software version the minimum inter pulse interval is 8 ms.
-
-        Returns
-        -------
-        coded_inter_pulse_interval: int
-            Coded value of inter pulse interval [0, 255].
-        """
-        return int((self.inter_pulse_interval - 1.5) * 2)
 
     def _msb_lsb_main_stim(self) -> Tuple[int, int]:
         """
@@ -266,8 +249,8 @@ class Stimulator(RehastimGeneric):
         self,
         stimulation_interval: int,
         list_channels: list,
-        inter_pulse_interval: int = None,
-        low_frequency_factor: int = None,
+        inter_pulse_interval: int = 2,
+        low_frequency_factor: int = 0,
     ):
         """
         Initialize the requested channel.

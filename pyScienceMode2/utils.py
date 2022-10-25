@@ -22,24 +22,27 @@ def check_stimulation_interval(stimulation_interval: int = None):
     """
     Checks if the stimulation interval is within limits.
     """
-    if stimulation_interval and stimulation_interval < 8 or stimulation_interval > 1025:
-        raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s" % stimulation_interval)
+    if stimulation_interval:
+        if stimulation_interval < 8 or stimulation_interval > 1025:
+            raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s" % stimulation_interval)
 
 
 def check_inter_pulse_interval(inter_pulse_interval: int = None):
     """
     Checks if the "inter pulse interval" is within limits.
     """
-    if inter_pulse_interval and inter_pulse_interval < 2 or inter_pulse_interval > 129:
-        raise ValueError("Error : Inter pulse interval [2,129], given : %s" % inter_pulse_interval)
+    if inter_pulse_interval:
+        if inter_pulse_interval < 2 or inter_pulse_interval > 129:
+            raise ValueError("Error : Inter pulse interval [2,129], given : %s" % inter_pulse_interval)
 
 
 def check_low_frequency_factor(low_frequency_factor: int = None):
     """
     Checks if the low frequency factor is within limits.
     """
-    if low_frequency_factor and low_frequency_factor < 0 or low_frequency_factor > 7:
-        raise ValueError("Error : Low frequency factor [0,7], given : %s" % low_frequency_factor)
+    if low_frequency_factor:
+        if low_frequency_factor < 0 or low_frequency_factor > 7:
+            raise ValueError("Error : Low frequency factor [0,7], given : %s" % low_frequency_factor)
 
 
 def check_unique_channel(list_channels: list = None) -> bool:

@@ -90,8 +90,8 @@ stimulator.start_stimulation(stimulation_duration=2)
 """
 To disconnect the computer and the Rehastim, use the disconnect method.
 """
-stimulator.disconnect()
 
+stimulator.disconnect()
 """
 After a disconnection, init_channel must be called.  
 """

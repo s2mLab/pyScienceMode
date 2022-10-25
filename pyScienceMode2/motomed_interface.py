@@ -6,7 +6,7 @@ See ScienceMode2 - Description and protocol for more information.
 from pyScienceMode2.acks import *
 from pyScienceMode2.utils import *
 from pyScienceMode2.enums import Type
-from pyScienceMode2.rehastim_interface import Stimulator
+from time import sleep
 import numpy as np
 
 
@@ -15,7 +15,7 @@ class _Motomed:
     Class to control the motomed
     """
 
-    def __init__(self, rehastim_interface: Stimulator, show_log: bool = False):
+    def __init__(self, rehastim_interface, show_log: bool = False):
         """
         Parameters
         ----------
@@ -33,22 +33,13 @@ class _Motomed:
         self.training_side = 0
         self.crank_orientation = 0
         self.fly_wheel = 0
-        self.phase_variant = 0
+        self.phase_variant = -1
         self.spasm_detection = 0
         self.last_phase_result = 0
         self.is_phase_training = False
         self.show_log = show_log
         self.max_phase_result = 1
         self.rehastim = rehastim_interface
-
-        # super().__init__(port, show_log, True)
-        # self.actual_values = self.motomed_values
-        # Connect to rehastim
-        # if not self.reha_connected:
-        #     packet = None
-        #     while packet is None:
-        #         packet = self._get_last_ack(init=True)
-        #     self._send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 
     def _send_packet(self, cmd: str) -> (None, str):
         """
@@ -63,10 +54,13 @@ class _Motomed:
         -------
             In the case of an InitAck, return the string 'InitAck'. None otherwise.
         """
-        self.rehastim.motomed_done.wait()  # If the event is set, motomed last command is done next command can be sent
+        self.rehastim.motomed_done.wait()   # If the event is set, motomed last command is done next command can be sent
         if cmd == "InitPhaseTraining":
             packet = packet_construction(self.rehastim.packet_count, "InitPhaseTraining", [self.body_training])
+            self.rehastim.motomed_done.clear()
         elif cmd == "StartPhase":
+            self.is_phase_result = False
+            self.is_phase_training = True
             data_command = [
                 self.phase_variant,
                 self.passive_speed,
@@ -78,14 +72,19 @@ class _Motomed:
                 self.crank_orientation,
             ]
             packet = packet_construction(self.rehastim.packet_count, "StartPhase", data_command)
+            self.rehastim.motomed_done.clear()
         elif cmd == "SetRotationDirection":
             packet = packet_construction(self.rehastim.packet_count, "SetRotationDirection", [self.direction])
+            self.rehastim.motomed_done.clear()
         elif cmd == "SetSpeed":
             packet = packet_construction(self.rehastim.packet_count, "SetSpeed", [self.passive_speed])
+            self.rehastim.motomed_done.clear()
         elif cmd == "SetGear":
             packet = packet_construction(self.rehastim.packet_count, "SetGear", [self.gear])
+            self.rehastim.motomed_done.clear()
         elif cmd == "StartBasicTraining":
             packet = packet_construction(self.rehastim.packet_count, "StartBasicTraining", [self.body_training])
+            self.rehastim.motomed_done.clear()
         else:
             packet = packet_construction(self.rehastim.packet_count, cmd)
         init_ack = self.rehastim.send_generic_packet(cmd, packet)
@@ -126,7 +125,7 @@ class _Motomed:
     def start_phase(
         self,
         go_forward: bool = True,
-        active: bool = False,
+        active: bool = True,
         symmetry_training: bool = False,
         motomedmax_game: bool = False,
         gear: int = 0,
@@ -166,8 +165,6 @@ class _Motomed:
         crank_symetric: bool
             If True, the phase will be done with a symetric crank.
         """
-        if active + symmetry_training + motomedmax_game != 1:
-            raise RuntimeError("Please chose one option between 'active' 'symmetry_training' and 'Motomedmax_game'.")
         if active:
             self.phase_variant = 0
         elif not active and not symmetry_training and not motomedmax_game:
@@ -176,6 +173,9 @@ class _Motomed:
             self.phase_variant = 2
         elif motomedmax_game:
             self.phase_variant = 3
+
+        if self.phase_variant not in [0, 1, 2, 3]:
+            raise RuntimeError("Please chose one option between 'active' 'symmetry_training' and 'Motomedmax_game'.")
 
         if not self.is_phase_initialize:
             raise RuntimeError("Phase not initialized.")
@@ -233,6 +233,7 @@ class _Motomed:
         """
         self._send_packet("StopPhaseTraining")
         stop_phase_ack = self._calling_ack(self.rehastim._get_last_ack())
+        self.is_phase_training = False
         if stop_phase_ack == "PhaseResult":
             print("Result of the phase available.")
         elif stop_phase_ack != "Stop phase training sent to MOTOmed":
@@ -350,7 +351,7 @@ class _Motomed:
         -------
             A string which is the message corresponding to the processing of the packet.
         """
-        # self.event_ack.wait()
+        # self.rehastim.event_ack.wait()
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == Type["GetMotomedModeAck"].value:
@@ -382,7 +383,7 @@ class _Motomed:
         elif packet[6] == Type["MotomedCommandDone"].value:
             return stop_basic_training_ack(packet)
         elif packet[6] == Type["MotomedError"].value:
-            return motomed_error_values(signed_int(packet[7:8]))
+            return motomed_error_ack(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")
 
@@ -441,6 +442,7 @@ class _Motomed:
             self.last_phase_result = np.append(self.last_phase_result, last_phase_result, axis=1)
         else:
             self.last_phase_result = np.append(self.last_phase_result[:, 1:], last_phase_result, axis=1)
+        self.is_phase_result = True
         return "PhaseResult"
 
     def get_angle(self):
@@ -472,3 +474,17 @@ class _Motomed:
             The torque of the motomed.
         """
         return self.rehastim.get_torque()
+
+    def get_phase_result(self):
+        """
+        Get the actual torqur of the motomed.
+
+        Returns
+        -------
+            The torque of the motomed.
+        """
+        while not self.is_phase_result:
+            sleep(0.01)
+            pass
+
+        return self.last_phase_result

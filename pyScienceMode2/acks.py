@@ -83,7 +83,7 @@ def init_phase_training_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Phase training initialized"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def start_phase_ack(packet: bytes) -> str:
@@ -93,7 +93,7 @@ def start_phase_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Start phase training / change phase sent to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def pause_phase_ack(packet: bytes) -> str:
@@ -103,7 +103,7 @@ def pause_phase_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Start pause sent to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def stop_phase_training_ack(packet: bytes) -> str:
@@ -113,7 +113,7 @@ def stop_phase_training_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Stop phase training sent to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def set_rotation_direction_ack(packet: bytes) -> str:
@@ -123,7 +123,7 @@ def set_rotation_direction_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Sent rotation direction to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def set_speed_ack(packet: bytes) -> str:
@@ -133,7 +133,7 @@ def set_speed_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Sent speed to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def set_gear_ack(packet: bytes) -> str:
@@ -143,7 +143,7 @@ def set_gear_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Set Gear to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def start_basic_training_ack(packet: bytes) -> str:
@@ -153,7 +153,7 @@ def start_basic_training_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Sent start basic training to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def pause_basic_training_ack(packet: bytes) -> str:
@@ -163,7 +163,7 @@ def pause_basic_training_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Sent basic pause to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def continue_basic_training_ack(packet: bytes) -> str:
@@ -173,7 +173,7 @@ def continue_basic_training_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Sent continue basic training to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def stop_basic_training_ack(packet: bytes) -> str:
@@ -183,13 +183,13 @@ def stop_basic_training_ack(packet: bytes) -> str:
     if str(packet[7]) == "0":
         return "Sent stop basic training to MOTOmed"
     else:
-        motomed_error_values(signed_int(packet[7:8]))
+        return motomed_error_values(signed_int(packet[7:8]))
 
 
 def motomed_error_ack(packet):
-    if str(packet[7]) == "-4":
+    if packet == -4:
         return "Motomed connection error"
-    elif str(packet[7]) == "-6":
+    elif packet == -6:
         return "Invalid Motomed trainer"
 
 

@@ -7,6 +7,7 @@ import serial
 import time
 import threading
 from pyScienceMode2.utils import *
+from .acks import motomed_error_ack
 import numpy as np
 
 # Notes :
@@ -151,7 +152,13 @@ class RehastimGeneric:
                 for packet in packets:
                     if len(packet) > 7:
                         if self.show_log and packet[6] in [t.value for t in self.Type]:
-                            print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
+                            if self.Type(packet[6]).name == "MotomedError":
+                                ack = motomed_error_ack(signed_int(packet[7:8]))
+                                if signed_int(packet[7:8]) in [-4, -6]:
+                                    print(f"Ack received by rehastim: {ack}")
+                            elif self.Type(packet[6]).name != "ActualValues":
+                                print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
+
                         if packet[6] == self.Type["ActualValues"].value:
                             self._actual_values_ack(packet)
                         elif packet[6] == 90:
@@ -163,6 +170,8 @@ class RehastimGeneric:
                                 self.last_init_ack = packet
                                 self.event_ack.set()
                             else:
+                                if packet[6] == 90 and signed_int(packet[7:8]) not in [-4, -6]:
+                                    packet = packet[1:]
                                 self.last_ack = packet
                                 self.event_ack.set()
 
@@ -246,9 +255,8 @@ class RehastimGeneric:
         self.packet_send_history = packet
         self.packet_count = (self.packet_count + 1) % 256
         self.event_ack.clear()
-        self.motomed_done.clear()
         if cmd == "InitAck":
-            self.motomed_done.set()
+            # self.motomed_done.set()
             return "InitAck"
 
     @staticmethod

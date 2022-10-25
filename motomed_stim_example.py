@@ -37,19 +37,9 @@ def init_rehastim():
     # Create our object Stimulator
     stimulator = St(port='/dev/ttyUSB0', with_motomed=True, show_log=True)
 
-    stimulator.init_channel(stimulation_interval=200, list_channels=list_channels, low_frequency_factor=2)
+    stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
 
     return stimulator, list_channels
-
-
-def set_amp_zero(nw_list_channels):
-    for i in range(len(nw_list_channels)):
-        nw_list_channels[i].amplitude = 0
-
-
-def show_list_channels(l_ch):
-    for i in range(len(l_ch)):
-        print(l_ch[i])
 
 
 if __name__ == '__main__':
@@ -66,38 +56,40 @@ if __name__ == '__main__':
     stimulator.start_stimulation(upd_list_channels=list_channels)
 
     motomed.start_basic_training(arm_training=True)
-    motomed.set_speed(10)
-    motomed.set_gear(5)
+    time.sleep(2)
+    motomed.set_speed(20)
+    # motomed.set_gear(5)
+    time.sleep(2)
     bic_delt_stim = False
     tric_delt_stim = False
     while 1:
         angle_crank = motomed.get_angle()
-
         # Angle without stimulation
         if (10 <= angle_crank < 20 or 180 <= angle_crank < 220) and (tric_delt_stim or bic_delt_stim):
-            set_amp_zero(list_channels)
             stimulator.stop_stimulation()
+            tric_delt_stim, bic_delt_stim = False, False
             print("angle crank", angle_crank)
             print("stimulation_state", (tric_delt_stim or bic_delt_stim))
 
         if 20 <= angle_crank < 180 and not tric_delt_stim:
-            list_channels[2].set_amplitude = 5
-            list_channels[3].set_amplitude = 5
-            list_channels[4].set_amplitude = 5
-            list_channels[5].set_amplitude = 5
-
+            # list_channels[2].set_amplitude = 5
+            # list_channels[3].set_amplitude = 5
+            # list_channels[4].set_amplitude = 5
+            # list_channels[5].set_amplitude = 5
             stimulator.start_stimulation(upd_list_channels=list_channels)
 
             tric_delt_stim = True
+            bic_delt_stim = False
             print("angle crank", angle_crank)
             print("stimulation_state", tric_delt_stim)
 
         if (220 <= angle_crank < 360 or 0 <= angle_crank < 10) and not bic_delt_stim:
-            list_channels[0].set_amplitude = 5
-            list_channels[1].set_amplitude = 5
+            print(angle_crank)
+            list_channels[0].set_amplitude(50)
 
             stimulator.start_stimulation(upd_list_channels=list_channels)
             bic_delt_stim = True
+            tric_delt_stim = False
             print("angle crank", angle_crank)
             print("stimulation_state", bic_delt_stim)
 
