@@ -40,6 +40,7 @@ class _Motomed:
         self.show_log = show_log
         self.max_phase_result = 1
         self.rehastim = rehastim_interface
+        self.is_phase_result = False
 
     def _send_packet(self, cmd: str) -> (None, str):
         """
@@ -54,7 +55,7 @@ class _Motomed:
         -------
             In the case of an InitAck, return the string 'InitAck'. None otherwise.
         """
-        self.rehastim.motomed_done.wait()   # If the event is set, motomed last command is done next command can be sent
+        self.rehastim.motomed_done.wait()  # If the event is set, motomed last command is done next command can be sent
         if cmd == "InitPhaseTraining":
             packet = packet_construction(self.rehastim.packet_count, "InitPhaseTraining", [self.body_training])
             self.rehastim.motomed_done.clear()
@@ -378,72 +379,12 @@ class _Motomed:
             return continue_basic_training_ack(packet)
         elif packet[6] == Type["StopBasicTrainingAck"].value:
             return stop_basic_training_ack(packet)
-        elif packet[6] == Type["PhaseResult"].value:
-            return self._phase_result_ack(packet)
         elif packet[6] == Type["MotomedCommandDone"].value:
             return stop_basic_training_ack(packet)
         elif packet[6] == Type["MotomedError"].value:
             return motomed_error_ack(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")
-
-    def _phase_result_ack(self, packet: bytes) -> str:
-        """
-        Process the phase result packet.
-
-        Parameters
-        ----------
-        packet: bytes
-            Packet which needs to be processed.
-
-        Returns
-        -------
-            A string which is the message corresponding to the processing of the packet.
-        """
-        msb_passive_distance = int(packet[8])
-        lsb_passive_distance = int(packet[9])
-        msb_active_distance = int(packet[10])
-        lsb_active_distance = int(packet[11])
-        average_power = int(packet[12])
-        maximum_power = int(packet[13])
-        msb_phase_duration = int(packet[14])
-        lsb_phase_duration = int(packet[15])
-        msb_active_phase_duration = int(packet[16])
-        lsb_active_phase_duration = int(packet[17])
-        msb_phase_work = int(packet[18])
-        lsb_phase_work = int(packet[19])
-        success_value = int(packet[20])
-        symmetry = int(packet[21])
-        average_muscle_tone = int(packet[22])
-
-        passive_distance = msb_passive_distance * 255 + lsb_passive_distance
-        active_distance = None
-        phase_duration = None
-        active_phase_duration = None
-        phase_work = None
-        last_phase_result = np.array(
-            [
-                passive_distance,
-                active_distance,
-                average_power,
-                maximum_power,
-                phase_duration,
-                active_phase_duration,
-                phase_work,
-                success_value,
-                symmetry,
-                average_muscle_tone,
-            ]
-        )[:, np.newaxis]
-
-        if self.last_phase_result is None:
-            self.last_phase_result = last_phase_result
-        elif self.last_phase_result.shape[1] < self.max_phase_result:
-            self.last_phase_result = np.append(self.last_phase_result, last_phase_result, axis=1)
-        else:
-            self.last_phase_result = np.append(self.last_phase_result[:, 1:], last_phase_result, axis=1)
-        self.is_phase_result = True
-        return "PhaseResult"
 
     def get_angle(self):
         """
@@ -483,8 +424,4 @@ class _Motomed:
         -------
             The torque of the motomed.
         """
-        while not self.is_phase_result:
-            sleep(0.01)
-            pass
-
-        return self.last_phase_result
+        return self.rehastim.get_phase_result()

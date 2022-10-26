@@ -91,6 +91,7 @@ class RehastimGeneric:
         self.__thread_watchdog = None
         self.lock = threading.Lock()
         self.motomed_done = threading.Event()
+        self.is_phase_result = threading.Event()
         self.event_ack = threading.Event()
         self.__motomed_thread_started = False
         self.__watchdog_thread_started = False
@@ -144,7 +145,7 @@ class RehastimGeneric:
         """
         Catch the motomed data.
         """
-        time_to_sleep = 0.05
+        time_to_sleep = 0.015
         while 1 and self.is_motomed_connected:
             packets = self._read_packet()
             tic = time.time()
@@ -161,6 +162,8 @@ class RehastimGeneric:
 
                         if packet[6] == self.Type["ActualValues"].value:
                             self._actual_values_ack(packet)
+                        elif packet[6] == Type["PhaseResult"].value:
+                            return self._phase_result_ack(packet)
                         elif packet[6] == 90:
                             pass
                         elif packet[6] == self.Type["MotomedCommandDone"].value:
@@ -196,16 +199,16 @@ class RehastimGeneric:
             angle = 255 * signed_int(packet[7:8]) + packet[8]
 
         if packet[10 + count] == 129:
-            speed = signed_int(packet[10 + count + 1: 10 + count + 2]) ^ self.STUFFING_KEY
+            speed = signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
-            speed = signed_int(packet[10:11])
+            speed = signed_int(packet[10 + count : 11 + count])
 
         if packet[12 + count] == 129:
-            torque = signed_int(packet[12 + count + 1: 12 + count + 2]) ^ self.STUFFING_KEY
+            torque = signed_int(packet[12 + count + 1 : 12 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
-            torque = signed_int(packet[12:13])
+            torque = signed_int(packet[12 + count : 13 + count])
 
         actual_values = np.array([angle, speed, torque])[:, np.newaxis]
         if self.motomed_values is None:
@@ -306,7 +309,7 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
-                packet_tmp = packet_tmp[next_stop_byte + 1:]
+                packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
 
     def disconnect(self):
@@ -384,3 +387,120 @@ class RehastimGeneric:
             Angle of the Rehastim.
         """
         return self.motomed_values[2, -1]
+
+    def _phase_result_ack(self, packet: bytes) -> str:
+        """
+        Process the phase result packet.
+
+        Parameters
+        ----------
+        packet: bytes
+            Packet which needs to be processed.
+
+        Returns
+        -------
+            A string which is the message corresponding to the processing of the packet.
+        """
+        count = 0
+        if packet[7] == 129:
+            phase_number = packet[8] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            phase_number = packet[7]
+        if packet[9 + count] == 129:
+            passive_distance = 255 * packet[8 + count] + packet[9 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            passive_distance = 255 * packet[8 + count] + packet[9 + count]
+
+        if packet[11 + count] == 129:
+            active_distance = 255 * packet[10 + count] + packet[11 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            active_distance = 255 * packet[10 + count] + packet[10 + count + 1]
+
+        if packet[12 + count] == 129:
+            average_power = packet[12 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            average_power = packet[12 + count]
+
+        if packet[13 + count] == 129:
+            maximum_power = packet[13 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            maximum_power = packet[13 + count]
+
+        if packet[15 + count] == 129:
+            phase_duration = 255 * packet[14 + count] + packet[15 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            phase_duration = 255 * packet[14 + count] + packet[15 + count]
+
+        if packet[17 + count] == 129:
+            active_phase_duration = 255 * packet[16 + count] + packet[17 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            active_phase_duration = 255 * packet[16 + count] + packet[17 + count]
+
+        if packet[19 + count] == 129:
+            phase_work = 255 * packet[18 + count] + packet[19 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            phase_work = 255 * packet[18 + count] + packet[19 + count]
+
+        if packet[20 + count] == 129:
+            success_value = packet[20 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            success_value = packet[20 + count]
+
+        if packet[21 + count] == 129:
+            symmetry = signed_int(packet[21 + count : 21 + count + 1]) ^ self.STUFFING_KEY
+            count += 1
+        else:
+            symmetry = signed_int(packet[21 + count : 21 + count + 1])
+
+        if packet[22 + count] == 129:
+            average_muscle_tone = packet[22 + count + 1] ^ self.STUFFING_KEY
+            count += 1
+        else:
+            average_muscle_tone = packet[22 + count]
+
+        last_phase_result = np.array(
+            [
+                phase_number,
+                passive_distance,
+                active_distance,
+                average_power,
+                maximum_power,
+                phase_duration,
+                active_phase_duration,
+                phase_work,
+                success_value,
+                symmetry,
+                average_muscle_tone,
+            ]
+        )[:, np.newaxis]
+
+        if self.last_phase_result is None:
+            self.last_phase_result = last_phase_result
+        elif self.last_phase_result.shape[1] < self.max_phase_result:
+            self.last_phase_result = np.append(self.last_phase_result, last_phase_result, axis=1)
+        else:
+            self.last_phase_result = np.append(self.last_phase_result[:, 1:], last_phase_result, axis=1)
+        self.is_phase_result.set()
+        return "PhaseResult"
+
+    def get_phase_result(self):
+        """
+        Get the actual torqur of the motomed.
+
+        Returns
+        -------
+            The torque of the motomed.
+        """
+        self.is_phase_result.wait()
+        last_result = self.last_phase_result
+        self.is_phase_result.clear()
+        return last_result

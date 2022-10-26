@@ -152,15 +152,7 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
     checksum = _stuff_byte(checksum)
     data_length = _stuff_byte(len(packet_payload))
 
-    packet = (
-        packet
-        + [stuffing_byte]
-        + [checksum]
-        + [stuffing_byte]
-        + [data_length]
-        + packet_payload
-        + [stop_byte]
-    )
+    packet = packet + [stuffing_byte] + [checksum] + [stuffing_byte] + [data_length] + packet_payload + [stop_byte]
     return b"".join([byte.to_bytes(1, "little") for byte in packet])
 
 
