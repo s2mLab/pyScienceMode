@@ -145,7 +145,7 @@ class RehastimGeneric:
         """
         Catch the motomed data.
         """
-        time_to_sleep = 0.015
+        time_to_sleep = 0.005
         while 1 and self.is_motomed_connected:
             packets = self._read_packet()
             tic = time.time()
@@ -197,7 +197,6 @@ class RehastimGeneric:
             count += 1
         else:
             angle = 255 * signed_int(packet[7:8]) + packet[8]
-
         if packet[10 + count] == 129:
             speed = signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
             count += 1
@@ -308,6 +307,8 @@ class RehastimGeneric:
             packet_tmp = packet[first_start_byte:]
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
+                while next_stop_byte < 8:
+                    next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
                 packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
