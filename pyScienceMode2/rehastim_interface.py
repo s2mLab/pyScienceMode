@@ -21,6 +21,7 @@ class Stimulator(RehastimGeneric):
         port: str,
         show_log: bool = False,
         with_motomed: bool = False,
+        fast_mode: bool = False,
     ):
         """
         Creates an object stimulator.
@@ -33,6 +34,9 @@ class Stimulator(RehastimGeneric):
             If True, the log of the communication will be printed.
         with_motomed: bool
             If the motomed is connected to the Rehastim, put this flag to True.
+        fast_mode: bool
+            If True, no visual response from the Rehastim, this means that there is no confirmation that the Rehastim
+            is stimulating
         """
         self.list_channels = None
         self.stimulation_interval = None
@@ -50,6 +54,9 @@ class Stimulator(RehastimGeneric):
         super().__init__(port, show_log, with_motomed)
         if with_motomed:
             self.motomed = _Motomed(self)
+        self.fast_mode = fast_mode
+        if fast_mode and with_motomed:
+            raise RuntimeError("Fast mode while using the MOTOmed is not yet implemented ")
         # Connect to rehastim
         packet = None
         while packet is None:
@@ -168,9 +175,7 @@ class Stimulator(RehastimGeneric):
             data_stimulation.append(msb)
             data_stimulation.append(lsb)
             data_stimulation.append(int(self.amplitude[i]))
-
         packet = packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
-
         return packet
 
     def _msb_lsb_main_stim(self) -> Tuple[int, int]:
@@ -306,14 +311,14 @@ class Stimulator(RehastimGeneric):
                 raise RuntimeError("Error update: all channels have not been initialised")
             self.list_channels = upd_list_channels
             self.set_stimulation_signal(self.list_channels)
-
         self._send_packet("StartChannelListMode")
-
         time_start_stim = time.time()
 
-        start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if start_channel_list_mode_ack != "Stimulation started":
-            raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+        if self.fast_mode is False:
+            start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+            if start_channel_list_mode_ack != "Stimulation started":
+                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+            self.stimulation_started = True
         else:
             self.stimulation_started = True
 

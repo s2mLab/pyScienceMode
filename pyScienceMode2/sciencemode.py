@@ -92,6 +92,7 @@ class RehastimGeneric:
         self.lock = threading.Lock()
         self.motomed_done = threading.Event()
         self.is_phase_result = threading.Event()
+        self.command_sent = threading.Event()
         self.event_ack = threading.Event()
         self.__motomed_thread_started = False
         self.__watchdog_thread_started = False
@@ -222,9 +223,10 @@ class RehastimGeneric:
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
         while 1 and self.reha_connected:
-            if time.time() - self.time_last_cmd > 0.5:
+            if time.time() - self.time_last_cmd > 1.1:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
-                time.sleep(0.5)
+            time.sleep(1)
+
 
     def send_generic_packet(self, cmd: str, packet: bytes) -> (None, str):
         """
@@ -247,6 +249,8 @@ class RehastimGeneric:
             if self.Type(packet[6]).name != "Watchdog":
                 print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
         self.lock.acquire()
+        if time.time() - self.time_last_cmd > 1:
+            self.port.write(self._packet_watchdog())
         self.port.write(packet)
         if cmd == "InitAck":
             self.reha_connected = True
