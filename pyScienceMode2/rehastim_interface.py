@@ -330,11 +330,26 @@ class Stimulator(RehastimGeneric):
 
     def stop_stimulation(self):
         """
-        Stop a stimulation by setting all amplitudes to 0.
+        Update a stimulation.
+        Warning: only the channel that has been initiated can be updated.
+
+        Parameters
+        ----------
+        stimulation_duration: float
+            Time of the stimulation after the update.
+        upd_list_channels: list[Channel]
+            List of the channels that will be updated
         """
-        for i in range(len(self.list_channels)):
-            self.list_channels[i].set_amplitude(0)
-        self.start_stimulation(upd_list_channels=self.list_channels)
+        self.amplitude = [0] * len(self.list_channels)
+        self._send_packet("StartChannelListMode")
+
+        if self.fast_mode is False:
+            start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+            if start_channel_list_mode_ack != "Stimulation started":
+                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+            self.stimulation_started = True
+        else:
+            self.stimulation_started = True
 
     def _stop_stimulation(self):
         """

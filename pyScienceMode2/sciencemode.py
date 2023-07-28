@@ -223,9 +223,9 @@ class RehastimGeneric:
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
         while 1 and self.reha_connected:
-            if time.time() - self.time_last_cmd > 1.1:
+            if time.time() - self.time_last_cmd > 0.8:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
-            time.sleep(1)
+            time.sleep(0.8)
 
 
     def send_generic_packet(self, cmd: str, packet: bytes) -> (None, str):
@@ -312,7 +312,11 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 while next_stop_byte < 8:
-                    next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
+                    try:
+                        next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
+                    except:
+                        packet_list = []  # quick fix
+                        break
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
                 packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
