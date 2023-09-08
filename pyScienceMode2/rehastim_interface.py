@@ -14,6 +14,33 @@ from pyScienceMode2.motomed_interface import _Motomed
 class Stimulator(RehastimGeneric):
     """
     Class used for the communication with Rehastim.
+
+    Attributes
+    ----------
+    list_channels: list[Channel]
+        List containing the channels and their parameters.
+    stimulation_interval: int
+        Period of the main stimulation. [8,1025] ms.
+    inter_pulse_interval: int
+        Inter pulse interval. [2, 255] ms.
+    low_frequency_factor: int
+        Low frequency factor. [0, 255].
+    electrode_number: int
+        Number of electrodes.
+    electrode_number_low_frequency: int
+        Number of electrodes for low frequency.
+    amplitude: list[int]
+        Amplitude of the stimulation.
+    pulse_width: list[int]
+        Pulse width of the stimulation.
+    mode: list[int]
+        Mode of the stimulation.
+    muscle: list[int]
+        Muscle of the stimulation.
+    given_channels: list[int]
+        List of the channels that have been given.
+    stimulation_started: bool
+        True if the stimulation has been started.
     """
 
     def __init__(
@@ -147,6 +174,11 @@ class Stimulator(RehastimGeneric):
     def _packet_init_stimulation(self) -> bytes:
         """
         Returns the packet for the InitChannelMode.
+
+        Returns
+        -------
+        packet: bytes
+            Packet for the InitChannelMode.
         """
         coded_inter_pulse_interval = int((self.inter_pulse_interval - 1.5) * 2)
         msb, lsb = self._msb_lsb_main_stim()
@@ -167,6 +199,11 @@ class Stimulator(RehastimGeneric):
     def _packet_start_stimulation(self) -> bytes:
         """
         Returns the packet for the StartChannelListMode.
+
+        Returns
+        -------
+        packet: bytes
+            Packet for the StartChannelListMode.
         """
         data_stimulation = []
         for i in range(len(self.amplitude)):
@@ -262,6 +299,12 @@ class Stimulator(RehastimGeneric):
         Can update stimulation interval if one is given.
         Can update list_channels if one is iven.
 
+        Parameters
+        ----------
+        inter_pulse_interval: int
+            Inter pulse interval. [2, 255] ms.
+        low_frequency_factor: int
+            Low frequency factor. [0, 255].
         stimulation_interval: int
             Period of the main stimulation. [8,1025] ms.
         list_channels: list[Channel]

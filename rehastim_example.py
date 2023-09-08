@@ -3,17 +3,21 @@ from pyScienceMode2.rehastim_interface import Stimulator as St
 
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
-
 from time import sleep
+
+"""
+This example shows how to use the Rehastim2 to stimulate a muscle.
+"""
 
 # Create a list of channels
 list_channels = []
 
-# Create all channels possible
+# Create all channels possible [1, 8]
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=1, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps"
+    mode="Single", no_channel=1, amplitude=10, pulse_width=100, enable_low_frequency=False, name="Biceps"
 )
-
+# Uncomment the following lines to change the parameters of the channel
+"""
 channel_2 = Ch.Channel()
 channel_2.set_mode("Single")
 channel_2.set_no_channel(2)
@@ -27,7 +31,7 @@ channel_5 = Ch.Channel("Triplet", 5, 50, 100)
 channel_6 = Ch.Channel("Single", 6, 50, 100, True)
 channel_7 = Ch.Channel("Single", 7, 50, 100)
 channel_8 = Ch.Channel("Single", 8, 50, 100)
-
+"""
 # Choose which channel will be used
 list_channels.append(channel_1)
 # list_channels.append(channel_3)
@@ -36,17 +40,19 @@ list_channels.append(channel_1)
 # list_channels.append(channel_7)
 # list_channels.append(channel_8)
 
-# Create our object Stimulator
+# Create our object Stimulator to start a stimulation
 stimulator = St(
-    port="/dev/ttyUSB0",
+    port="COM3",
     show_log=True,
+    fast_mode = False #Erreur quand j'active le fast_mode
+
 )
 
 """
 Initialise the channels given.
 It is possible to modify the list of channels, the stimulation interval and the low_frequency_factor
 """
-stimulator.init_channel(stimulation_interval=200, list_channels=list_channels, low_frequency_factor=2)
+stimulator.init_channel(stimulation_interval=500, list_channels=list_channels, low_frequency_factor=2)
 
 """
 Start the stimulation.
@@ -59,7 +65,7 @@ stimulator.start_stimulation()
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,
-list_channels[0].set_amplitude(10)
+list_channels[0].set_amplitude(20)
 # list_channels[3].set_amplitude(15)
 
 # Wait a given time in seconds
@@ -84,8 +90,8 @@ stimulator.start_stimulation(stimulation_duration=2)
 """
 The method init_channel must be called to update the stimulation interval (period).
 """
-stimulator.init_channel(stimulation_interval=10, list_channels=list_channels)
-stimulator.start_stimulation(stimulation_duration=2)
+stimulator.init_channel(stimulation_interval=9, list_channels=list_channels)
+stimulator.start_stimulation(stimulation_duration=4)
 
 """
 To disconnect the computer and the Rehastim, use the disconnect method.

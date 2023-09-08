@@ -111,7 +111,8 @@ class RehastimGeneric:
             If True, get the last ack of the init packet. If False, get the last ack of the normal packet.
         Returns
         -------
-        bytes
+        last_ack : bytes
+            Last ack received.
         """
         if self.is_motomed_connected:
             if init:
@@ -507,6 +508,7 @@ class RehastimGeneric:
 
         Returns
         -------
+        last_result : float
             The torque of the motomed.
         """
         self.is_phase_result.wait()

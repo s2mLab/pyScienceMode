@@ -2,6 +2,12 @@ from enum import Enum
 
 
 class Type(Enum):
+    """
+    Enumeration representing message types and commands.
+
+    This enumeration defines constants for various message types and commands used in communication.
+
+    """
     Init = 1
     InitAck = 2
     UnknownCommand = 3
