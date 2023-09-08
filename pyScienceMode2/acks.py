@@ -39,7 +39,7 @@ def rehastim_error(error_code: int) -> str:
     Parameters
     ----------
     error_code: int
-        Code d'erreur du Rehastim
+        Error code of the Rehastim
 
     Returns
     -------
