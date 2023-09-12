@@ -153,7 +153,7 @@ class RehastimGeneric:
         packets_r = []
         while 1 : #and self.is_motomed_connected:
             packets = self._read_packet()
-            
+
             # packets_r.append(packets)
             # print(packets_r)
             tic = time.time()

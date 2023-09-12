@@ -86,3 +86,5 @@ venv.bak/
 # pycharm
 .idea
 
+
+pyScienceMode2/sciencemode.py
