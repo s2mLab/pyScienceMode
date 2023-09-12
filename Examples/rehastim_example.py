@@ -44,7 +44,7 @@ list_channels.append(channel_1)
 stimulator = St(
     port="COM3",
     show_log=True,
-    fast_mode = False #Erreur quand j'active le fast_mode
+    fast_mode = True #Erreur quand j'active le fast_mode
 
 )
 
@@ -69,13 +69,13 @@ list_channels[0].set_amplitude(20)
 # list_channels[3].set_amplitude(15)
 
 # Wait a given time in seconds
-sleep(10)
+#sleep(10)
 
 # Update the parameters of the stimulation
 stimulator.start_stimulation(upd_list_channels=list_channels)
 
 # Wait a given time in seconds
-sleep(5)
+#sleep(5)
 
 """
 Stop the stimulation. But does not disconnect the Pc and the Rehastim.

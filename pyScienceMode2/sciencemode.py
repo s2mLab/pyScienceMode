@@ -7,7 +7,7 @@ import serial
 import time
 import threading
 from pyScienceMode2.utils import *
-from .acks import motomed_error_ack
+#from .acks import motomed_error_ack
 import numpy as np
 
 # Notes :
@@ -313,11 +313,15 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 while next_stop_byte < 8:
+                    """
                     try:
-                        next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
+                        next_stop_byte += packet_tmp[next_stop_byte + 1:].index(self.STOP_BYTE) + 1
                     except:
                         packet_list = []  # quick fix
                         break
+                    """
+                    next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
+
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
                 packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
