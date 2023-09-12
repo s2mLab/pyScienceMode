@@ -2,7 +2,7 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.9(eigen)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="stage1" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="biosiglive" />
     <orderEntry type="module" module-name="code_paper_mhe" />
@@ -12,14 +12,5 @@
     <orderEntry type="module" module-name="bioviz" />
     <orderEntry type="module" module-name="cycling" />
     <orderEntry type="module" module-name="muscle_moment_arm" />
-  </component>
-  <component name="PackageRequirementsSettings">
-    <option name="requirementsPath" value="" />
-  </component>
-  <component name="PyDocumentationSettings">
-    <option name="renderExternalDocumentation" value="true" />
-  </component>
-  <component name="ReSTService">
-    <option name="TXT_IS_RST" value="true" />
   </component>
 </module>

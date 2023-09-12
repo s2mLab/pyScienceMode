@@ -97,7 +97,7 @@ class RehastimGeneric:
         self.__motomed_thread_started = False
         self.__watchdog_thread_started = False
 
-        if self.is_motomed_connected and not self.__motomed_thread_started:
+        if self.is_motomed_connected and not self.__motomed_thread_started: # TODO MAKE THREAD COMPARATION
             self._start_motomed_thread()
         self.Type = Type
 
@@ -132,6 +132,8 @@ class RehastimGeneric:
                     break
             if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                 print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
+            for p in packet:
+                print(self.Type(p[6]).name)
             return packet[-1]
 
     def _start_motomed_thread(self):
@@ -147,13 +149,21 @@ class RehastimGeneric:
         Catch the motomed data.
         """
         time_to_sleep = 0.005
-        while 1 and self.is_motomed_connected:
+        packets_s =[]
+        packets_r = []
+        while 1 : #and self.is_motomed_connected:
             packets = self._read_packet()
+            
+            # packets_r.append(packets)
+            # print(packets_r)
             tic = time.time()
             if packets:
                 for packet in packets:
                     if len(packet) > 7:
+                        #with self.lock:
+
                         if self.show_log and packet[6] in [t.value for t in self.Type]:
+                            #print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
                             if self.Type(packet[6]).name == "MotomedError":
                                 ack = motomed_error_ack(signed_int(packet[7:8]))
                                 if signed_int(packet[7:8]) in [-4, -6]:
@@ -165,6 +175,11 @@ class RehastimGeneric:
                             self._actual_values_ack(packet)
                         elif packet[6] == Type["PhaseResult"].value:
                             return self._phase_result_ack(packet)
+                        #elif packet[6] == Type["InitChannelListMode"].value:
+                               #self.get_last_ack(init=True)
+                        #
+
+
                         elif packet[6] == 90:
                             pass
                         elif packet[6] == self.Type["MotomedCommandDone"].value:
@@ -181,7 +196,7 @@ class RehastimGeneric:
 
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
-
+            #return packets_r
     def _actual_values_ack(self, packet: bytes):
         """
         Ack of the actual values packet.
@@ -254,6 +269,7 @@ class RehastimGeneric:
         self.port.write(packet)
         if cmd == "InitAck":
             self.reha_connected = True
+            #print(self.reha_connected)
         # if self.is_motomed_connected and cmd != "Watchdog":
         #     self.motomed_done.wait()
         self.lock.release()
@@ -298,7 +314,7 @@ class RehastimGeneric:
             List of command sent by rehastim.
         """
         packet = bytes()
-        while True:
+        while True: # ?
             packet_tmp = self.port.read(self.port.inWaiting())
             if len(packet_tmp) != 0:
                 packet += packet_tmp
