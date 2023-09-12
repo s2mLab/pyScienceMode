@@ -1,7 +1,7 @@
 # pyScienceMode2
-Python interface to control the Rehastim2.
+`pyScienceMode2` is  Python interface to control the Rehastim2. Please have a look to the documentation for more information about [pyScienceMode2]
 
-## Installation
+## How to install
 To install the program run the following command in the main directory 
 
 ```bash
@@ -17,4 +17,11 @@ pip install crccheck colorama pyserial typing
 ```
 
 ## How to use
-An example.py file will guide you on how to use this library.
+A set of example is provided in the `examples` folder. Please take a look at the [documentation example page]"nom de la page"
+
+## How to contribute
+You are welcome to contribute to this project by following the steps describes in the 
+[how to contribute] "nom de la page" page.
+
+## How to cite
+If you are using the biosig live library please cite us by following the guidelines available [here]"nom de la page".
