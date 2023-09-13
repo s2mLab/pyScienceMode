@@ -21,7 +21,7 @@ def init_rehastim():
     list_channels.append(channel_4)
 
     # Create our object Stimulator
-    stimulator = St(port="/dev/ttyUSB0", with_motomed=True, show_log=True)
+    stimulator = St(port="/dev/ttyUSB0", show_log=True)#with_motomed=True,
     stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
 
     return stimulator, list_channels

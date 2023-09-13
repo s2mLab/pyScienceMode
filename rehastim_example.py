@@ -42,7 +42,7 @@ list_channels.append(channel_1)
 stimulator = St(
     port="COM3",
     show_log=True,
-    fast_mode=False #plus besoin?
+    #fast_mode=False #plus besoin?
 )
 
 """
