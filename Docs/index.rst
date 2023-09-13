@@ -13,8 +13,9 @@ Welcome to pyScienceMode2's documentation!
    about
    modules
    install
-
-
+   example
+   contributing
+   cite
 
 Indices and tables
 ==================
