@@ -11,6 +11,8 @@ from pyScienceMode2.sciencemode import RehastimGeneric
 from pyScienceMode2.motomed_interface import _Motomed
 
 
+
+
 class Stimulator(RehastimGeneric):
     """
     Class used for the communication with Rehastim.
@@ -60,7 +62,8 @@ class Stimulator(RehastimGeneric):
         # Connect to rehastim
         packet = None
         while packet is None:
-            packet = self._get_last_ack(init=True)
+            packet = self._get_last_ack()
+            #packet = self._get_last_ack(init=True)
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 
     def set_stimulation_signal(self, list_channels: list):
@@ -316,13 +319,13 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StartChannelListMode")
         time_start_stim = time.time()
 
-        if self.fast_mode is False:
-            start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-            if start_channel_list_mode_ack != "Stimulation started":
-                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
-            self.stimulation_started = True
-        else:
-            self.stimulation_started = True
+        #if self.fast_mode is False:
+        start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        if start_channel_list_mode_ack != "Stimulation started":
+            raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+        self.stimulation_started = True
+        # else:
+        #     self.stimulation_started = True
 
         if stimulation_duration is not None:
             if stimulation_duration < time.time() - time_start_stim:
@@ -338,14 +341,14 @@ class Stimulator(RehastimGeneric):
         self.amplitude = [0] * len(self.list_channels)
         self._send_packet("StartChannelListMode")
 
-        if self.fast_mode is False:
-            start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-            if start_channel_list_mode_ack != "Stimulation started":
-                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
-            self.stimulation_started = True
-        else:
-            self.port.read(self.port.inWaiting())
-            self.stimulation_started = True
+        # if self.fast_mode is False:
+        start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        if start_channel_list_mode_ack != "Stimulation started":
+             raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+        self.stimulation_started = True
+        # else:
+        #     self.port.read(self.port.inWaiting())
+        #     self.stimulation_started = True
 
     def _stop_channel_list(self):
         """

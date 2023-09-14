@@ -58,8 +58,8 @@ It is possible to :
 - Update the parameters of the channel by giving a new list of channels. The channel given must have been 
   initialised first.
 """
-#stimulator.start_stimulation()
-print(1)
+stimulator.start_stimulation()
+print(12)
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,
@@ -91,7 +91,7 @@ Stop the stimulation. But does not disconnect the Pc and the Rehastim.
 # The method init_channel must be called to update the stimulation interval (period).
 # """
 stimulator.init_channel(stimulation_interval=10, list_channels=list_channels) # Cela stop le channel avant
-print(4)
+print(2)
 stimulator.start_stimulation(stimulation_duration=2)
 
 """
