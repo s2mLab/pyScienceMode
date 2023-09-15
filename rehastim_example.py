@@ -42,7 +42,6 @@ list_channels.append(channel_1)
 stimulator = St(
     port="COM3",
     show_log=True,
-    #fast_mode=False #plus besoin?
 )
 
 """
@@ -59,7 +58,7 @@ It is possible to :
   initialised first.
 """
 stimulator.start_stimulation()
-print(12)
+#print(12)
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,

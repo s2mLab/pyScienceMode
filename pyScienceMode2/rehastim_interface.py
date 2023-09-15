@@ -60,6 +60,7 @@ class Stimulator(RehastimGeneric):
         # if fast_mode and with_motomed: # A enlever?
         #     raise RuntimeError("Fast mode while using the MOTOmed is not yet implemented ")# A enlever?
         # Connect to rehastim
+
         packet = None
         while packet is None:
             packet = self._get_last_ack()
@@ -89,7 +90,7 @@ class Stimulator(RehastimGeneric):
             self.mode.append(list_channels[i].get_mode())
             self.given_channels.append(list_channels[i].get_no_channel())
 
-    def _send_packet(self, cmd: str) -> str: # A traiter plus tard dans le thread pour avoir les acks
+    def _send_packet(self, cmd: str) -> str:
         """
         Calls the methode that construct the packet according to the command.
 
@@ -130,6 +131,8 @@ class Stimulator(RehastimGeneric):
         -------
         A string which is the message corresponding to the processing of the packet.
         """
+
+        print(packet[6])
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == self.Type["GetStimulationModeAck"].value:
@@ -291,7 +294,7 @@ class Stimulator(RehastimGeneric):
         self.electrode_number_low_frequency = calc_electrode_number(self.list_channels, enable_low_frequency=True)
 
         self.set_stimulation_signal(self.list_channels)
-        self._send_packet("InitChannelListMode") #Aller dans le thread
+        self._send_packet("InitChannelListMode")
         init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
         if init_channel_list_mode_ack != "Stimulation initialized":
             raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
@@ -321,6 +324,7 @@ class Stimulator(RehastimGeneric):
 
         #if self.fast_mode is False:
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+
         if start_channel_list_mode_ack != "Stimulation started":
             raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
