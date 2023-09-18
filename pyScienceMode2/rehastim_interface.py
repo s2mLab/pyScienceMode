@@ -273,10 +273,10 @@ class Stimulator(RehastimGeneric):
         list_channels: list[Channel]
             List containing the channels and their parameters.
         """
-        time.sleep(1)
+        #time.sleep(1)
         if self.stimulation_started:
             self._stop_channel_list()
-        time.sleep(1)
+        #time.sleep(1)
 
         check_stimulation_interval(stimulation_interval)
         check_unique_channel(list_channels)
@@ -351,8 +351,9 @@ class Stimulator(RehastimGeneric):
              raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
         # else:
-        #     self.port.read(self.port.inWaiting())
-        #     self.stimulation_started = True
+        #     print(1)
+              # self.port.read(self.port.inWaiting())
+            # self.stimulation_started = True
 
     def _stop_channel_list(self):
         """
