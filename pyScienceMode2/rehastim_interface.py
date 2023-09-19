@@ -53,6 +53,7 @@ class Stimulator(RehastimGeneric):
         self.muscle = []
         self.given_channels = []
         self.stimulation_started = None
+
         super().__init__(port, show_log) #with_motomed)
         # if with_motomed:
         #     self.motomed = _Motomed(self)

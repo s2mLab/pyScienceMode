@@ -97,7 +97,7 @@ stimulator.start_stimulation(stimulation_duration=2)
 To disconnect the computer and the Rehastim, use the disconnect method.
 """
 
-stimulator.disconnect() # Un problème vient d'ici. Quand on se deconnecte qu'à la fin tout va bien sinon problème.
+#stimulator.disconnect() # Un problème vient d'ici. Quand on se deconnecte qu'à la fin tout va bien sinon problème.
 """
 After a disconnection, init_channel must be called.  
 """
@@ -111,3 +111,4 @@ stimulator.disconnect()
 close_port method closes the serial port.
 """
 stimulator.close_port()
+print("Fin du programme principal")
