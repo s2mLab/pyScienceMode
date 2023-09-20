@@ -92,8 +92,10 @@ class RehastimGeneric:
         self.lock = threading.Lock()
         self.motomed_done = threading.Event()
         self.is_phase_result = threading.Event()
-        self.command_sent = threading.Event() # Not used
+        self.command_sent = threading.Event() # Used to know if the command has been sent
         self.event_ack = threading.Event()
+        self.event_send_updated = threading.Event()
+        self.event_ack_updated = threading.Event()
         self.__comparison_thread_start = False
         self.__watchdog_thread_started = False
         self.info_send = [] #Command sent to the rehastim
@@ -137,8 +139,8 @@ class RehastimGeneric:
         if packet :
             if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                  print(f"Ack received by rehastim: {self.Type(packet[-1][6]).value}")
-                 with self.lock_1:
-                    self.info_received.append(self.Type(packet[-1][6]).value)
+                 # with self.lock_1:
+                 self.info_received.append(self.Type(packet[-1][6]).value)
                  self.return_list_ack()
                  print(f"LISTE RECUE {self.return_list_ack()}")
                  self.verif_last_element(packet)
@@ -146,15 +148,17 @@ class RehastimGeneric:
         return packet[-1]
 
     def return_list_ack(self)-> list:
-        with self.lock_1:
-            if len(self.info_received) > 3:
-                self.info_received.pop(0)
-            return self.info_received
+        # with self.lock_1:
+        if len(self.info_received) > 3:
+            self.info_received.pop(0)
+        self.event_ack_updated.set()
+        return self.info_received
     def return_list_send(self)-> list:
-        with self.lock_1:
-            if len(self.info_send) > 3:
-                self.info_send.pop(0)
-            return self.info_send
+        # with self.lock_1:
+        if len(self.info_send) > 3:
+            self.info_send.pop(0)
+        self.event_send_updated.set()
+        return self.info_send
     def verif_last_element(self,packet):
         if self.info_received :
             #print(self.info_received[-1],packet[-1][6])
@@ -183,22 +187,26 @@ class RehastimGeneric:
         #     start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
 
         print("Thread started")
-        time_to_sleep = 0.005
+        # print("oui\n", self.return_list_ack(), self.return_list_send())
+        time_to_sleep = 0.5
         while 1:
-            # with self.lock_1, self.lock_1:
             list_send = self.return_list_send()
             list_ack = self.return_list_ack()
             tic = time.time()
             if len(list_send) == 0 and len(list_ack) == 0:
                 pass
-            while list_send and list_ack:
+            while list_send and list_ack :
                 for i in range(1, min(len(list_send), len(list_ack))):
-                    #print(self.return_list_send()[i], self.return_list_ack()[i])
+                    self.event_ack_updated.wait()
+                    self.event_send_updated.wait()
+                    print("oui\n", self.return_list_send()[i], self.return_list_ack()[i])
                     if list_send[i] + 1 != list_ack[i]:
                         raise RuntimeError(f"Error not in same order at index {i}: list_send[{i}]={list_send[i]} doesn't match list_ack[{i}]={list_ack[i]}")
+                    self.event_send_updated.clear()
+                    self.event_ack_updated.clear()
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
-
+            # time.sleep()
     def _actual_values_ack(self, packet: bytes):
         """
         Ack of the actual values packet.
