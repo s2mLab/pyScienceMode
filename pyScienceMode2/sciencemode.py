@@ -138,25 +138,21 @@ class RehastimGeneric:
                 break
         if packet :
             if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
-                 print(f"Ack received by rehastim: {self.Type(packet[-1][6]).value}")
+                 # print(f"Ack received by rehastim: {self.Type(packet[-1][6]).value}")
                  # with self.lock_1:
                  self.info_received.append(self.Type(packet[-1][6]).value)
                  self.return_list_ack()
-                 print(f"LISTE RECUE {self.return_list_ack()}")
+                 # print(f"LISTE RECUE {self.return_list_ack()}")
                  self.verif_last_element(packet)
 
         return packet[-1]
 
     def return_list_ack(self)-> list:
-        # with self.lock_1:
-        if len(self.info_received) > 3:
-            self.info_received.pop(0)
+
         self.event_ack_updated.set()
         return self.info_received
     def return_list_send(self)-> list:
         # with self.lock_1:
-        if len(self.info_send) > 3:
-            self.info_send.pop(0)
         self.event_send_updated.set()
         return self.info_send
     def verif_last_element(self,packet):
@@ -187,23 +183,33 @@ class RehastimGeneric:
         #     start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
 
         print("Thread started")
-        # print("oui\n", self.return_list_ack(), self.return_list_send())
-        time_to_sleep = 0.5
+        time_to_sleep = 0.005
         while 1:
             list_send = self.return_list_send()
             list_ack = self.return_list_ack()
             tic = time.time()
-            if len(list_send) == 0 and len(list_ack) == 0:
-                pass
+
             while list_send and list_ack :
-                for i in range(1, min(len(list_send), len(list_ack))):
+                # for i in range(max(len(list_send), len(list_ack))):
+                for i in reversed(range(min(len(list_send), len(list_ack)))):
                     self.event_ack_updated.wait()
                     self.event_send_updated.wait()
-                    print("oui\n", self.return_list_send()[i], self.return_list_ack()[i])
-                    if list_send[i] + 1 != list_ack[i]:
+                    # print(list_send[i], list_ack[i])
+                    with self.lock:
+                        if list_send[i]+1 == list_ack[i]:
+                            del list_ack[i]
+                            del list_send[i]
+
+                            print("ok")
+                        elif i>0 :
+                            raise RuntimeError(f"Error not in same order at index {i}: list_send[{i}]={list_send[i]} doesn't match list_ack[{i}]={list_ack[i]}")
+
+                    if (list_send[i] + 1 != list_ack[i]) and i>0 :
                         raise RuntimeError(f"Error not in same order at index {i}: list_send[{i}]={list_send[i]} doesn't match list_ack[{i}]={list_ack[i]}")
                     self.event_send_updated.clear()
                     self.event_ack_updated.clear()
+                print("Liste info envoyé :", list_send)
+                print("Liste info reçu :", list_ack)
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
             # time.sleep()
@@ -273,16 +279,15 @@ class RehastimGeneric:
 
         if self.show_log:
             if self.Type(packet[6]).name != "Watchdog":
-                print(f"Command sent to Rehastim : {self.Type(packet[6]).value}")
-                with self.lock_1:
-                    self.info_send.append((self.Type(packet[6]).value))
-                #print(f"List of command sent : {self.info_send}")
-
-        if time.time() - self.time_last_cmd > 1:
-            self.port.write(self._packet_watchdog())
-        self.port.write(packet)
-        if cmd == "InitAck":
-            self.reha_connected = True
+                # print(f"Command sent to Rehastim : {self.Type(packet[6]).value}")
+                self.info_send.append((self.Type(packet[6]).value))
+            #print(f"List of command sent : {self.info_send}")
+        with self.lock:
+            if time.time() - self.time_last_cmd > 1:
+                self.port.write(self._packet_watchdog())
+            self.port.write(packet)
+            if cmd == "InitAck":
+                self.reha_connected = True
             #print(self.reha_connected)
         # if self.is_motomed_connected and cmd != "Watchdog":
         #     self.motomed_done.wait()
@@ -293,7 +298,7 @@ class RehastimGeneric:
         #self.packet_send_history = packet
         self.packet_send_history.append(packet)
         self.return_list_send()
-        print(f"LISTE ENVOYEE {self.return_list_send()}")
+        # print(f"LISTE ENVOYEE {self.return_list_send()}")
 
         self.packet_count = (self.packet_count + 1) % 256
         #self.last_info_sent = packet

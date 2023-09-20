@@ -133,7 +133,7 @@ class Stimulator(RehastimGeneric):
         A string which is the message corresponding to the processing of the packet.
         """
 
-        print(packet[6])
+        #print(packet[6])
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == self.Type["GetStimulationModeAck"].value:
@@ -362,7 +362,7 @@ class Stimulator(RehastimGeneric):
         """
         self._send_packet("StopChannelListMode")
         stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        print(stop_channel_list_mode_ack)
+        # print(stop_channel_list_mode_ack)
         if stop_channel_list_mode_ack != " Stimulation stopped":
             raise RuntimeError("Error : StopChannelListMode " + stop_channel_list_mode_ack)
         else:
