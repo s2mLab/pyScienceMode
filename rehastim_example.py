@@ -7,13 +7,14 @@ from pyScienceMode2.rehastim_interface import Stimulator as St
 from pyScienceMode2 import Channel as Ch
 
 from time import sleep
+start_time = time.time()
 
 # Create a list of channels
 list_channels = []
 
 # Create all channels possible
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=1, amplitude=20, pulse_width=100, enable_low_frequency=False, name="Biceps"
+    mode="Single", no_channel=1, amplitude=8, pulse_width=100, enable_low_frequency=False, name="Biceps"
 )
 """
 channel_2 = Ch.Channel()
@@ -89,19 +90,19 @@ stimulator.stop_stimulation()
 # """
 # The method init_channel must be called to update the stimulation interval (period).
 # """
-stimulator.init_channel(stimulation_interval=10, list_channels=list_channels) # Cela stop le channel avant
-print(2)
+stimulator.init_channel(stimulation_interval=30, list_channels=list_channels) # Cela stop le channel avant
+
 stimulator.start_stimulation(stimulation_duration=2)
 
 """
 To disconnect the computer and the Rehastim, use the disconnect method.
 """
 
-#stimulator.disconnect() # Un problème vient d'ici. Quand on se deconnecte qu'à la fin tout va bien sinon problème.
+# stimulator.disconnect() # Un problème vient d'ici. Quand on se deconnecte qu'à la fin tout va bien sinon problème.
 """
 After a disconnection, init_channel must be called.  
 """
-stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
+stimulator.init_channel(stimulation_interval=33, list_channels=list_channels)
 stimulator.start_stimulation(5, list_channels)
 stimulator.stop_stimulation()
 # print(15)
@@ -111,4 +112,7 @@ stimulator.disconnect()
 close_port method closes the serial port.
 """
 stimulator.close_port()
-print("Fin du programme principal")
+end_time = time.time()
+time_duration = end_time - start_time
+print("temps pris par le programme : ", time_duration)
+print("End of the program")

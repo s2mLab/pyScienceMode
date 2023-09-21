@@ -278,6 +278,7 @@ class Stimulator(RehastimGeneric):
         if self.stimulation_started:
             self._stop_channel_list()
         #time.sleep(1)
+        self.current_operation = "Init"
 
         check_stimulation_interval(stimulation_interval)
         check_unique_channel(list_channels)
@@ -323,7 +324,6 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StartChannelListMode")
         time_start_stim = time.time()
 
-        #if self.fast_mode is False:
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
 
         if start_channel_list_mode_ack != "Stimulation started":
