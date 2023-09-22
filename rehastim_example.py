@@ -14,7 +14,7 @@ list_channels = []
 
 # Create all channels possible
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=1, amplitude=8, pulse_width=100, enable_low_frequency=False, name="Biceps"
+    mode="Single", no_channel=1, amplitude=10, pulse_width=100, enable_low_frequency=False, name="Biceps"
 )
 """
 channel_2 = Ch.Channel()
@@ -43,6 +43,7 @@ list_channels.append(channel_1)
 stimulator = St(
     port="COM3",
     show_log=True,
+
 )
 
 """
@@ -98,16 +99,27 @@ stimulator.start_stimulation(stimulation_duration=2)
 To disconnect the computer and the Rehastim, use the disconnect method.
 """
 
-# stimulator.disconnect() # Un problème vient d'ici. Quand on se deconnecte qu'à la fin tout va bien sinon problème.
+stimulator.disconnect()
 """
 After a disconnection, init_channel must be called.  
 """
 stimulator.init_channel(stimulation_interval=33, list_channels=list_channels)
-stimulator.start_stimulation(5, list_channels)
+print(13)
+stimulator.start_stimulation(2, list_channels)
+print(14)
 stimulator.stop_stimulation()
-# print(15)
-stimulator.disconnect()
+list_channels[0].set_amplitude(15)
 
+stimulator.init_channel(stimulation_interval=100, list_channels=list_channels)
+stimulator.start_stimulation(1, list_channels)
+
+print(15)
+"""
+You need to disconnect the Rehastim to close the serial port.
+"""
+
+stimulator.disconnect()
+print(16)
 """
 close_port method closes the serial port.
 """

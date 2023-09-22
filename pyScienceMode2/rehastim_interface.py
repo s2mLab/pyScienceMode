@@ -275,8 +275,10 @@ class Stimulator(RehastimGeneric):
             List containing the channels and their parameters.
         """
         #time.sleep(1)
+
         if self.stimulation_started:
             self._stop_channel_list()
+
         #time.sleep(1)
         self.current_operation = "Init"
 
@@ -294,6 +296,11 @@ class Stimulator(RehastimGeneric):
         # Find electrode_number (according to Science_Mode2_Description_Protocol_20121212 p17)
         self.electrode_number = calc_electrode_number(self.list_channels)
         self.electrode_number_low_frequency = calc_electrode_number(self.list_channels, enable_low_frequency=True)
+        #
+
+        if self.stimulation_started == False:
+            self._start_thread_comparison()
+            self._start_watchdog()
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet("InitChannelListMode")
@@ -325,9 +332,9 @@ class Stimulator(RehastimGeneric):
         time_start_stim = time.time()
 
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-
         if start_channel_list_mode_ack != "Stimulation started":
-            raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+
+                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
         # else:
         #     self.stimulation_started = True
@@ -349,7 +356,10 @@ class Stimulator(RehastimGeneric):
         # if self.fast_mode is False:
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
         if start_channel_list_mode_ack != "Stimulation started":
-             raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+            # if start_channel_list_mode_ack == "InitAck":
+            #     return "InitAck"
+            # else:
+                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
         # else:
         #     print(1)
@@ -368,6 +378,7 @@ class Stimulator(RehastimGeneric):
         else:
             self.packet_count = 0
             self.stimulation_started = False
+
 
     def get_motomed_angle(self) -> float:
         """
