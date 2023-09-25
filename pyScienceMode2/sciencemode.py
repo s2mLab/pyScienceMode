@@ -226,7 +226,6 @@ class RehastimGeneric:
                                         print(f"Ack received by rehastim: {ack}")
                                 elif self.Type(packet[6]).name != "ActualValues":
                                     print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
-                            # if packet[6] ==self.Type["Stimulation error"].value:
 
                             if packet[6] == self.Type["ActualValues"].value:
                                 self._actual_values_ack(packet)

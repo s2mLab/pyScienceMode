@@ -11,19 +11,17 @@ from pyScienceMode2.sciencemode import RehastimGeneric
 from pyScienceMode2.motomed_interface import _Motomed
 
 
-
-
 class Stimulator(RehastimGeneric):
     """
     Class used for the communication with Rehastim.
     """
 
     def __init__(
-        self,
-        port: str,
-        show_log: bool = False,
-        #with_motomed: bool = False,
-        #fast_mode: bool = False # A enlever?
+            self,
+            port: str,
+            show_log: bool = False,
+            # with_motomed: bool = False,
+            # fast_mode: bool = False # A enlever?
     ):
         """
         Creates an object stimulator.
@@ -53,8 +51,9 @@ class Stimulator(RehastimGeneric):
         self.muscle = []
         self.given_channels = []
         self.stimulation_started = None
+        self.current_operation = None
 
-        super().__init__(port, show_log) #with_motomed)
+        super().__init__(port, show_log)  # with_motomed)
         # if with_motomed:
         #     self.motomed = _Motomed(self)
         # self.fast_mode = fast_mode
@@ -65,7 +64,7 @@ class Stimulator(RehastimGeneric):
         packet = None
         while packet is None:
             packet = self._get_last_ack()
-            #packet = self._get_last_ack(init=True)
+            # packet = self._get_last_ack(init=True)
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 
     def set_stimulation_signal(self, list_channels: list):
@@ -114,12 +113,12 @@ class Stimulator(RehastimGeneric):
             packet = self._packet_start_stimulation()
         elif cmd == "StopChannelListMode":
             packet = packet_construction(self.packet_count, "StopChannelListMode")
-        #self.motomed_done.set()
+        # self.motomed_done.set()
         init_ack = self.send_generic_packet(cmd, packet)
         if init_ack:
             return init_ack
 
-    def _calling_ack(self, packet) -> str: # A traiter plus tard dans le thread pour avoir les acks
+    def _calling_ack(self, packet) -> str:  # A traiter plus tard dans le thread pour avoir les acks
         """
         Processing ack from rehastim
 
@@ -133,7 +132,7 @@ class Stimulator(RehastimGeneric):
         A string which is the message corresponding to the processing of the packet.
         """
 
-        #print(packet[6])
+        # print(packet[6])
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == self.Type["GetStimulationModeAck"].value:
@@ -258,11 +257,11 @@ class Stimulator(RehastimGeneric):
         return msb, lsb
 
     def init_channel(
-        self,
-        stimulation_interval: int,
-        list_channels: list,
-        inter_pulse_interval: int = 2,
-        low_frequency_factor: int = 0,
+            self,
+            stimulation_interval: int,
+            list_channels: list,
+            inter_pulse_interval: int = 2,
+            low_frequency_factor: int = 0,
     ):
         """
         Initialize the requested channel.
@@ -274,12 +273,12 @@ class Stimulator(RehastimGeneric):
         list_channels: list[Channel]
             List containing the channels and their parameters.
         """
-        #time.sleep(1)
+        # time.sleep(1)
 
         if self.stimulation_started:
             self._stop_channel_list()
 
-        #time.sleep(1)
+        # time.sleep(1)
         self.current_operation = "Init"
 
         check_stimulation_interval(stimulation_interval)
@@ -298,15 +297,16 @@ class Stimulator(RehastimGeneric):
         self.electrode_number_low_frequency = calc_electrode_number(self.list_channels, enable_low_frequency=True)
         #
 
-        if self.stimulation_started == False:
-            self._start_thread_comparison()
-            self._start_watchdog()
+        # if self.stimulation_started == False:
+        #     self._start_thread_comparison()
+        #     self._start_watchdog()
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet("InitChannelListMode")
         init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if init_channel_list_mode_ack != "Stimulation initialized":
-            raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
+        #
+        # if init_channel_list_mode_ack != "Stimulation initialized":
+        #     raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
 
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
         """
@@ -320,6 +320,7 @@ class Stimulator(RehastimGeneric):
         upd_list_channels: list[Channel]
             List of the channels that will be updated
         """
+        self.current_operation = "Start"
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
 
@@ -332,9 +333,8 @@ class Stimulator(RehastimGeneric):
         time_start_stim = time.time()
 
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if start_channel_list_mode_ack != "Stimulation started":
-
-                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+        # if start_channel_list_mode_ack != "Stimulation started":
+        #     raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
         # else:
         #     self.stimulation_started = True
@@ -350,35 +350,36 @@ class Stimulator(RehastimGeneric):
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
         """
+        self.current_operation = "Start_channel"
         self.amplitude = [0] * len(self.list_channels)
         self._send_packet("StartChannelListMode")
 
         # if self.fast_mode is False:
         start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if start_channel_list_mode_ack != "Stimulation started":
+        # if start_channel_list_mode_ack != "Stimulation started":
             # if start_channel_list_mode_ack == "InitAck":
             #     return "InitAck"
             # else:
-                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+            # raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
         # else:
         #     print(1)
-              # self.port.read(self.port.inWaiting())
-            # self.stimulation_started = True
+        # self.port.read(self.port.inWaiting())
+        # self.stimulation_started = True
 
     def _stop_channel_list(self):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
+        self.current_operation = "Stop_channel"
+
         self._send_packet("StopChannelListMode")
         stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        # print(stop_channel_list_mode_ack)
-        if stop_channel_list_mode_ack != " Stimulation stopped":
-            raise RuntimeError("Error : StopChannelListMode " + stop_channel_list_mode_ack)
-        else:
-            self.packet_count = 0
-            self.stimulation_started = False
-
+        # if stop_channel_list_mode_ack != " Stimulation stopped":
+        #     raise RuntimeError("Error : StopChannelListMode " + stop_channel_list_mode_ack)
+        # else:
+        self.packet_count = 0
+        self.stimulation_started = False
 
     def get_motomed_angle(self) -> float:
         """
