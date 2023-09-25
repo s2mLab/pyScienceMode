@@ -1,38 +1,20 @@
 # Import Stimulator class
-import time
-
 from pyScienceMode2.rehastim_interface import Stimulator as St
 
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
 
-from time import sleep
-start_time = time.time()
+from time import time,sleep
 
-# Create a list of channels
 list_channels = []
 
-# Create all channels possible
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=1, amplitude=10, pulse_width=100, enable_low_frequency=False, name="Biceps"
+    mode="Single", no_channel=1, amplitude=10, pulse_width=300, enable_low_frequency=False, name="Biceps"
 )
-"""
-channel_2 = Ch.Channel()
-channel_2.set_mode("Single")
-channel_2.set_no_channel(2)
-channel_2.set_amplitude(2)
-channel_2.set_pulse_width(100)
-channel_2.set_name("Triceps")
+#channel_2 = Ch.Channel( mode="Single", no_channel=2, amplitude=10, pulse_width=300, name="Biceps_recorded")
 
-channel_3 = Ch.Channel("Doublet", 3, 50, 100)
-channel_4 = Ch.Channel("Single", 4, 50, 100)
-channel_5 = Ch.Channel("Triplet", 5, 50, 100)
-channel_6 = Ch.Channel("Single", 6, 50, 100, True)
-channel_7 = Ch.Channel("Single", 7, 50, 100)
-channel_8 = Ch.Channel("Single", 8, 50, 100)
-"""
-# Choose which channel will be used
 list_channels.append(channel_1)
+#list_channels.append(channel_2)
 # list_channels.append(channel_3)
 # list_channels.append(channel_5)
 # list_channels.append(channel_6)
@@ -43,88 +25,17 @@ list_channels.append(channel_1)
 stimulator = St(
     port="COM3",
     show_log=True,
-
 )
 
-"""
-Initialise the channels given.
-It is possible to modify the list of channels, the stimulation interval and the low_frequency_factor
-"""
-stimulator.init_channel(stimulation_interval=200, list_channels=list_channels, low_frequency_factor=2)
+# stimulator.init_channel(stimulation_interval=33, list_channels=list_channels, low_frequency_factor=2)
+end_time = time() + 60 * 5
 
-"""
-Start the stimulation.
-It is possible to :
-- Give a time after which the stimulation will be stopped but not disconnected.
-- Update the parameters of the channel by giving a new list of channels. The channel given must have been 
-  initialised first.
-"""
-stimulator.start_stimulation()
-#print(12)
-# stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
+while time() < end_time:
+    stimulator.init_channel(stimulation_interval=33, list_channels=list_channels, low_frequency_factor=2)
+    stimulator.start_stimulation(stimulation_duration=1)
+    sleep(1)
 
-# Modify some parameters,
-#list_channels[0].set_amplitude(10)
-# list_channels[3].set_amplitude(15)
 
-# Wait a given time in seconds
-#sleep(10)
-
-# Update the parameters of the stimulation
-#stimulator.start_stimulation(upd_list_channels=list_channels)
-
-# Wait a given time in seconds
-sleep(2)
-
-"""
-Stop the stimulation. But does not disconnect the Pc and the Rehastim.
-"""
 stimulator.stop_stimulation()
-# #stimulator.init_channel(stimulation_interval=10, list_channels=list_channels)#Cela envoie au reha un StartChannelListMode
-# print(2)
-# """
-# Restart a stimulation with the same parameter for 2 seconds.
-# """
-# stimulator.start_stimulation(stimulation_duration=2)
-#
-# print(3)
-# """
-# The method init_channel must be called to update the stimulation interval (period).
-# """
-stimulator.init_channel(stimulation_interval=30, list_channels=list_channels) # Cela stop le channel avant
-
-stimulator.start_stimulation(stimulation_duration=2)
-
-"""
-To disconnect the computer and the Rehastim, use the disconnect method.
-"""
-
 stimulator.disconnect()
-"""
-After a disconnection, init_channel must be called.  
-"""
-stimulator.init_channel(stimulation_interval=33, list_channels=list_channels)
-print(13)
-stimulator.start_stimulation(2, list_channels)
-print(14)
-stimulator.stop_stimulation()
-list_channels[0].set_amplitude(15)
-
-stimulator.init_channel(stimulation_interval=100, list_channels=list_channels)
-stimulator.start_stimulation(1, list_channels)
-
-print(15)
-"""
-You need to disconnect the Rehastim to close the serial port.
-"""
-
-stimulator.disconnect()
-print(16)
-"""
-close_port method closes the serial port.
-"""
 stimulator.close_port()
-end_time = time.time()
-time_duration = end_time - start_time
-print("temps pris par le programme : ", time_duration)
-print("End of the program")
