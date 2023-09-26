@@ -303,8 +303,9 @@ class Stimulator(RehastimGeneric):
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet("InitChannelListMode")
-        init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        #
+        # init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        init_channel_list_mode_ack = self._get_last_ack()
+        # #
         # if init_channel_list_mode_ack != "Stimulation initialized":
         #     raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
 
@@ -332,7 +333,8 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StartChannelListMode")
         time_start_stim = time.time()
 
-        start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        # start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        start_channel_list_mode_ack = self._get_last_ack()
         # if start_channel_list_mode_ack != "Stimulation started":
         #     raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
@@ -355,12 +357,13 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StartChannelListMode")
 
         # if self.fast_mode is False:
-        start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        # start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        start_channel_list_mode_ack = self._get_last_ack()
         # if start_channel_list_mode_ack != "Stimulation started":
-            # if start_channel_list_mode_ack == "InitAck":
-            #     return "InitAck"
-            # else:
-            # raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
+        #     if start_channel_list_mode_ack == "InitAck":
+        #         return "InitAck"
+        #     else:
+        #         raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
         self.stimulation_started = True
         # else:
         #     print(1)
@@ -371,10 +374,11 @@ class Stimulator(RehastimGeneric):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
-        self.current_operation = "Stop_channel"
+
 
         self._send_packet("StopChannelListMode")
-        stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        # stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
+        stop_channel_list_mode_ack = self._get_last_ack()
         # if stop_channel_list_mode_ack != " Stimulation stopped":
         #     raise RuntimeError("Error : StopChannelListMode " + stop_channel_list_mode_ack)
         # else:
