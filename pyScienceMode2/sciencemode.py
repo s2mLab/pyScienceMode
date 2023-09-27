@@ -290,42 +290,42 @@ class RehastimGeneric:
                             raise RuntimeError(
                                 f"Error not in same order at index {i}: list_send[{i}]={list_send[i]} doesn't match list_ack[{i}]={list_ack[i]}")
 
-                    if self.is_motomed_connected :
-                        packets = self._read_packet()
-                        tic = time.time()
-                        if packets:
-                            for packet in packets:
-                                if len(packet) > 7:
-                                    if self.show_log and packet[6] in [t.value for t in self.Type]:
-                                        if self.Type(packet[6]).name == "MotomedError":
-                                            ack = motomed_error_ack(signed_int(packet[7:8]))
-                                            if signed_int(packet[7:8]) in [-4, -6]:
-                                                print(f"Ack received by rehastim: {ack}")
-                                        elif self.Type(packet[6]).name != "ActualValues":
-                                            print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
+            while self.is_motomed_connected and self.reha_connected:
+                packets = self._read_packet()
+                tic = time.time()
+                if packets:
+                    for packet in packets:
+                        if len(packet) > 7:
+                            if self.show_log and packet[6] in [t.value for t in self.Type]:
+                                if self.Type(packet[6]).name == "MotomedError":
+                                    ack = motomed_error_ack(signed_int(packet[7:8]))
+                                    if signed_int(packet[7:8]) in [-4, -6]:
+                                        print(f"Ack received by rehastim: {ack}")
+                                elif self.Type(packet[6]).name != "ActualValues":
+                                    print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
 
-                                    if packet[6] == self.Type["ActualValues"].value:
-                                        self._actual_values_ack(packet)
-                                    elif packet[6] == Type["PhaseResult"].value:
-                                        return self._phase_result_ack(packet)
-                                    elif packet[6] == 90:
-                                        pass
-                                    elif packet[6] == self.Type["MotomedCommandDone"].value:
-                                        self.motomed_done.set()
-                                    elif packet[6] in [t.value for t in self.Type]:
-                                        if packet[6] == 1:
-                                            self.last_init_ack = packet
-                                            self.event_ack.set()
-                                        else:
-                                            if packet[6] == 90 and signed_int(packet[7:8]) not in [-4, -6]:
-                                                packet = packet[1:]
-                                            self.last_ack = packet
-                                            self.event_ack.set()
+                            if packet[6] == self.Type["ActualValues"].value:
+                                self._actual_values_ack(packet)
+                            elif packet[6] == Type["PhaseResult"].value:
+                                return self._phase_result_ack(packet)
+                            elif packet[6] == 90:
+                                pass
+                            elif packet[6] == self.Type["MotomedCommandDone"].value:
+                                self.motomed_done.set()
+                            elif packet[6] in [t.value for t in self.Type]:
+                                if packet[6] == 1:
+                                    self.last_init_ack = packet
+                                    self.event_ack.set()
+                                else:
+                                    if packet[6] == 90 and signed_int(packet[7:8]) not in [-4, -6]:
+                                        packet = packet[1:]
+                                    self.last_ack = packet
+                                    self.event_ack.set()
 
-                self.event_send_updated.clear()
-                self.event_ack_updated.clear()
-                loop_duration = tic - time.time()
-                time.sleep(time_to_sleep - loop_duration)
+            self.event_send_updated.clear()
+            self.event_ack_updated.clear()
+            loop_duration = tic - time.time()
+            time.sleep(time_to_sleep - loop_duration)
 
     def _actual_values_ack(self, packet: bytes):
         """
