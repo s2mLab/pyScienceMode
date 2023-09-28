@@ -144,6 +144,7 @@ class RehastimGeneric:
                 if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                      print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
                      self.info_received.append(self.Type(packet[-1][6]).value)
+                     #append only the entire packet
                      self.packet_received.append(packet)
                      self.return_packet_received()
                      self.return_list_ack()
@@ -290,7 +291,7 @@ class RehastimGeneric:
                             raise RuntimeError(
                                 f"Error not in same order at index {i}: list_send[{i}]={list_send[i]} doesn't match list_ack[{i}]={list_ack[i]}")
 
-            while self.is_motomed_connected and self.reha_connected:
+            while self.is_motomed_connected :
                 packets = self._read_packet()
                 tic = time.time()
                 if packets:
@@ -395,6 +396,7 @@ class RehastimGeneric:
             if self.Type(packet[6]).name != "Watchdog":
                 print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
                 self.info_send.append((self.Type(packet[6]).value))
+                # append only the entire packet
 
         with self.lock:
             if time.time() - self.time_last_cmd > 1:
