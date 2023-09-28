@@ -9,7 +9,7 @@ from time import time,sleep
 list_channels = []
 
 channel_1 = Ch.Channel(
-  mode="Single", no_channel=1, amplitude=30, pulse_width=300, enable_low_frequency=False, name="Biceps"
+  mode="Single", no_channel=1, amplitude=15, pulse_width=300, enable_low_frequency=False, name="Biceps"
  )
 # channel_2 = Ch.Channel( mode="Single", no_channel=1, amplitude=30, pulse_width=300, name="Biceps_recorded")
 

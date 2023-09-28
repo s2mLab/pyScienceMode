@@ -336,6 +336,7 @@ class _Motomed:
         self.gear = gear
         self._send_packet("SetGear")
         gear_ack = self._calling_ack(self.rehastim._get_last_ack())
+        print(f'gear_ack: {gear_ack}')
         if gear_ack != "Set Gear to MOTOmed":
             raise RuntimeError("Error sending gear : " + str(gear_ack))
 

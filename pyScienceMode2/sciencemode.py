@@ -258,6 +258,7 @@ class RehastimGeneric:
             list_ack = self.return_list_ack()
             tic = time.time()
             while list_send and list_ack:
+                print("ok")
                 for i in reversed(range(min(len(list_send), len(list_ack)))):
                     # for i in range(min(len(list_send), len(list_ack))):
                     self.event_ack_updated.wait()
@@ -292,18 +293,21 @@ class RehastimGeneric:
                                 f"Error not in same order at index {i}: list_send[{i}]={list_send[i]} doesn't match list_ack[{i}]={list_ack[i]}")
 
             while self.is_motomed_connected :
+
                 packets = self._read_packet()
                 tic = time.time()
                 if packets:
+
                     for packet in packets:
                         if len(packet) > 7:
                             if self.show_log and packet[6] in [t.value for t in self.Type]:
+
                                 if self.Type(packet[6]).name == "MotomedError":
                                     ack = motomed_error_ack(signed_int(packet[7:8]))
                                     if signed_int(packet[7:8]) in [-4, -6]:
                                         print(f"Ack received by rehastim: {ack}")
                                 elif self.Type(packet[6]).name != "ActualValues":
-                                    print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
+                                    print(f"Ackz received by rehastim: {self.Type(packet[6]).name}")
 
                             if packet[6] == self.Type["ActualValues"].value:
                                 self._actual_values_ack(packet)
@@ -463,7 +467,11 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 while next_stop_byte < 8:
-                    next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
+                    try :
+                        next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
+                    except :
+                        packet_list = []
+                        break
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
                 packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
