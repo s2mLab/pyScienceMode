@@ -35,15 +35,6 @@ while time() < end_time:
     stimulator.init_channel(stimulation_interval=33, list_channels=list_channels)
     stimulator.start_stimulation(stimulation_duration=1)
     sleep(1)
-# #
-# stimulator.init_channel(
-# 
-# *
-# stimulation_interval=30, list_channels=list_channels)
-# stimulator.start_stimulation(stimulation_duration=5)
-
-
-
 stimulator.stop_stimulation()
 stimulator.disconnect()
 stimulator.close_port()
