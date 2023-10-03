@@ -267,7 +267,6 @@ class Stimulator(RehastimGeneric):
         list_channels: list[Channel]
             List containing the channels and their parameters.
         """
-
         if self.stimulation_started:
             self._stop_channel_list()
 
@@ -288,7 +287,7 @@ class Stimulator(RehastimGeneric):
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet("InitChannelListMode")
-        init_channel_list_mode_ack = self._get_last_ack()
+        self._get_last_ack()
 
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
         """
@@ -314,7 +313,7 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StartChannelListMode")
         time_start_stim = time.time()
 
-        start_channel_list_mode_ack = self._get_last_ack()
+        self._get_last_ack()
         self.stimulation_started = True
 
         if stimulation_duration is not None:
@@ -331,7 +330,7 @@ class Stimulator(RehastimGeneric):
 
         self.amplitude = [0] * len(self.list_channels)
         self._send_packet("StartChannelListMode")
-        start_channel_list_mode_ack = self._get_last_ack()
+        self._get_last_ack()
         self.stimulation_started = True
 
     def _stop_channel_list(self):
@@ -339,7 +338,7 @@ class Stimulator(RehastimGeneric):
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
         self._send_packet("StopChannelListMode")
-        stop_channel_list_mode_ack = self._get_last_ack()
+        self._get_last_ack()
         self.packet_count = 0
         self.stimulation_started = False
 
