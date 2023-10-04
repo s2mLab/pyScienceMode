@@ -254,10 +254,10 @@ class RehastimGeneric:
                             self.error_occured = True
                             raise RuntimeError("Stimulation error : ", ack)
                     elif list_send[i][6]+1 == list_ack[i][6] and i>0:
-                        print("nooo")
+                        print("1")
                         for packet in list_ack :
                             if packet[6] == self.Type["InitChannelListModeAck"].value:
-                                print("yessir")
+                                print("2-init")
                                 init_stimulation_ack(packet)
                                 if init_stimulation_ack(packet) != "Stimulation initialized":
                                     self.error_occured = True
@@ -265,10 +265,11 @@ class RehastimGeneric:
                             elif packet[6] == 1 or packet == "InitAck":
                                 pass
                             elif packet[6]== self.Type["InitPhaseTrainingAck"].value:
-                                print("youpi")
+                                print("3-init")
                             elif packet[6] == self.Type["GetStimulationModeAck"].value:
                                 get_mode_ack(packet)
                             elif packet[6] == self.Type["StopChannelListModeAck"].value:
+
                                 stop_stimulation_ack(packet)
                                 if stop_stimulation_ack(packet) != "Stimulation stopped":
                                     self.error_occured = True
@@ -277,6 +278,7 @@ class RehastimGeneric:
                                     self.packet_count = 0
                                     self.stimulation_started = False
                             elif packet[6] == self.Type["StartChannelListModeAck"].value:
+                                print("yes start")
                                 start_stimulation_ack(packet)
                                 if start_stimulation_ack(packet) != "Stimulation started":
                                     self.error_occured = True
@@ -288,8 +290,8 @@ class RehastimGeneric:
                             #     raise RuntimeError(f"Error packet : not understood {packet[6]}")
                         del list_send[i]
                         del list_ack[i]
-                        # print("list_ack after del", list_ack)
-                        # print("list_send after del", list_send)
+                        print("list_ack after del", list_ack)
+                        print("list_send after del", list_send)
 
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
