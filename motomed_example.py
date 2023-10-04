@@ -1,9 +1,10 @@
 import time
 from pyScienceMode2.rehastim_interface import Stimulator
+#TODO : reset example files
 
 port = "COM3"
 
-motomed = Stimulator(port, show_log=True, with_motomed=True).motomed
+motomed = Stimulator(port, show_log=True, with_motomed=True).motomed #TODO : remove with_motomed
 motomed.init_phase_training(arm_training=True)
 print(motomed.get_motomed_mode())
 motomed.start_phase(speed=50, gear=5, active=False, go_forward=False, spasm_detection=True)

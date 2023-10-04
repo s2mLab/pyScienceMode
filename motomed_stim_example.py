@@ -3,7 +3,7 @@ import time
 from pyScienceMode2.rehastim_interface import Stimulator as St
 from pyScienceMode2 import Channel as Ch
 
-
+#TODO : reset example files
 def init_rehastim():
     # Create a list of channels
     list_channels = []
@@ -21,7 +21,7 @@ def init_rehastim():
     list_channels.append(channel_4)
 
     # Create our object Stimulator
-    stimulator = St(port="COM3", show_log=True,with_motomed=True)
+    stimulator = St(port="COM3", show_log=True,with_motomed=True) #TODO : change port
     stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
 
     return stimulator, list_channels

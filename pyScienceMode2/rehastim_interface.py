@@ -17,10 +17,10 @@ class Stimulator(RehastimGeneric):
     """
 
     def __init__(
-            self,
-            port: str,
-            show_log: bool = False,
-            with_motomed: bool = False,
+        self,
+        port: str,
+        show_log: bool = False,
+        with_motomed: bool = False,
 
     ):
         """
@@ -51,8 +51,17 @@ class Stimulator(RehastimGeneric):
         self.stimulation_started = None
 
         super().__init__(port, show_log, with_motomed)
-        if with_motomed:
+        if with_motomed :
             self.motomed = _Motomed(self)
+        # if with_motomed:
+        # packets = self._read_packet() #TODO : if time to work on it else remove
+        # for packet in packets :
+        #     if packet[6] == self.Type["GetMotomedModeAck"].value:
+        #          if self.get_motomed_mode_ack(packet) == 0:
+        #              self.motomed = _Motomed(self)
+        #              break
+
+
 
         # Connect to rehastim
 
@@ -251,11 +260,11 @@ class Stimulator(RehastimGeneric):
         return msb, lsb
 
     def init_channel(
-            self,
-            stimulation_interval: int,
-            list_channels: list,
-            inter_pulse_interval: int = 2,
-            low_frequency_factor: int = 0,
+        self,
+        stimulation_interval: int,
+        list_channels: list,
+        inter_pulse_interval: int = 2,
+        low_frequency_factor: int = 0,
     ):
         """
         Initialize the requested channel.

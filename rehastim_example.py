@@ -5,6 +5,7 @@ from pyScienceMode2.rehastim_interface import Stimulator as St
 from pyScienceMode2 import Channel as Ch
 
 from time import time,sleep
+#TODO : reset example files
 
 list_channels = []
 

@@ -7,7 +7,7 @@ import serial
 import time
 import threading
 from pyScienceMode2.utils import *
-from .acks import *
+from .acks import * #TODO : list methods used
 import numpy as np
 
 # Notes :
@@ -74,13 +74,12 @@ class RehastimGeneric:
         self.time_last_cmd = 0
         self.packet_count = 0
         self.reha_connected = False
-        self.is_reha_connected = False #Need to check
         self.show_log = show_log
         self.time_last_cmd = 0
         self.packet_send_history = []
         self.read_port_time = 0.0
         self.last_ack = None
-        self.last_init_ack = None #for motomed
+        self.last_init_ack = None
         self.motomed_values = None
         self.max_motomed_values = 100
         self.max_phase_result = 1
@@ -98,18 +97,17 @@ class RehastimGeneric:
         self.__watchdog_thread_started = False
         self.info_send = [] # Command sent to the rehastim
         self.info_received= [] # Command received by the rehastim
-        self.packet_received = [] # Packet received by the rehastim
         self.Type = Type
         self.error_occured = False # if true raise error if the stimulation is not working
 
         self._start_thread_catch_data() # Start the thread which catch rehastim and motomed data
 
-        if self.reha_connected and not self.__comparison_thread_started :
+        if self.reha_connected and not self.__comparison_thread_started:
             self._start_thread_catch_data()
 
         self.Type = Type
 
-    def _get_last_ack(self,init :bool =False) -> bytes:
+    def _get_last_ack(self, init:bool = False) -> bytes:
         """
         Get the last ack received.
 
@@ -127,16 +125,12 @@ class RehastimGeneric:
                     pass
                 last_ack = self.last_init_ack
                 self.info_received.append(last_ack)
-                # print(self.info_received)
-                # self.return_list_ack()
                 self.last_init_ack = None
             else:
                 while not self.last_ack:
                     pass
                 last_ack = self.last_ack
                 self.info_received.append(last_ack)
-                # print(self.info_received)
-                # self.return_list_ack()
                 self.last_ack = None
             return last_ack
         else:
@@ -148,7 +142,6 @@ class RehastimGeneric:
                 if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                      print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
                      self.info_received.append(packet[-1])
-                     self.packet_received.append(packet)
                      self.return_list_ack()
 
         if self.error_occured:
@@ -206,7 +199,7 @@ class RehastimGeneric:
             Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
             not the same as the command received.
             """
-            if self.is_motomed_connected:
+            if self.is_motomed_connected: #TODO : change _get_last_ack
                 packets = self._read_packet()
                 tic = time.time()
                 if packets:
@@ -229,7 +222,7 @@ class RehastimGeneric:
                                 self._actual_values_ack(packet)
                             elif packet[6] == Type["PhaseResult"].value:
                                 return self._phase_result_ack(packet)
-                            elif packet[6] == 90: #? Already tested above
+                            elif packet[6] == 90:
                                 pass
                             elif packet[6] == self.Type["MotomedCommandDone"].value:
                                 self.motomed_done.set()
@@ -382,8 +375,8 @@ class RehastimGeneric:
         self.packet_send_history = packet
         self.return_list_send()
         self.packet_count = (self.packet_count + 1) % 256
+
         if cmd == "InitAck":
-            # self.motomed_done.set()
             return "InitAck"
 
     @staticmethod
@@ -433,9 +426,9 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 while next_stop_byte < 8:
-                    try :
+                    try:
                         next_stop_byte += packet_tmp[next_stop_byte + 1:].index(self.STOP_BYTE) + 1
-                    except :
+                    except:
                         packet_list = []
                         break
                 packet_list.append(packet_tmp[: next_stop_byte + 1])

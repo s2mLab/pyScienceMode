@@ -41,10 +41,6 @@ class _Motomed:
         self.max_phase_result = 1
         self.rehastim = rehastim_interface
         self.is_phase_result = False
-        self.sent_packets = []
-
-    def get_sent_packets(self):
-        return self.sent_packets
 
     def _send_packet(self, cmd: str) -> (None, str):
         """
