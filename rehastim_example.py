@@ -25,7 +25,7 @@ list_channels.append(channel_1)
 stimulator = St(
     port="COM3",
     show_log=True,
-    with_motomed=False
+
 )
 
 # stimulator.init_channel(stimulation_interval=33, list_channels=list_channels)

@@ -126,16 +126,17 @@ class RehastimGeneric:
                 while not self.last_init_ack:
                     pass
                 last_ack = self.last_init_ack
-                self.info_send.append(last_ack)
-                self.return_list_ack()
+                self.info_received.append(last_ack)
+                # print(self.info_received)
+                # self.return_list_ack()
                 self.last_init_ack = None
             else:
                 while not self.last_ack:
                     pass
                 last_ack = self.last_ack
-                self.info_send.append(last_ack)
-                # print(self.info_send)
-                self.return_list_ack()
+                self.info_received.append(last_ack)
+                # print(self.info_received)
+                # self.return_list_ack()
                 self.last_ack = None
             return last_ack
         else:
@@ -205,55 +206,7 @@ class RehastimGeneric:
             Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
             not the same as the command received.
             """
-
-            while list_send and list_ack:
-                print("yes")
-                for i in reversed(range(min(len(list_send), len(list_ack)))):
-                    if list_ack[i][6] == self.Type["StimulationError"].value :
-                        ack = rehastim_error(signed_int(list_ack[i][7:8]))
-                        if signed_int(list_ack[i][7:8]) in [-1, -2, -3]:
-                            self.error_occured = True
-                            raise RuntimeError("Stimulation error : ", ack)
-                    elif list_send[i][6]+1 == list_ack[i][6] and i>0:
-                        for packet in list_ack :
-                            if packet[6] == self.Type["InitChannelListModeAck"].value :
-                                init_stimulation_ack(packet)
-                                if init_stimulation_ack(packet) != "Stimulation initialized":
-                                    self.error_occured = True
-                                    raise RuntimeError("Stimulation not initialized")
-                            elif packet[6] == 1 or packet == "InitAck":
-                                pass
-                            elif packet[6] == self.Type["GetStimulationModeAck"].value:
-                                get_mode_ack(packet)
-                            elif packet[6] == self.Type["StopChannelListModeAck"].value:
-                                stop_stimulation_ack(packet)
-                                if stop_stimulation_ack(packet) != "Stimulation stopped":
-                                    self.error_occured = True
-                                    raise RuntimeError("Error : StoppedChannelListMode :" + stop_stimulation_ack(packet))
-                                else:
-                                    self.packet_count = 0
-                                    self.stimulation_started = False
-                            elif packet[6] == self.Type["StartChannelListModeAck"].value:
-                                start_stimulation_ack(packet)
-                                if start_stimulation_ack(packet) != "Stimulation started":
-                                    self.error_occured = True
-                                    raise RuntimeError("Error : StartChannelListMode :" + start_stimulation_ack(packet))
-                            elif packet[6] == self.Type["ActualValues"].value:
-                                self.error_occured = True
-                                raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
-                            else:
-                                raise RuntimeError(f"Error packet : not understood {packet[6]}")
-                        del list_send[i]
-                        del list_ack[i]
-                        print("list_ack after del", list_ack)
-                        print("list_send after del", list_send)
-
-
-            """
-            Catch the data sent by the motomed if connected.
-            """
-
-            while 1 and self.is_motomed_connected:
+            if self.is_motomed_connected:
                 packets = self._read_packet()
                 tic = time.time()
                 if packets:
@@ -289,10 +242,63 @@ class RehastimGeneric:
                                         packet = packet[1:]
                                     self.last_ack = packet
                                     self.event_ack.set()
-            # self.event_send_updated.clear()
-            # self.event_ack_updated.clear() remove ?
+
+            if list_send and list_ack:
+                for i in reversed(range(min(len(list_send), len(list_ack)))):
+                    # print("list_senddd", list_send[i][6])
+                    # print("list_ackkk", list_ack[i][6])
+
+                    if list_ack[i][6] == self.Type["StimulationError"].value:
+                        ack = rehastim_error(signed_int(list_ack[i][7:8]))
+                        if signed_int(list_ack[i][7:8]) in [-1, -2, -3]:
+                            self.error_occured = True
+                            raise RuntimeError("Stimulation error : ", ack)
+                    elif list_send[i][6]+1 == list_ack[i][6] and i>0:
+                        print("nooo")
+                        for packet in list_ack :
+                            if packet[6] == self.Type["InitChannelListModeAck"].value:
+                                print("yessir")
+                                init_stimulation_ack(packet)
+                                if init_stimulation_ack(packet) != "Stimulation initialized":
+                                    self.error_occured = True
+                                    raise RuntimeError("Stimulation not initialized")
+                            elif packet[6] == 1 or packet == "InitAck":
+                                pass
+                            elif packet[6]== self.Type["InitPhaseTrainingAck"].value:
+                                print("youpi")
+                            elif packet[6] == self.Type["GetStimulationModeAck"].value:
+                                get_mode_ack(packet)
+                            elif packet[6] == self.Type["StopChannelListModeAck"].value:
+                                stop_stimulation_ack(packet)
+                                if stop_stimulation_ack(packet) != "Stimulation stopped":
+                                    self.error_occured = True
+                                    raise RuntimeError("Error : StoppedChannelListMode :" + stop_stimulation_ack(packet))
+                                else:
+                                    self.packet_count = 0
+                                    self.stimulation_started = False
+                            elif packet[6] == self.Type["StartChannelListModeAck"].value:
+                                start_stimulation_ack(packet)
+                                if start_stimulation_ack(packet) != "Stimulation started":
+                                    self.error_occured = True
+                                    raise RuntimeError("Error : StartChannelListMode :" + start_stimulation_ack(packet))
+                            elif packet[6] == self.Type["ActualValues"].value:
+                                self.error_occured = True
+                                raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
+                            # else:
+                            #     raise RuntimeError(f"Error packet : not understood {packet[6]}")
+                        del list_send[i]
+                        del list_ack[i]
+                        # print("list_ack after del", list_ack)
+                        # print("list_send after del", list_send)
+
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
+
+            """
+            Catch the data sent by the motomed if connected.
+            """
+
+
 
     def _actual_values_ack(self, packet: bytes):
         """

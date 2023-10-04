@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
         if (220 <= angle_crank < 360 or 0 <= angle_crank < 10) and not bic_delt_stim:
             upd_list = list_channels[:2]
-            stimulator.start_stimulation(upd_list_channels=upd_list)
+            # stimulator.start_stimulation(upd_list_channels=upd_list)
             bic_delt_stim = True
             tric_delt_stim = False
             print("angle crank", angle_crank)
