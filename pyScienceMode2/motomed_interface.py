@@ -383,8 +383,8 @@ class _Motomed:
             return stop_basic_training_ack(packet)
         elif packet[6] == Type["MotomedError"].value:
             return motomed_error_ack(signed_int(packet[7:8]))
-        else:
-            raise RuntimeError("Error packet : not understood")
+        # else:
+        #     raise RuntimeError("Error packet : not understood")
 
     def get_angle(self):
         """

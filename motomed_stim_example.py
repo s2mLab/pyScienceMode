@@ -21,7 +21,7 @@ def init_rehastim():
     list_channels.append(channel_4)
 
     # Create our object Stimulator
-    stimulator = St(port="COM3", show_log=True,with_motomed=True) #TODO : change port
+    stimulator = St(port="COM3", show_log=True,with_motomed=True) # /dev/ttyUSB0 for linux, COM3 for windows
     stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
 
     return stimulator, list_channels
@@ -52,18 +52,23 @@ if __name__ == "__main__":
             print("stimulation_state", (tric_delt_stim or bic_delt_stim))
 
         if 20 <= angle_crank < 180 and not tric_delt_stim:
-            list_channels[2].set_amplitude(7)
-            list_channels[3].set_amplitude(15)
-            stimulator.start_stimulation(upd_list_channels=list_channels)
+            list_channels[0].set_amplitude(0)
+            list_channels[1].set_amplitude(7)
+            list_channels[2].set_amplitude(15)
+            list_channels[3].set_amplitude(0)
 
+            stimulator.start_stimulation(upd_list_channels=list_channels)
             tric_delt_stim = True
             bic_delt_stim = False
             print("angle crank", angle_crank)
             print("stimulation_state", tric_delt_stim)
 
         if (220 <= angle_crank < 360 or 0 <= angle_crank < 10) and not bic_delt_stim:
-            upd_list = list_channels[:2]
-            # stimulator.start_stimulation(upd_list_channels=upd_list)
+            list_channels[0].set_amplitude(15)
+            list_channels[1].set_amplitude(0)
+            list_channels[2].set_amplitude(0)
+            list_channels[3].set_amplitude(7)
+            stimulator.start_stimulation(upd_list_channels=list_channels)
             bic_delt_stim = True
             tric_delt_stim = False
             print("angle crank", angle_crank)

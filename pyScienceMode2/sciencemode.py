@@ -132,6 +132,7 @@ class RehastimGeneric:
                 last_ack = self.last_ack
                 self.info_received.append(last_ack)
                 self.last_ack = None
+            print(last_ack[6])
             return last_ack
         else:
             while 1:
@@ -141,13 +142,12 @@ class RehastimGeneric:
             if packet and not self.error_occured :
                 if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                      print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
+                     print("hmmmoo")
                      self.info_received.append(packet[-1])
                      self.return_list_ack()
 
-        if self.error_occured:
-            raise RuntimeError("Stimulation error")
-
         return packet[-1]
+
 
     def return_list_ack(self)-> list:
         """
@@ -201,10 +201,10 @@ class RehastimGeneric:
             """
             if self.is_motomed_connected: #TODO : change _get_last_ack
                 packets = self._read_packet()
-                tic = time.time()
                 if packets:
                     for packet in packets:
                         if len(packet) > 7:
+                            # print(packet[6])
                             if self.show_log and packet[6] in [t.value for t in self.Type]:
                                 if self.Type(packet[6]).name == "MotomedError":
                                     ack = motomed_error_ack(signed_int(packet[7:8]))
@@ -247,18 +247,18 @@ class RehastimGeneric:
                             self.error_occured = True
                             raise RuntimeError("Stimulation error : ", ack)
                     elif list_send[i][6]+1 == list_ack[i][6] and i>0:
-                        print("1")
+                        # print("1")
                         for packet in list_ack :
                             if packet[6] == self.Type["InitChannelListModeAck"].value:
-                                print("2-init")
+                                # print("2-init")
                                 init_stimulation_ack(packet)
                                 if init_stimulation_ack(packet) != "Stimulation initialized":
                                     self.error_occured = True
                                     raise RuntimeError("Stimulation not initialized")
                             elif packet[6] == 1 or packet == "InitAck":
                                 pass
-                            elif packet[6]== self.Type["InitPhaseTrainingAck"].value:
-                                print("3-init")
+                            # elif packet[6]== self.Type["InitPhaseTrainingAck"].value:
+                            #     print("3-init")
                             elif packet[6] == self.Type["GetStimulationModeAck"].value:
                                 get_mode_ack(packet)
                             elif packet[6] == self.Type["StopChannelListModeAck"].value:
@@ -276,9 +276,7 @@ class RehastimGeneric:
                                 if start_stimulation_ack(packet) != "Stimulation started":
                                     self.error_occured = True
                                     raise RuntimeError("Error : StartChannelListMode :" + start_stimulation_ack(packet))
-                            elif packet[6] == self.Type["ActualValues"].value:
-                                self.error_occured = True
-                                raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
+
                             # else:
                             #     raise RuntimeError(f"Error packet : not understood {packet[6]}")
                         del list_send[i]
