@@ -413,10 +413,10 @@ class RehastimGeneric:
         """
         self._stop_watchdog()
         if self.reha_connected:
-            self._stop_thread_data()
+            self._stop_thread_catch_ack()
         self.is_motomed_connected = False
 
-    def _stop_thread_data(self):
+    def _stop_thread_catch_ack(self):
         """
         Stop the rehastim thread.
         """
