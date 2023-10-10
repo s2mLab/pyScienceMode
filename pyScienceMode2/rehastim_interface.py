@@ -324,10 +324,11 @@ class Stimulator(RehastimGeneric):
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
         """
+        tmp_amp = self.amplitude
         self.amplitude = [0] * len(self.list_channels)
         self._send_packet("StartChannelListMode")
         self._get_last_ack()
-        self.stimulation_started = True
+        self.amplitude = tmp_amp
 
     def _stop_channel_list(self):
         """

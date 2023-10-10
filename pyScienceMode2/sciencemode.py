@@ -7,7 +7,14 @@ import serial
 import time
 import threading
 from pyScienceMode2.utils import *
-from .acks import *
+from .acks import (
+    motomed_error_ack,
+    rehastim_error,
+    init_stimulation_ack,
+    get_mode_ack,
+    stop_stimulation_ack,
+    start_stimulation_ack,
+)
 import numpy as np
 
 # Notes :
@@ -93,17 +100,17 @@ class RehastimGeneric:
         self.is_motomed_connected = with_motomed
         self.__comparison_thread_started = False
         self.__watchdog_thread_started = False
-        self.info_send = []  # Command sent to the rehastim
-        self.info_received = []  # Command received by the rehastim
+        self.command_send = []  # Command sent to the rehastim
+        self.command_received = []  # Command received by the rehastim
         self.Type = Type
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
 
-        self._start_thread_catch_data()  # Start the thread which catches rehastim and motomed data
+        self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
 
         if self.reha_connected and not self.__comparison_thread_started:
-            self._start_thread_catch_data()
+            self._start_thread_catch_ack()
 
         self.Type = Type
 
@@ -124,13 +131,13 @@ class RehastimGeneric:
                 while not self.last_init_ack:
                     pass
                 last_ack = self.last_init_ack
-                self.info_received.append(last_ack)
+                self.command_received.append(last_ack)
                 self.last_init_ack = None
             else:
                 while not self.last_ack:
                     pass
                 last_ack = self.last_ack
-                self.info_received.append(last_ack)
+                self.command_received.append(last_ack)
                 self.last_ack = None
             return last_ack
         else:
@@ -141,44 +148,44 @@ class RehastimGeneric:
             if packet and not self.error_occured:
                 if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                     print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
-                    self.info_received.append(packet[-1])
-                    self.return_list_ack()
+                    self.command_received.append(packet[-1])
+                    self._return_command_received()
         if self.error_occured:
             raise RuntimeError("Stimulation error")
 
         return packet[-1]
 
-    def return_list_ack(self) -> list:
+    def _return_command_received(self) -> list:
         """
         Return the list of the command received from the rehastim
 
         Returns
         -------
-        self.info_received : list
+        self.command_received : list
             Commands received from the rehastim
         """
-        return self.info_received
+        return self.command_received
 
-    def return_list_send(self) -> list:
+    def _return_command_sent(self) -> list:
         """
         Return the list of the command sent to the rehastim
 
         Returns
         -------
-        self.info_send : list
+        self.command_send : list
             Commands sent to the rehastim
         """
-        return self.info_send
+        return self.command_send
 
-    def _start_thread_catch_data(self):
+    def _start_thread_catch_ack(self):
         """
         Start the thread which catches rehastim data and motomed data if motomed flag is true.
         """
         self.__comparison_thread_started = True
-        self.__thread_catch_data = threading.Thread(target=self._thread_catch_data)
-        self.__thread_catch_data.start()
+        self.__thread_catch_ack = threading.Thread(target=self._thread_catch_ack)
+        self.__thread_catch_ack.start()
 
-    def _thread_catch_data(self):
+    def _thread_catch_ack(self):
         """
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
@@ -186,8 +193,8 @@ class RehastimGeneric:
         print("Thread started")
         time_to_sleep = 0.005
         while 1:
-            list_send = self.return_list_send()
-            list_ack = self.return_list_ack()
+            list_send = self._return_command_sent()
+            list_ack = self._return_command_received()
             tic = time.time()
             """
             Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
@@ -327,7 +334,7 @@ class RehastimGeneric:
         if self.show_log:
             if self.Type(packet[6]).name != "Watchdog":
                 print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
-                self.info_send.append(packet)
+                self.command_send.append(packet)
 
         with self.lock:
             if time.time() - self.time_last_cmd > 1:
@@ -338,7 +345,7 @@ class RehastimGeneric:
 
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
-        self.return_list_send()
+        self._return_command_sent()
         self.packet_count = (self.packet_count + 1) % 256
 
         if cmd == "InitAck":
@@ -415,7 +422,7 @@ class RehastimGeneric:
         """
         self.is_motomed_connected = False
         self.reha_connected = False
-        self.__thread_catch_data.join()
+        self.__thread_catch_ack.join()
 
     def _start_watchdog(self):
         """
