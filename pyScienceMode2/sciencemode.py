@@ -7,7 +7,14 @@ import serial
 import time
 import threading
 from pyScienceMode2.utils import *
-from .acks import motomed_error_ack
+from .acks import (
+    motomed_error_ack,
+    rehastim_error,
+    init_stimulation_ack,
+    get_mode_ack,
+    stop_stimulation_ack,
+    start_stimulation_ack,
+)
 import numpy as np
 
 # Notes :
@@ -75,30 +82,36 @@ class RehastimGeneric:
         self.packet_count = 0
         self.reha_connected = False
         self.show_log = show_log
-
         self.time_last_cmd = 0
         self.packet_send_history = []
-
         self.read_port_time = 0.0
         self.last_ack = None
         self.last_init_ack = None
         self.motomed_values = None
-        self.last_phase_result = None
-        self._motomed_command_done = True
-        self.is_motomed_connected = with_motomed
         self.max_motomed_values = 100
         self.max_phase_result = 1
         self.__thread_watchdog = None
         self.lock = threading.Lock()
         self.motomed_done = threading.Event()
         self.is_phase_result = threading.Event()
-        self.command_sent = threading.Event()
         self.event_ack = threading.Event()
-        self.__motomed_thread_started = False
+        self.last_phase_result = None
+        self._motomed_command_done = True
+        self.is_motomed_connected = with_motomed
+        self.__comparison_thread_started = False
         self.__watchdog_thread_started = False
+        self.command_send = []  # Command sent to the rehastim
+        self.command_received = []  # Command received by the rehastim
+        self.Type = Type
+        self.error_occured = (
+            False  # If the stimulation is not working and error occured flag set to true, raise an error
+        )
 
-        if self.is_motomed_connected and not self.__motomed_thread_started:
-            self._start_motomed_thread()
+        self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
+
+        if self.reha_connected and not self.__comparison_thread_started:
+            self._start_thread_catch_ack()
+
         self.Type = Type
 
     def _get_last_ack(self, init: bool = False) -> bytes:
@@ -118,11 +131,13 @@ class RehastimGeneric:
                 while not self.last_init_ack:
                     pass
                 last_ack = self.last_init_ack
+                self.command_received.append(last_ack)
                 self.last_init_ack = None
             else:
                 while not self.last_ack:
                     pass
                 last_ack = self.last_ack
+                self.command_received.append(last_ack)
                 self.last_ack = None
             return last_ack
         else:
@@ -130,54 +145,125 @@ class RehastimGeneric:
                 packet = self._read_packet()
                 if packet and len(packet) != 0:
                     break
-            if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
-                print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
-            return packet[-1]
+            if packet and not self.error_occured:
+                if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
+                    print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
+                    self.command_received.append(packet[-1])
+                    self._return_command_received()
+        if self.error_occured:
+            raise RuntimeError("Stimulation error")
 
-    def _start_motomed_thread(self):
-        """
-        Start the thread which catch motomed data.
-        """
-        self.__motomed_thread_started = True
-        self.__thread_motomed = threading.Thread(target=self._catch_motomed_data)
-        self.__thread_motomed.start()
+        return packet[-1]
 
-    def _catch_motomed_data(self):
+    def _return_command_received(self) -> list:
         """
-        Catch the motomed data.
+        Return the list of the command received from the rehastim
+
+        Returns
+        -------
+        self.command_received : list
+            Commands received from the rehastim
         """
+        return self.command_received
+
+    def _return_command_sent(self) -> list:
+        """
+        Return the list of the command sent to the rehastim
+
+        Returns
+        -------
+        self.command_send : list
+            Commands sent to the rehastim
+        """
+        return self.command_send
+
+    def _start_thread_catch_ack(self):
+        """
+        Start the thread which catches rehastim data and motomed data if motomed flag is true.
+        """
+        self.__comparison_thread_started = True
+        self.__thread_catch_ack = threading.Thread(target=self._thread_catch_ack)
+        self.__thread_catch_ack.start()
+
+    def _thread_catch_ack(self):
+        """
+        Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
+        """
+
+        print("Thread started")
         time_to_sleep = 0.005
-        while 1 and self.is_motomed_connected:
-            packets = self._read_packet()
+        while 1:
+            list_send = self._return_command_sent()
+            list_ack = self._return_command_received()
             tic = time.time()
-            if packets:
-                for packet in packets:
-                    if len(packet) > 7:
-                        if self.show_log and packet[6] in [t.value for t in self.Type]:
-                            if self.Type(packet[6]).name == "MotomedError":
-                                ack = motomed_error_ack(signed_int(packet[7:8]))
-                                if signed_int(packet[7:8]) in [-4, -6]:
-                                    print(f"Ack received by rehastim: {ack}")
-                            elif self.Type(packet[6]).name != "ActualValues":
-                                print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
+            """
+            Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
+            not the same as the command received.
+            """
+            if self.is_motomed_connected:
+                packets = self._read_packet()
+                if packets:
+                    for packet in packets:
+                        if len(packet) > 7:
+                            if self.show_log and packet[6] in [t.value for t in self.Type]:
+                                if self.Type(packet[6]).name == "MotomedError":
+                                    ack = motomed_error_ack(signed_int(packet[7:8]))
+                                    if signed_int(packet[7:8]) in [-4, -6]:
+                                        print(f"Ack received by rehastim: {ack}")
+                                elif self.Type(packet[6]).name != "ActualValues":
+                                    print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
+                            if packet[6] == self.Type["ActualValues"].value:
+                                self._actual_values_ack(packet)
+                            elif packet[6] == Type["PhaseResult"].value:
+                                return self._phase_result_ack(packet)
+                            elif packet[6] == 90:
+                                pass
+                            elif packet[6] == self.Type["MotomedCommandDone"].value:
+                                self.motomed_done.set()
+                            elif packet[6] in [t.value for t in self.Type]:
+                                if packet[6] == 1:
+                                    self.last_init_ack = packet
+                                    self.event_ack.set()
+                                else:
+                                    if packet[6] == 90 and signed_int(packet[7:8]) not in [-4, -6]:
+                                        packet = packet[1:]
+                                    self.last_ack = packet
+                                    self.event_ack.set()
 
-                        if packet[6] == self.Type["ActualValues"].value:
-                            self._actual_values_ack(packet)
-                        elif packet[6] == Type["PhaseResult"].value:
-                            return self._phase_result_ack(packet)
-                        elif packet[6] == 90:
-                            pass
-                        elif packet[6] == self.Type["MotomedCommandDone"].value:
-                            self.motomed_done.set()
-                        elif packet[6] in [t.value for t in self.Type]:
-                            if packet[6] == 1:
-                                self.last_init_ack = packet
-                                self.event_ack.set()
-                            else:
-                                if packet[6] == 90 and signed_int(packet[7:8]) not in [-4, -6]:
-                                    packet = packet[1:]
-                                self.last_ack = packet
-                                self.event_ack.set()
+            if list_send and list_ack:
+                for i in reversed(range(min(len(list_send), len(list_ack)))):
+                    if list_ack[i][6] == self.Type["StimulationError"].value:
+                        ack = rehastim_error(signed_int(list_ack[i][7:8]))
+                        if signed_int(list_ack[i][7:8]) in [-1, -2, -3]:
+                            self.error_occured = True
+                            raise RuntimeError("Stimulation error : ", ack)
+                    elif list_ack[i][6] == self.Type["ActualValues"].value and not self.is_motomed_connected:
+                        self.error_occured = True
+                        raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
+                    elif list_send[i][6] + 1 == list_ack[i][6] and i > 0:
+                        for packet in list_ack:
+                            if packet[6] == self.Type["InitChannelListModeAck"].value:
+                                init_stimulation_ack(packet)
+                                if init_stimulation_ack(packet) != "Stimulation initialized":
+                                    self.error_occured = True
+                                    raise RuntimeError("Stimulation not initialized")
+                            elif packet[6] == self.Type["GetStimulationModeAck"].value:
+                                get_mode_ack(packet)
+                            elif packet[6] == self.Type["StopChannelListModeAck"].value:
+                                stop_stimulation_ack(packet)
+                                if stop_stimulation_ack(packet) != "Stimulation stopped":
+                                    self.error_occured = True
+                                    raise RuntimeError(
+                                        "Error : StoppedChannelListMode :" + stop_stimulation_ack(packet)
+                                    )
+                            elif packet[6] == self.Type["StartChannelListModeAck"].value:
+                                start_stimulation_ack(packet)
+                                if start_stimulation_ack(packet) != "Stimulation started":
+                                    self.error_occured = True
+                                    raise RuntimeError("Error : StartChannelListMode :" + start_stimulation_ack(packet))
+
+                        del list_send[i]
+                        del list_ack[i]
 
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
@@ -227,7 +313,6 @@ class RehastimGeneric:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
             time.sleep(0.8)
 
-
     def send_generic_packet(self, cmd: str, packet: bytes) -> (None, str):
         """
         Send a packet to the rehastim.
@@ -245,24 +330,25 @@ class RehastimGeneric:
         if cmd == "InitAck":
             self.motomed_done.set()
             self._start_watchdog()
+
         if self.show_log:
             if self.Type(packet[6]).name != "Watchdog":
                 print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
-        self.lock.acquire()
-        if time.time() - self.time_last_cmd > 1:
-            self.port.write(self._packet_watchdog())
-        self.port.write(packet)
-        if cmd == "InitAck":
-            self.reha_connected = True
-        # if self.is_motomed_connected and cmd != "Watchdog":
-        #     self.motomed_done.wait()
-        self.lock.release()
+                self.command_send.append(packet)
+
+        with self.lock:
+            if time.time() - self.time_last_cmd > 1:
+                self.port.write(self._packet_watchdog())
+            self.port.write(packet)
+            if cmd == "InitAck":
+                self.reha_connected = True
+
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
+        self._return_command_sent()
         self.packet_count = (self.packet_count + 1) % 256
-        self.event_ack.clear()
+
         if cmd == "InitAck":
-            # self.motomed_done.set()
             return "InitAck"
 
     @staticmethod
@@ -315,7 +401,7 @@ class RehastimGeneric:
                     try:
                         next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
                     except:
-                        packet_list = []  # quick fix
+                        packet_list = []
                         break
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
                 packet_tmp = packet_tmp[next_stop_byte + 1 :]
@@ -326,8 +412,17 @@ class RehastimGeneric:
         Disconnect the pc to the Rehastim by stopping sending watchdog and motomed threads (if applicable).
         """
         self._stop_watchdog()
-        if self.is_motomed_connected:
-            self._stop_motomed()
+        if self.reha_connected:
+            self._stop_thread_catch_ack()
+        self.is_motomed_connected = False
+
+    def _stop_thread_catch_ack(self):
+        """
+        Stop the rehastim thread.
+        """
+        self.is_motomed_connected = False
+        self.reha_connected = False
+        self.__thread_catch_ack.join()
 
     def _start_watchdog(self):
         """
@@ -344,13 +439,6 @@ class RehastimGeneric:
         """
         self.reha_connected = False
         self.__thread_watchdog.join()
-
-    def _stop_motomed(self):
-        """
-        Stop the motomed thread.
-        """
-        self.is_motomed_connected = False
-        self.__thread_motomed.join()
 
     def _packet_watchdog(self) -> bytes:
         """

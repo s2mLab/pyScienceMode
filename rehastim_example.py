@@ -38,7 +38,7 @@ list_channels.append(channel_1)
 
 # Create our object Stimulator
 stimulator = St(
-    port="/dev/ttyUSB0",
+    port="/dev/ttyUSB0",  # Enter the port on which the stimulator is connected
     show_log=True,
 )
 
@@ -97,6 +97,8 @@ After a disconnection, init_channel must be called.
 """
 stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
 stimulator.start_stimulation(2, list_channels)
+
+# Disconnect before closing port
 stimulator.disconnect()
 
 """
