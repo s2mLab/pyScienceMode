@@ -21,7 +21,6 @@ class Stimulator(RehastimGeneric):
         port: str,
         show_log: bool = False,
         with_motomed: bool = False,
-
     ):
         """
         Creates an object stimulator.
@@ -56,7 +55,6 @@ class Stimulator(RehastimGeneric):
             self.motomed = _Motomed(self)
 
         # Connect to rehastim
-
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
@@ -127,7 +125,6 @@ class Stimulator(RehastimGeneric):
         -------
         A string which is the message corresponding to the processing of the packet.
         """
-
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == self.Type["GetStimulationModeAck"].value:
@@ -328,7 +325,6 @@ class Stimulator(RehastimGeneric):
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
         """
-
         self.amplitude = [0] * len(self.list_channels)
         self._send_packet("StartChannelListMode")
         self._get_last_ack()

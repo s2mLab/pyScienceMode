@@ -10,7 +10,6 @@ from pyScienceMode2.utils import *
 from .acks import *
 import numpy as np
 
-
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
 
@@ -97,9 +96,11 @@ class RehastimGeneric:
         self.info_send = []  # Command sent to the rehastim
         self.info_received = []  # Command received by the rehastim
         self.Type = Type
-        self.error_occured = False  # if true raise error if the stimulation is not working
+        self.error_occured = (
+            False  # If the stimulation is not working and error occured flag set to true, raise an error
+        )
 
-        self._start_thread_catch_data()  # Start the thread which catch rehastim and motomed data
+        self._start_thread_catch_data()  # Start the thread which catches rehastim and motomed data
 
         if self.reha_connected and not self.__comparison_thread_started:
             self._start_thread_catch_data()
@@ -171,22 +172,20 @@ class RehastimGeneric:
 
     def _start_thread_catch_data(self):
         """
-        Start the thread which catch rehastim data.
+        Start the thread which catches rehastim data and motomed data if motomed flag is true.
         """
         self.__comparison_thread_started = True
         self.__thread_catch_data = threading.Thread(target=self._thread_catch_data)
         self.__thread_catch_data.start()
 
     def _thread_catch_data(self):
-
         """
-        Compare the command sent and received by the rehastim. Catch the data sent by the motomed.
+        Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
 
         print("Thread started")
         time_to_sleep = 0.005
         while 1:
-
             list_send = self.return_list_send()
             list_ack = self.return_list_ack()
             tic = time.time()
@@ -248,7 +247,8 @@ class RehastimGeneric:
                                 if stop_stimulation_ack(packet) != "Stimulation stopped":
                                     self.error_occured = True
                                     raise RuntimeError(
-                                        "Error : StoppedChannelListMode :" + stop_stimulation_ack(packet))
+                                        "Error : StoppedChannelListMode :" + stop_stimulation_ack(packet)
+                                    )
                             elif packet[6] == self.Type["StartChannelListModeAck"].value:
                                 start_stimulation_ack(packet)
                                 if start_stimulation_ack(packet) != "Stimulation started":
@@ -282,16 +282,16 @@ class RehastimGeneric:
         else:
             angle = 255 * signed_int(packet[7:8]) + packet[8]
         if packet[10 + count] == 129:
-            speed = signed_int(packet[10 + count + 1: 10 + count + 2]) ^ self.STUFFING_KEY
+            speed = signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
-            speed = signed_int(packet[10 + count: 11 + count])
+            speed = signed_int(packet[10 + count : 11 + count])
 
         if packet[12 + count] == 129:
-            torque = signed_int(packet[12 + count + 1: 12 + count + 2]) ^ self.STUFFING_KEY
+            torque = signed_int(packet[12 + count + 1 : 12 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
-            torque = signed_int(packet[12 + count: 13 + count])
+            torque = signed_int(packet[12 + count : 13 + count])
 
         actual_values = np.array([angle, speed, torque])[:, np.newaxis]
         if self.motomed_values is None:
@@ -396,12 +396,12 @@ class RehastimGeneric:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 while next_stop_byte < 8:
                     try:
-                        next_stop_byte += packet_tmp[next_stop_byte + 1:].index(self.STOP_BYTE) + 1
+                        next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
                     except:
                         packet_list = []
                         break
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
-                packet_tmp = packet_tmp[next_stop_byte + 1:]
+                packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list
 
     def disconnect(self):
@@ -550,10 +550,10 @@ class RehastimGeneric:
             success_value = packet[20 + count]
 
         if packet[21 + count] == 129:
-            symmetry = signed_int(packet[21 + count: 21 + count + 1]) ^ self.STUFFING_KEY
+            symmetry = signed_int(packet[21 + count : 21 + count + 1]) ^ self.STUFFING_KEY
             count += 1
         else:
-            symmetry = signed_int(packet[21 + count: 21 + count + 1])
+            symmetry = signed_int(packet[21 + count : 21 + count + 1])
 
         if packet[22 + count] == 129:
             average_muscle_tone = packet[22 + count + 1] ^ self.STUFFING_KEY

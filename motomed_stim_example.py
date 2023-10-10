@@ -21,14 +21,15 @@ def init_rehastim():
     list_channels.append(channel_4)
 
     # Create our object Stimulator
-    stimulator = St(port="COM3", show_log=True,with_motomed=True) # /dev/ttyUSB0 for linux, COM3 for windows
+    stimulator = St(
+        port="/dev/ttyYSB0", show_log=True, with_motomed=True
+    )  # Check the port on which the stimulator is connected
     stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
 
     return stimulator, list_channels
 
 
 if __name__ == "__main__":
-
     stimulator, list_channels = init_rehastim()
     motomed = stimulator.motomed
 
@@ -56,7 +57,6 @@ if __name__ == "__main__":
             list_channels[1].set_amplitude(7)
             list_channels[2].set_amplitude(15)
             list_channels[3].set_amplitude(0)
-
             stimulator.start_stimulation(upd_list_channels=list_channels)
             tric_delt_stim = True
             bic_delt_stim = False
