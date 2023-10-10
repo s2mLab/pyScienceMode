@@ -261,10 +261,6 @@ class RehastimGeneric:
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
 
-            """
-            Catch the data sent by the motomed if connected.
-            """
-
     def _actual_values_ack(self, packet: bytes):
         """
         Ack of the actual values packet.

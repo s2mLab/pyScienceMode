@@ -1,7 +1,7 @@
 import time
 from pyScienceMode2.rehastim_interface import Stimulator
 
-port = "/dev/ttyUSB0"  # Check the port on which the stimulator is connected
+port = "/dev/ttyUSB0"  # Enter the port on which the stimulator is connected
 
 motomed = Stimulator(port, show_log=True, with_motomed=True).motomed
 motomed.init_phase_training(arm_training=True)

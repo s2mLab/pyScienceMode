@@ -23,7 +23,7 @@ def init_rehastim():
     # Create our object Stimulator
     stimulator = St(
         port="/dev/ttyYSB0", show_log=True, with_motomed=True
-    )  # Check the port on which the stimulator is connected
+    )  # Enter the port on which the stimulator is connected
     stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
 
     return stimulator, list_channels

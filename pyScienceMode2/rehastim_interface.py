@@ -33,7 +33,6 @@ class Stimulator(RehastimGeneric):
             If True, the log of the communication will be printed.
         with_motomed: bool
             If the motomed is connected to the Rehastim, put this flag to True.
-
         """
         self.list_channels = None
         self.stimulation_interval = None
