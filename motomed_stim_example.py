@@ -3,7 +3,7 @@ import time
 from pyScienceMode2.rehastim_interface import Stimulator as St
 from pyScienceMode2 import Channel as Ch
 
-#TODO : reset example files
+
 def init_rehastim():
     # Create a list of channels
     list_channels = []

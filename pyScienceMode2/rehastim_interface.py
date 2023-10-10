@@ -51,17 +51,9 @@ class Stimulator(RehastimGeneric):
         self.stimulation_started = None
 
         super().__init__(port, show_log, with_motomed)
-        if with_motomed :
+
+        if with_motomed:
             self.motomed = _Motomed(self)
-        # if with_motomed:
-        # packets = self._read_packet() #TODO : if time to work on it else remove
-        # for packet in packets :
-        #     if packet[6] == self.Type["GetMotomedModeAck"].value:
-        #          if self.get_motomed_mode_ack(packet) == 0:
-        #              self.motomed = _Motomed(self)
-        #              break
-
-
 
         # Connect to rehastim
 
