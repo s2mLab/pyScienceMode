@@ -206,7 +206,6 @@ class RehastimGeneric:
                                         print(f"Ack received by rehastim: {ack}")
                                 elif self.Type(packet[6]).name != "ActualValues":
                                     print(f"Ack received by rehastim: {self.Type(packet[6]).name}")
-
                             if packet[6] == self.Type["ActualValues"].value:
                                 self._actual_values_ack(packet)
                             elif packet[6] == Type["PhaseResult"].value:
@@ -235,10 +234,8 @@ class RehastimGeneric:
                     elif list_ack[i][6] == self.Type["ActualValues"].value and not self.is_motomed_connected:
                         self.error_occured = True
                         raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
-
                     elif list_send[i][6] + 1 == list_ack[i][6] and i > 0:
                         for packet in list_ack:
-
                             if packet[6] == self.Type["InitChannelListModeAck"].value:
                                 init_stimulation_ack(packet)
                                 if init_stimulation_ack(packet) != "Stimulation initialized":
