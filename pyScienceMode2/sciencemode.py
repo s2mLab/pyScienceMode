@@ -7,7 +7,7 @@ import serial
 import time
 import threading
 from pyScienceMode2.utils import *
-from .acks import (
+from pyScienceMode2.acks import (
     motomed_error_ack,
     rehastim_error,
     init_stimulation_ack,
