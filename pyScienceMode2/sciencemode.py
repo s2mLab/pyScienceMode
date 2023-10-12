@@ -56,7 +56,7 @@ class RehastimGeneric:
 
     BAUD_RATE = 460800
 
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device : str = None):
         """
         Init the class.
 
@@ -77,6 +77,7 @@ class RehastimGeneric:
             stopbits=serial.STOPBITS_ONE,
             timeout=0.1,
         )
+        self.device = device
         self.port_open = True
         self.time_last_cmd = 0
         self.packet_count = 0
@@ -126,6 +127,7 @@ class RehastimGeneric:
         -------
         bytes
         """
+
         if self.is_motomed_connected:
             if init:
                 while not self.last_init_ack:
@@ -140,7 +142,7 @@ class RehastimGeneric:
                 self.command_received.append(last_ack)
                 self.last_ack = None
             return last_ack
-        else:
+        if device == "Rehastim2":
             while 1:
                 packet = self._read_packet()
                 if packet and len(packet) != 0:
@@ -149,9 +151,10 @@ class RehastimGeneric:
                 if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                     print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
                     self.command_received.append(packet[-1])
-                    self._return_command_received()
         if self.error_occured:
             raise RuntimeError("Stimulation error")
+        if device =="RehastimP24" :
+            pass
 
         return packet[-1]
 
