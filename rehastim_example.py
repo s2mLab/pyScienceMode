@@ -1,10 +1,10 @@
 # Import Stimulator class
 from pyScienceMode2.rehastim_interface import Stimulator as St
+from pyScienceMode2 import Channel as Ch
+from time import sleep
 
 # Import Channel class
-from pyScienceMode2 import Channel as Ch
 
-from time import sleep
 
 # Create a list of channels
 list_channels = []

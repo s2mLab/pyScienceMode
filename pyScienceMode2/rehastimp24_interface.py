@@ -1,6 +1,7 @@
 import sciencemode
 from pyScienceMode2.sciencemode import RehastimGeneric
 import serial
+from pyScienceMode2.utils import *
 
 import time
 
@@ -71,7 +72,7 @@ class StimulatorP24(RehastimGeneric):
 
         print("Le niveau inférieur (lower level) a été initialisé avec succès.")
 
-    def start_stimulation(self):
+    def init_stimulation(self):
         """
         Démarre la stimulation sur le dispositif.
         """
@@ -79,9 +80,16 @@ class StimulatorP24(RehastimGeneric):
         ml_init.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
 
         if not sciencemode.smpt_send_ml_init(self.device, ml_init):
-            raise RuntimeError("Échec du démarrage de la stimulation.")
+            raise RuntimeError("failed to start stimulation")
 
         print("Stimulation démarrée avec succès.")
+
+    def start_stimulation(self,stimulation_duration: float = None, upd_list_channels: list = None):
+        if upd_list_channels is not None:
+            new_electrode_number = calc_electrode_number(upd_list_channels)
+
+        ml_update = sciencemode.ffi.new("Smpt_ml_update*")
+        ml_update.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
 
     def stop_stimulation(self):
         """

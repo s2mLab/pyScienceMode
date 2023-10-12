@@ -23,6 +23,7 @@ class Channel:
         pulse_width: int = 1,
         enable_low_frequency: bool = False,
         name: str = None,
+        device_type="rehastim2",
     ):
         """
         Create an object Channel.
@@ -43,12 +44,14 @@ class Channel:
         name: str
             Name of the muscle corresponding to the channel.
         """
+        self.device_type = device_type
         self._mode = self.MODE[mode]
         self._no_channel = no_channel
         self._amplitude = amplitude
         self._pulse_width = pulse_width
         self._enable_low_frequency = enable_low_frequency
         self._name = name if name else f"muscle_{self._no_channel}"
+        self._number_of_points = 0
 
         self.check_value_param()
 
@@ -65,16 +68,37 @@ class Channel:
             f"{self._enable_low_frequency=}"
         )
 
+    def check_device_type(self) :
+        """
+        Check if the device type is correct.
+        """
+        if self.device_type != "rehastim2" and self.device_type != "rehastim4":
+            raise ValueError("Error : Device type must be rehastim2 or rehastim4. Device type given : %s" % self.device_type)
+        return self.device_type
+
     def check_value_param(self):
         """
         Checks if the values given correspond are in limits.
         """
-        if self._amplitude < 0 or self._amplitude > 130:
-            raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
-        if self._no_channel < 1 or self._no_channel > 8:
-            raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
-        if self._pulse_width < 0 or self._pulse_width > 500:
-            raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
+        if self.device_type == "rehastim2":
+            if self._amplitude < 0 or self._amplitude > 130:
+                raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
+            if self._no_channel < 1 or self._no_channel > 8:
+                raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
+            if self._pulse_width < 0 or self._pulse_width > 500:
+                raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
+
+        """New parameters for rehastim4"""
+
+        if self.device_type == "rehastim4":
+            if self._amplitude < 0 or self._amplitude > 130:
+                raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
+            if self._no_channel < 1 or self._no_channel > 8:
+                raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
+            if self._pulse_width < 10 or self._pulse_width > 65520:
+                raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
+            if self._number_of_points < 0 or self._number_of_points > 15:
+                raise ValueError("Error : Number of points [0,15], given : %s" % self._number_of_points)
 
     def set_mode(self, mode: MODE):
         """
@@ -92,8 +116,14 @@ class Channel:
         """
         Set amplitude.
         """
-        self._amplitude = amp
-        self.check_value_param()
+        self.check_device_type() #Check the device used
+        if self.device_type == "rehastim2":
+            self._amplitude = amp
+            self.check_value_param()
+        if self.device_type == "rehastim4":
+            self._amplitude = amp
+            self.check_value_param()
+
 
     def get_amplitude(self) -> int:
         """
