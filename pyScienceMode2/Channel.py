@@ -112,7 +112,7 @@ class Channel:
         """
         return self._mode
 
-    def  set_amplitude(self, amp: int):
+    def set_amplitude(self, amp: int):
         """
         Set amplitude.
         """

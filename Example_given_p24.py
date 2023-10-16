@@ -1,20 +1,22 @@
-from time import sleep,time
-from pyScienceMode2 import Channel as Ch
 from sciencemode import sciencemode
-from pyScienceMode2.rehastimp24_interface import StimulatorP24 as St
-from pyScienceMode2.acks import *
-from pyScienceMode2.utils import *
-from pyScienceMode2.sciencemode import RehastimGeneric
+import time
 
-
+ack = sciencemode.ffi.new("Smpt_ack*")
 device = sciencemode.ffi.new("Smpt_device*")
+extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
 
-stimulator = St(port="COM4", show_log=True, device_type="RehastimP24")
+com = sciencemode.ffi.new("char[]", b"COM4")
 
-packet_number = sciencemode.smpt_packet_number_generator_next(device)
+ret = sciencemode.smpt_check_serial_port(com)  # Check if the port is available
+print("Port check is {}", ret)
+
+ret = sciencemode.smpt_open_serial_port(device, com)  # Open the port
+print("smpt_open_serial_port: {}", ret)
+
+packet_number = sciencemode.smpt_packet_number_generator_next(device)  # Generate the packet number
 print("next packet_number {}", packet_number)
-sleep(1)
-ret = sciencemode.smpt_send_get_extended_version(device, packet_number)
+
+ret = sciencemode.smpt_send_get_extended_version(device, packet_number)  #
 print("smpt_send_get_extended_version: {}", ret)
 
 ret = False
@@ -23,22 +25,17 @@ while not sciencemode.smpt_new_packet_received(device):
     time.sleep(1)
 
 sciencemode.smpt_last_ack(device, ack);
-print("last ack: {}",ack)
-print(f"command number {ack.command_number}, packet_number {ack.packet_number}")
+print("command number {}, packet_number {}", ack.command_number, ack.packet_number)
 
 ret = sciencemode.smpt_get_get_extended_version_ack(device, extended_version_ack)
 print("smpt_get_get_extended_version_ack: {}", ret)
 print("fw_hash {} ", extended_version_ack.fw_hash)
 
-
-
-# St.ll_init()
-
-# ll_init = sciencemode.ffi.new("Smpt_ll_init*")
-# ll_init.high_voltage_level = sciencemode.Smpt_High_Voltage_Default
-# ll_init.packet_number = sciencemode.smpt_packet_number_generator_next(device)
-# ret = sciencemode.smpt_send_ll_init(device, ll_init)
-# print("smpt_send_ll_init: {}", ret)
+ll_init = sciencemode.ffi.new("Smpt_ll_init*")
+ll_init.high_voltage_level = sciencemode.Smpt_High_Voltage_Default
+ll_init.packet_number = sciencemode.smpt_packet_number_generator_next(device)
+ret = sciencemode.smpt_send_ll_init(device, ll_init)
+print("smpt_send_ll_init: {}", ret)
 time.sleep(1)
 
 packet_number = sciencemode.smpt_packet_number_generator_next(device)

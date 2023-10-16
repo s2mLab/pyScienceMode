@@ -1,4 +1,4 @@
-import sciencemode
+from sciencemode import sciencemode
 from pyScienceMode2.sciencemode import RehastimGeneric
 import serial
 from pyScienceMode2.utils import *
@@ -16,7 +16,7 @@ class StimulatorP24(RehastimGeneric):
     BAUD_RATE = 3000000
     Flow_Control = True
 
-    def __init__(self, port: str, show_log: bool = False):
+    def __init__(self, port: str, show_log: bool = False, device_type: str = "RehastimP24"):
         """
         Creates an object stimulator for the rehastim P24.
 
@@ -29,13 +29,10 @@ class StimulatorP24(RehastimGeneric):
 
         """
 
-        self.device = sciencemode.ffi.new("Smpt_device*")
-        self.com = sciencemode.ffi.new("char[]", port.encode())
         self.list_channels = None
         self.stimulation_interval = None
         self.inter_pulse_interval = 2
         self.electrode_number = 0
-
         self.amplitude = []
         self.pulse_width = []
         self.mode = []
@@ -43,22 +40,16 @@ class StimulatorP24(RehastimGeneric):
         self.given_channels = []
         self.stimulation_started = None
         self.point_number = 0
+        self.show_log = show_log
 
-        super().__init__(port, show_log)
-        self.port = serial.Serial(
-            port,
-            self.BAUD_RATE,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_TWO,
-            timeout=0.1,
-        )
-        self._initialize_device()
+        super().__init__(port, show_log, device_type=device_type)
 
     def _initialize_device(self):
         """
         Initialize the device.
         """
+        com = sciencemode.ffi.new("char[]", self.port.port.encode())
+        ret = sciencemode.smpt_check_serial_port(com)
         if not sciencemode.smpt_open_serial_port(self.device, self.com):
             raise ConnectionError(f"Impossible d'ouvrir le port série {self.com.decode()}.")
 

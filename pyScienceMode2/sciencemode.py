@@ -15,6 +15,7 @@ from pyScienceMode2.acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
 )
+from sciencemode import sciencemode
 import numpy as np
 
 # Notes :
@@ -56,7 +57,7 @@ class RehastimGeneric:
 
     BAUD_RATE = 460800
 
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device : str = None):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type : str = None):
         """
         Init the class.
 
@@ -69,16 +70,35 @@ class RehastimGeneric:
         with_motomed : bool
             If the motomed is connected to the Rehastim, put this flag to True.
         """
-        self.port = serial.Serial(
-            port,
-            self.BAUD_RATE,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_EVEN,
-            stopbits=serial.STOPBITS_ONE,
-            timeout=0.1,
-        )
-        self.device = device
-        self.port_open = True
+        self.device_type = device_type
+        self.port_name = port
+        if self.device_type == "Rehastim2":
+            self.port = serial.Serial(
+                    port,
+                    self.BAUD_RATE,
+                    bytesize=serial.EIGHTBITS,
+                    parity=serial.PARITY_EVEN,
+                    stopbits=serial.STOPBITS_ONE,
+                    timeout=0.1,
+                )
+        elif self.device_type == "RehastimP24":
+            self.device = sciencemode.ffi.new("Smpt_device*")
+            self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
+            # self.port = serial.Serial(
+            #     port,
+            #     self.BAUD_RATE,
+            #     bytesize=serial.EIGHTBITS,
+            #     parity=serial.PARITY_NONE,
+            #     stopbits=serial.STOPBITS_TWO,
+            #     timeout=0.1,)
+            if not self.check_serial_port():
+                raise RuntimeError(f"Failed to access port {self.port_name}.")
+
+            if not self.open_serial_port():
+                raise RuntimeError(f"Unable to open port {self.port_name}.")
+        else:
+            raise ValueError("Device type not recognized")
+
         self.time_last_cmd = 0
         self.packet_count = 0
         self.reha_connected = False
@@ -114,6 +134,24 @@ class RehastimGeneric:
             self._start_thread_catch_ack()
 
         self.Type = Type
+
+    def check_serial_port(self):
+        """
+        Verify if the serial port is available and functional.
+        """
+        ret = sciencemode.smpt_check_serial_port(self.com)
+        if self.show_log:
+            print(f"Port check for {self.port_name} is {'successful' if ret else 'unsuccessful'}")
+        return ret
+
+    def open_serial_port(self):
+        """
+        Try to open the serial port.
+        """
+        ret = sciencemode.smpt_open_serial_port(self.device, self.com)
+        if self.show_log:
+            print(f"smpt_open_serial_port for {self.port_name}: {'successful' if ret else 'unsuccessful'}")
+        return ret
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
