@@ -23,7 +23,7 @@ class Channel:
         pulse_width: int = 1,
         enable_low_frequency: bool = False,
         name: str = None,
-        device_type="rehastim2",
+        device_type="Rehastim2",
     ):
         """
         Create an object Channel.
@@ -72,7 +72,7 @@ class Channel:
         """
         Check if the device type is correct.
         """
-        if self.device_type != "rehastim2" and self.device_type != "rehastim4":
+        if self.device_type != "Rehastim2" and self.device_type != "RehastimP24":
             raise ValueError("Error : Device type must be rehastim2 or rehastim4. Device type given : %s" % self.device_type)
         return self.device_type
 
@@ -80,7 +80,7 @@ class Channel:
         """
         Checks if the values given correspond are in limits.
         """
-        if self.device_type == "rehastim2":
+        if self.device_type == "Rehastim2":
             if self._amplitude < 0 or self._amplitude > 130:
                 raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
             if self._no_channel < 1 or self._no_channel > 8:
@@ -88,9 +88,9 @@ class Channel:
             if self._pulse_width < 0 or self._pulse_width > 500:
                 raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
 
-        """New parameters for rehastim4"""
+        """New parameters for rehastimp24"""
 
-        if self.device_type == "rehastim4":
+        if self.device_type == "RehastimP24":
             if self._amplitude < 0 or self._amplitude > 130:
                 raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
             if self._no_channel < 1 or self._no_channel > 8:

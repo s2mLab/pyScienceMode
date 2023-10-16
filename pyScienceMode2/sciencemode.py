@@ -96,6 +96,7 @@ class RehastimGeneric:
 
             if not self.open_serial_port():
                 raise RuntimeError(f"Unable to open port {self.port_name}.")
+            # self.get_next_packet_number()
         else:
             raise ValueError("Device type not recognized")
 
@@ -152,6 +153,15 @@ class RehastimGeneric:
         if self.show_log:
             print(f"smpt_open_serial_port for {self.port_name}: {'successful' if ret else 'unsuccessful'}")
         return ret
+
+    def get_next_packet_number(self):
+        if hasattr(self, 'device') and self.device is not None:
+            packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+            if self.show_log:
+                print(f"Next packet number is : {packet_number}")
+            return packet_number
+        else:
+            raise AttributeError("device attribute not found")
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """

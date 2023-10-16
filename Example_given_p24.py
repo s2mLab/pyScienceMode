@@ -85,7 +85,7 @@ for i in range(8):
 
 ret = sciencemode.smpt_send_ml_update(device, ml_update)
 print("smpt_send_ml_update: {}", ret)
-
+#
 ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
 
 for i in range(10):
