@@ -38,7 +38,7 @@ list_channels.append(channel_1)
 
 # Create our object Stimulator
 stimulator = St(
-    port="/dev/ttyUSB0",  # Enter the port on which the stimulator is connected
+    port="COM4",  # Enter the port on which the stimulator is connected
     show_log=True,
 )
 

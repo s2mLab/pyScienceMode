@@ -21,6 +21,7 @@ class Stimulator(RehastimGeneric):
         port: str,
         show_log: bool = False,
         with_motomed: bool = False,
+        device_type: str = "Rehastim2",
     ):
         """
         Creates an object stimulator.
@@ -48,15 +49,20 @@ class Stimulator(RehastimGeneric):
         self.given_channels = []
         self.stimulation_started = None
 
-        super().__init__(port, show_log, with_motomed)
+        super().__init__(port, show_log, with_motomed, device_type=device_type)
 
         if with_motomed:
             self.motomed = _Motomed(self)
 
         # Connect to rehastim
+
         packet = None
+
         while packet is None:
+
             packet = self._get_last_ack(init=True)
+
+
 
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
 

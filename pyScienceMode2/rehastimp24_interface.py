@@ -40,9 +40,11 @@ class StimulatorP24(RehastimGeneric):
         self.given_channels = []
         self.stimulation_started = None
         self.point_number = 0
+        self.list_points = []
         self.show_log = show_log
 
         super().__init__(port, show_log, device_type=device_type)
+        self.nbr_points = 0
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -58,6 +60,7 @@ class StimulatorP24(RehastimGeneric):
         self.mode = []
         self.muscle = []
         self.given_channels = []
+        self.nbr_points = 0
 
         check_list_channel_order(list_channels)
 
@@ -107,22 +110,30 @@ class StimulatorP24(RehastimGeneric):
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
                 raise RuntimeError("Error update: all channels have not been initialised")
+            self.list_channels = upd_list_channels
+
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
-        for i in range(len(upd_list_channels)):
+
+        for i, channel in enumerate(upd_list_channels):
             ml_update.enable_channel[i] = True
-            ml_update.channel_config[i].period = 20
-            ml_update.channel_config[i].amplitude = 10
-            ml_update.channel_config[i].number_of_points = 3
-            ml_update.channel_config[i].points[0].time = 100
-            ml_update.channel_config[i].points[0].current = 10
-            ml_update.channel_config[i].points[1].time = 100
-            ml_update.channel_config[i].points[1].current = 10
-            ml_update.channel_config[i].points[2].time = 100
-            ml_update.channel_config[i].points[2].current = -10
+            ml_update.channel_config[i].period = 20  # Vous pouvez également envisager de rendre cette valeur configurable
+            ml_update.channel_config[i].number_of_points = len(self.list_points)
+
+            for j, point in enumerate(self.list_points):
+                ml_update.channel_config[i].points[j].time = point['time']
+                ml_update.channel_config[i].points[j].current = point['current']
+
+
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("failed to start stimulation")
         print("Stimulation started")
+        time_start_stim = time.time()
+        if stimulation_duration is not None:
+            if stimulation_duration < time.time() - time_start_stim:
+                raise RuntimeError("Asked stimulation duration too short")
+            time.sleep(stimulation_duration - (time.time() - time_start_stim))
+            self.stop_stimulation()
 
     def stop_stimulation(self):
         """
@@ -134,3 +145,7 @@ class StimulatorP24(RehastimGeneric):
             raise RuntimeError("Échec de l'arrêt de la stimulation.")
 
         print("Stimulation arrêtée avec succès.")
+
+    def add_point_configuration(self, time, current):
+        point_config = {'time': time, 'current': current}
+        self.list_points.append(point_config)

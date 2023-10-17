@@ -91,6 +91,8 @@ class RehastimGeneric:
             #     parity=serial.PARITY_NONE,
             #     stopbits=serial.STOPBITS_TWO,
             #     timeout=0.1,)
+            # if self.port.isOpen():
+            #     print(self.port.name + ' is open...'
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")
 
@@ -190,7 +192,9 @@ class RehastimGeneric:
                 self.command_received.append(last_ack)
                 self.last_ack = None
             return last_ack
-        if device == "Rehastim2":
+        if self.device_type == "RehastimP24" :
+            pass
+        if self.device_type == "Rehastim2":
             while 1:
                 packet = self._read_packet()
                 if packet and len(packet) != 0:
@@ -201,8 +205,6 @@ class RehastimGeneric:
                     self.command_received.append(packet[-1])
         if self.error_occured:
             raise RuntimeError("Stimulation error")
-        if device =="RehastimP24" :
-            pass
 
         return packet[-1]
 

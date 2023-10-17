@@ -3,8 +3,10 @@ from pyScienceMode2 import Channel as Ch
 from sciencemode import sciencemode
 from pyScienceMode2.rehastimp24_interface import StimulatorP24 as St
 
-
+# list which contains the channels you want to use
 list_channels = []
+
+# Create an object channel
 
 channel_1 = Ch.Channel(mode="Single", no_channel=1, amplitude=20, pulse_width=100, name="Biceps", device_type="RehastimP24")
 
@@ -64,9 +66,19 @@ sleep(1)
 # packet_number = sciencemode.smpt_packet_number_generator_next(device)
 # ret = sciencemode.smpt_send_ll_stop(device, packet_number)
 # print("smpt_send_ll_stop: {}", ret)
-stimulator.init_stimulation(list_channels=list_channels, stimulation_interval=100)
+# Init the stimulation. Use it before starting the stimulation or after stopping it.
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
+stimulator.init_stimulation(list_channels=list_channels, stimulation_interval=600)
+
+# Add points with the configuration you want to create your shape pulse
+
+stimulator.add_point_configuration(time=100, current=10)
+stimulator.add_point_configuration(time=100, current=-10)
+
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=100)
+
+sleep(4)
+stimulator.stop_stimulation()
 
 
 # ml_init = sciencemode.ffi.new("Smpt_ml_init*")
