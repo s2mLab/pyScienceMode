@@ -4,12 +4,12 @@ import time
 ack = sciencemode.ffi.new("Smpt_ack*")
 device = sciencemode.ffi.new("Smpt_device*")
 extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
-
+get_device_info_ack = sciencemode.ffi.new("Smpt_get_device_info_ack*")
 com = sciencemode.ffi.new("char[]", b"COM4")
 
 ret = sciencemode.smpt_check_serial_port(com)  # Check if the port is available
 print("Port check is {}", ret)
-
+sciencemode.spmt_
 ret = sciencemode.smpt_open_serial_port(device, com)  # Open the port
 print("smpt_open_serial_port: {}", ret)
 

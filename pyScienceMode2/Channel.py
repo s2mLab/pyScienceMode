@@ -24,6 +24,7 @@ class Channel:
         enable_low_frequency: bool = False,
         name: str = None,
         device_type="Rehastim2",
+        period : float = 20.0,
     ):
         """
         Create an object Channel.
@@ -51,9 +52,9 @@ class Channel:
         self._pulse_width = pulse_width
         self._enable_low_frequency = enable_low_frequency
         self._name = name if name else f"muscle_{self._no_channel}"
-        self._number_of_points = 0
+        self._period = period  # NEW : period of the channel
 
-        self.check_value_param()
+        self.check_value_param() #TODO check new parameters
 
     def __str__(self) -> str:
         """
@@ -97,8 +98,8 @@ class Channel:
                 raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
             if self._pulse_width < 10 or self._pulse_width > 65520:
                 raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
-            if self._number_of_points < 0 or self._number_of_points > 15:
-                raise ValueError("Error : Number of points [0,15], given : %s" % self._number_of_points)
+            # if self._number_of_points < 0 or self._number_of_points > 15:
+            #     raise ValueError("Error : Number of points [0,15], given : %s" % self._number_of_points)
 
     def set_mode(self, mode: MODE):
         """
@@ -180,3 +181,16 @@ class Channel:
         Returns enable_low_frequency.
         """
         return self._enable_low_frequency
+
+    def set_period(self, period: float):
+        """
+        Set the period for a channel
+        """
+        self._period = period
+        self.check_value_param()  # TODO check new parameters
+
+    def get_period(self) -> float:
+        """
+        Returns the period of a channel
+        """
+        return self._period

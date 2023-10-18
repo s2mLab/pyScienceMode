@@ -46,7 +46,7 @@ class StimulatorP24(RehastimGeneric):
         super().__init__(port, show_log, device_type=device_type)
         self.nbr_points = 0
 
-    def set_stimulation_signal(self, list_channels: list):
+    def set_stimulation_signal(self, list_channels: list): #TODO check new parameters
         """
         Sets or updates the stimulation's parameters.
 
@@ -117,7 +117,7 @@ class StimulatorP24(RehastimGeneric):
 
         for i, channel in enumerate(upd_list_channels):
             ml_update.enable_channel[i] = True
-            ml_update.channel_config[i].period = 20  # Vous pouvez également envisager de rendre cette valeur configurable
+            ml_update.channel_config[i].period = channel.period
             ml_update.channel_config[i].number_of_points = len(self.list_points)
 
             for j, point in enumerate(self.list_points):
