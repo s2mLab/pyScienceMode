@@ -4,12 +4,12 @@ import time
 ack = sciencemode.ffi.new("Smpt_ack*")
 device = sciencemode.ffi.new("Smpt_device*")
 extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
-get_device_info_ack = sciencemode.ffi.new("Smpt_get_device_info_ack*")
+
 com = sciencemode.ffi.new("char[]", b"COM4")
 
 ret = sciencemode.smpt_check_serial_port(com)  # Check if the port is available
 print("Port check is {}", ret)
-sciencemode.spmt_
+
 ret = sciencemode.smpt_open_serial_port(device, com)  # Open the port
 print("smpt_open_serial_port: {}", ret)
 
@@ -75,27 +75,25 @@ ml_update.packet_number = sciencemode.smpt_packet_number_generator_next(device)
 for i in range(8):
     ml_update.enable_channel[i] = True
     ml_update.channel_config[i].period = 20
-    ml_update.channel_config[i].number_of_points = 1
+    ml_update.channel_config[i].number_of_points = 3
     ml_update.channel_config[i].points[0].time = 100
-    ml_update.channel_config[i].points[0].current = 15
-    # ml_update.channel_config[i].points[1].time = 100
-    # ml_update.channel_config[i].points[1].current = 10
-    # ml_update.channel_config[i].points[2].time = 100
-    # ml_update.channel_config[i].points[2].current = -10
+    ml_update.channel_config[i].points[0].current = 20
+    ml_update.channel_config[i].points[1].time = 100
+    ml_update.channel_config[i].points[1].current = 20
+    ml_update.channel_config[i].points[2].time = 100
+    ml_update.channel_config[i].points[2].current = -20
 
 ret = sciencemode.smpt_send_ml_update(device, ml_update)
 print("smpt_send_ml_update: {}", ret)
 
 ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
 
-for i in range(20):
-
-    # ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
+for i in range(10):
+    ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
     ml_get_current_data.packet_number = sciencemode.smpt_packet_number_generator_next(device)
     ret = sciencemode.smpt_send_ml_get_current_data(device, ml_get_current_data)
     print("smpt_send_ml_get_current_data: {}", ret)
     time.sleep(1)
-
 
 packet_number = sciencemode.smpt_packet_number_generator_next(device)
 ret = sciencemode.smpt_send_ml_stop(device, packet_number)

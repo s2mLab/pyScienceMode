@@ -1,7 +1,7 @@
 """
 Class used to construct a channel for each different electrode.
 """
-
+from pyScienceMode2.stimulation_point import Point
 
 class Channel:
     """
@@ -14,6 +14,7 @@ class Channel:
     """
 
     MODE = {"Single": 0, "Doublet": 1, "Triplet": 2}
+    MAX_POINTS = 16
 
     def __init__(
         self,
@@ -45,7 +46,7 @@ class Channel:
         name: str
             Name of the muscle corresponding to the channel.
         """
-        self.device_type = device_type
+        self.device_type = device_type  # NEW : Check if the device is rehastim2 or rehastimP24
         self._mode = self.MODE[mode]
         self._no_channel = no_channel
         self._amplitude = amplitude
@@ -53,7 +54,7 @@ class Channel:
         self._enable_low_frequency = enable_low_frequency
         self._name = name if name else f"muscle_{self._no_channel}"
         self._period = period  # NEW : period of the channel
-
+        self.list_point = [] # NEW : list of points for the channel
         self.check_value_param() #TODO check new parameters
 
     def __str__(self) -> str:
@@ -194,3 +195,15 @@ class Channel:
         Returns the period of a channel
         """
         return self._period
+
+    def add_point(self, time: float, current: float):
+        """
+        Add a point to the list of points for a channel. One channel can pilot 16 points.
+        :param time: pulse width of the point
+        :param current: current of the point
+        """
+        if len(self.list_point) < Channel.MAX_POINTS:
+            point = Point(time, current)
+            self.list_point.append(point)
+        else:
+            raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
