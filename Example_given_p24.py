@@ -4,6 +4,7 @@ import time
 ack = sciencemode.ffi.new("Smpt_ack*")
 device = sciencemode.ffi.new("Smpt_device*")
 extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
+ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
 
 com = sciencemode.ffi.new("char[]", b"COM4")
 
@@ -89,11 +90,35 @@ print("smpt_send_ml_update: {}", ret)
 ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
 
 for i in range(10):
+    # ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
+    # ml_get_current_data.packet_number = sciencemode.smpt_packet_number_generator_next(device)
+    # ret = sciencemode.smpt_send_ml_get_current_data(device, ml_get_current_data)
+    # b = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
+    # a = sciencemode.smpt_get_ml_get_current_data_ack(device, ml_get_current_data)
+    # print("smpt_send_ml_get_current_data: {}", ret)
+    # time.sleep(1)
     ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
     ml_get_current_data.packet_number = sciencemode.smpt_packet_number_generator_next(device)
     ret = sciencemode.smpt_send_ml_get_current_data(device, ml_get_current_data)
+    # a = sciencemode.smpt_get_ml_get_current_data_ack(device, ml_get_current_data)
     print("smpt_send_ml_get_current_data: {}", ret)
     time.sleep(1)
+    while sciencemode.smpt_new_packet_received(device):
+        sciencemode.smpt_clear_ack(ack),
+        sciencemode.smpt_last_ack(device, ack)
+        if ack.command_number != sciencemode.Smpt_Cmd_Ml_Get_Current_Data_Ack:
+            continue
+        ret = sciencemode.smpt_get_ml_get_current_data_ack(device, ml_get_current_data_ack)
+        if not ret:
+            print("smpt_get_ml_get_current_data_ack:", ret)
+        error_on_channel = False
+        for i in range(8):
+            if ml_get_current_data_ack.channel_data.channel_state[i] != sciencemode.Smpt_Ml_Channel_State_Ok:
+                error_on_channel = True
+        if error_on_channel:
+            print("Error on channel")
+        else:
+            print("All channels ok")
 
 packet_number = sciencemode.smpt_packet_number_generator_next(device)
 ret = sciencemode.smpt_send_ml_stop(device, packet_number)

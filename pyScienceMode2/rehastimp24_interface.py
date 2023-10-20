@@ -1,15 +1,11 @@
 from sciencemode import sciencemode
 from pyScienceMode2.sciencemode import RehastimGeneric
-import serial
 from pyScienceMode2.utils import *
-
-
 import time
-
 
 class StimulatorP24(RehastimGeneric):
     """
-    Class used for the communication with Rehastim P24.
+    Class used for the communication with RehastimP24.
     """
 
     MAX_PACKET_BYTES = 69
@@ -31,45 +27,12 @@ class StimulatorP24(RehastimGeneric):
         """
 
         self.list_channels = None
-        self.stimulation_interval = None
-        self.inter_pulse_interval = 2
         self.electrode_number = 0
-        self.amplitude = []
-        self.pulse_width = []
-        self.mode = []
-        self.muscle = []
-        self.given_channels = []
         self.stimulation_started = None
-        self.point_number = 0
-        self.list_points = []
         self.show_log = show_log
 
+
         super().__init__(port, show_log, device_type=device_type)
-        self.nbr_points = 0
-
-    def set_stimulation_signal(self, list_channels: list): #TODO check new parameters
-        """
-        Sets or updates the stimulation's parameters.
-
-        Parameters
-        ----------
-        list_channels: list[Channel]
-            Contain the channels and their parameters.
-        """
-        self.amplitude = []
-        self.pulse_width = []
-        self.mode = []
-        self.muscle = []
-        self.given_channels = []
-        self.nbr_points = 0
-
-        check_list_channel_order(list_channels)
-
-        for i in range(len(list_channels)):
-            self.amplitude.append(list_channels[i].get_amplitude())
-            self.pulse_width.append(list_channels[i].get_pulse_width())
-            self.mode.append(list_channels[i].get_mode())
-            self.given_channels.append(list_channels[i].get_no_channel())
 
     def ll_init(self):
         ll_init = sciencemode.ffi.new("Smpt_ll_init*")
@@ -84,17 +47,13 @@ class StimulatorP24(RehastimGeneric):
 
     def init_stimulation(self, list_channels: list):
         """
-        Démarre la stimulation sur le dispositif.
+        Initialize the ml stimulation on the device.
         """
-
+        if self.stimulation_started:
+            self.stop_stimulation()
         check_unique_channel(list_channels)
-
         self.list_channels = list_channels
-
-
         self.electrode_number = calc_electrode_number(self.list_channels)
-
-        self.set_stimulation_signal(self.list_channels)
 
         ml_init = sciencemode.ffi.new("Smpt_ml_init*")
         ml_init.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
@@ -123,15 +82,10 @@ class StimulatorP24(RehastimGeneric):
                 ml_update.channel_config[i].points[j].time = point.time
                 ml_update.channel_config[i].points[j].current = point.current
 
-            # for j, point in enumerate(self.list_points):
-            #     ml_update.channel_config[i].points[j].time = point['time']
-            #     ml_update.channel_config[i].points[j].current = point['current']
-
 
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("failed to start stimulation")
         print("Stimulation started")
-        time_start_stim = time.time()
 
         # This code is used to set the stimulation duration
 
@@ -143,29 +97,30 @@ class StimulatorP24(RehastimGeneric):
             ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
 
             if ret:
-                print(f"smpt_send_ml_get_current_data: {ret}")
+                print(f"Stimulated: {ret}")
             else:
                 print("Failed to get current data.")
 
             time.sleep(1)
+        self.stimulation_started = True
 
 
     def stop_stimulation(self):
         """
-        Arrête la stimulation sur le dispositif.
+        Stop the stimulation on the device
         """
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
 
         if not sciencemode.smpt_send_ml_stop(self.device, packet_number):
-            raise RuntimeError("Échec de l'arrêt de la stimulation.")
+            raise RuntimeError("failure to stop stimulation.")
 
-        print("Stimulation arrêtée avec succès.")
+        print("Stimulation stopped.")
+        self.stimulation_started = False
 
     def close_port(self):
+        """
+        Close the serial port
+        """
         ret = sciencemode.smpt_close_serial_port(self.device)
 
         return ret
-
-    def add_point_configuration(self, time, current):
-        point_config = {'time': time, 'current': current}
-        self.list_points.append(point_config)
