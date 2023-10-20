@@ -84,15 +84,7 @@ class RehastimGeneric:
         elif self.device_type == "RehastimP24":
             self.device = sciencemode.ffi.new("Smpt_device*")
             self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
-            # self.port = serial.Serial(
-            #     port,
-            #     self.BAUD_RATE,
-            #     bytesize=serial.EIGHTBITS,
-            #     parity=serial.PARITY_NONE,
-            #     stopbits=serial.STOPBITS_TWO,
-            #     timeout=0.1,)
-            # if self.port.isOpen():
-            #     print(self.port.name + ' is open...'
+            self.ack = sciencemode.ffi.new("Smpt_ack*")
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")
 

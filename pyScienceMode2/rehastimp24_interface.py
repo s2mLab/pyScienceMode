@@ -33,6 +33,21 @@ class StimulatorP24(RehastimGeneric):
 
 
         super().__init__(port, show_log, device_type=device_type)
+    def get_extended_version(self):
+        extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
+        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        ret = sciencemode.smpt_send_get_extended_version(self.device, packet_number)
+        print("smpt_send_get_extended_version: {}", ret)
+        ret = False
+        while not sciencemode.smpt_new_packet_received(self.device):
+            time.sleep(1)
+        sciencemode.smpt_last_ack(self.device, self.ack)
+        print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
+
+        ret = sciencemode.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
+        print("smpt_get_get_extended_version_ack: {}", ret)
+        print("fw_hash {} ", extended_version_ack.fw_hash)
+        return ret
 
     def ll_init(self):
         ll_init = sciencemode.ffi.new("Smpt_ll_init*")

@@ -18,7 +18,9 @@ sleep(1)
 
 # Init the stimulation. Use it before starting the stimulation or after stopping it.
 
+stimulator.get_extended_version()
 stimulator.init_stimulation(list_channels=list_channels)
+
 
 # Add points with the configuration you want to create your shape pulse
 

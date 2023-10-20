@@ -5,6 +5,8 @@ ack = sciencemode.ffi.new("Smpt_ack*")
 device = sciencemode.ffi.new("Smpt_device*")
 extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
 ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
+ml_get_current_stimulation_state = sciencemode.ffi.new("Smpt_Ml_Channel_State*")
+ml_get_current_stim_state = sciencemode.ffi.new("Smpt_Ml_Stimulation_State*")
 
 com = sciencemode.ffi.new("char[]", b"COM4")
 
@@ -73,7 +75,7 @@ time.sleep(1)
 
 ml_update = sciencemode.ffi.new("Smpt_ml_update*")
 ml_update.packet_number = sciencemode.smpt_packet_number_generator_next(device)
-for i in range(8):
+for i in range(3):
     ml_update.enable_channel[i] = True
     ml_update.channel_config[i].period = 20
     ml_update.channel_config[i].number_of_points = 3
@@ -97,10 +99,10 @@ for i in range(10):
     # a = sciencemode.smpt_get_ml_get_current_data_ack(device, ml_get_current_data)
     # print("smpt_send_ml_get_current_data: {}", ret)
     # time.sleep(1)
+
     ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
     ml_get_current_data.packet_number = sciencemode.smpt_packet_number_generator_next(device)
     ret = sciencemode.smpt_send_ml_get_current_data(device, ml_get_current_data)
-    # a = sciencemode.smpt_get_ml_get_current_data_ack(device, ml_get_current_data)
     print("smpt_send_ml_get_current_data: {}", ret)
     time.sleep(1)
     while sciencemode.smpt_new_packet_received(device):
@@ -112,12 +114,23 @@ for i in range(10):
         if not ret:
             print("smpt_get_ml_get_current_data_ack:", ret)
         error_on_channel = False
-        for i in range(8):
-            if ml_get_current_data_ack.channel_data.channel_state[i] != sciencemode.Smpt_Ml_Channel_State_Ok:
+        for j in range(2):
+            print("stimulation state", ml_get_current_data_ack.channel_data.channel_state[j])
+            if ml_get_current_data_ack.channel_data.channel_state[j] != sciencemode.Smpt_Ml_Channel_State_Ok:
                 error_on_channel = True
         if error_on_channel:
-            print("Error on channel")
+            if ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Electrode_Error:
+                raise RuntimeError("Electrode error")
+            if ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Timeout_Error:
+                raise RuntimeError("Timeout error")
+            if ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Low_Current_Error:
+                raise RuntimeError("Current error")
+            if ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Last_Item:
+                raise RuntimeError("Last item error")
+            raise("Error on channel", ml_get_current_data_ack.channel_data.channel_state[j])
+            # print("Error on channel")
         else:
+
             print("All channels ok")
 
 packet_number = sciencemode.smpt_packet_number_generator_next(device)
