@@ -9,10 +9,14 @@ list_channels = []
 # Create an object channel
 
 channel_1 = Ch.Channel(mode="Single", no_channel=1, amplitude=20, pulse_width=100, name="Biceps", device_type="RehastimP24", period=10)
+channel_2 = Ch.Channel(mode="Single", no_channel=2, amplitude=20, pulse_width=100, name="Triceps", device_type="RehastimP24", period=10)
 
 list_channels.append(channel_1)
+list_channels.append(channel_2)
 
-stimulator = St(port="COM4", show_log=True, device_type="RehastimP24")
+stimulator = St(port="COM4", show_log=True)
+
+# stimulator.ll_init()
 
 sleep(1)
 
@@ -25,8 +29,10 @@ stimulator.init_stimulation(list_channels=list_channels)
 # Add points with the configuration you want to create your shape pulse
 
 channel_1.add_point(100, 10)
-channel_1.add_point(100, 20)
+channel_1.add_point(100, -10)
 
+channel_2.add_point(100, 10)
+channel_2.add_point(100, -10)
 
 stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
 

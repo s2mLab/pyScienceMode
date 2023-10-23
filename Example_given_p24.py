@@ -69,6 +69,7 @@ print("smpt_send_ll_stop: {}", ret)
 
 ml_init = sciencemode.ffi.new("Smpt_ml_init*")
 ml_init.packet_number = sciencemode.smpt_packet_number_generator_next(device)
+ml_init.stop_all_channels_on_error = True  # if true all channels will stop if one channel has an error
 ret = sciencemode.smpt_send_ml_init(device, ml_init)
 print("smpt_send_ml_init: {}", ret)
 time.sleep(1)
