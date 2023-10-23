@@ -3,7 +3,7 @@ Class used to construct a channel for each different electrode.
 """
 from pyScienceMode2.stimulation_point import Point
 
-class Channel:
+class Channel: #TODO : adapt no_channel with the wrapper command
     """
     Class representing a channel.
 
@@ -55,7 +55,7 @@ class Channel:
         self._name = name if name else f"muscle_{self._no_channel}"
         self._period = period  # NEW : period of the channel
         self.list_point = [] # NEW : list of points for the channel
-        self.check_value_param() #TODO check new parameters
+        self.check_value_param()
 
     def __str__(self) -> str:
         """
@@ -172,7 +172,7 @@ class Channel:
         Set the period for a channel
         """
         self._period = period
-        self.check_value_param()  # TODO check new parameters
+        self.check_value_param()
 
     def get_period(self) -> float:
         """

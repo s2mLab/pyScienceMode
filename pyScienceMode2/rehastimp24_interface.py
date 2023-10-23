@@ -31,36 +31,42 @@ class StimulatorP24(RehastimGeneric):
         self.stimulation_started = None
         self.show_log = show_log
         super().__init__(port, show_log, device_type = "RehastimP24")
-    def get_extended_version(self):
+
+    def get_extended_version(self) -> bool:
+        """
+        Get the extended version of the device.
+        """
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
         ret = sciencemode.smpt_send_get_extended_version(self.device, packet_number)
         print("smpt_send_get_extended_version: {}", ret)
         ret = False
-        while not sciencemode.smpt_new_packet_received(self.device):
-            time.sleep(1)
-        sciencemode.smpt_last_ack(self.device, self.ack)
-        print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
-
+        self._get_last_ack()
         ret = sciencemode.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
         print("smpt_get_get_extended_version_ack: {}", ret)
         print("fw_hash {} ", extended_version_ack.fw_hash)
         return ret
 
     def ll_init(self):
+        """
+        Initialize the lower level of the device. The low-level is used for defining a custom shaped pulse.
+        Each stimulation pulse needs to triggered from the PC.
+        """
         ll_init = sciencemode.ffi.new("Smpt_ll_init*")
-        ll_init.high_voltage_level = sciencemode.Smpt_High_Voltage_Default
+        ll_init.high_voltage_level = sciencemode.Smpt_High_Voltage_Default  # This switches on the high voltage source
         ll_init.packet_number = self.get_next_packet_number()
 
         if not sciencemode.smpt_send_ll_init(self.device, ll_init):
             raise RuntimeError("Ll initialization failed.")
-        print("lower level initialized")
-        # self.get_next_packet_number()
+        print("lower level initialized") #TODO Check cmd and ack number
+        self.get_next_packet_number()
         while not sciencemode.smpt_new_packet_received(self.device):
             time.sleep(1)
         sciencemode.smpt_last_ack(self.device, self.ack)
-        ll_init_ack1 = sciencemode.ffi.new("Smpt_ll_init_ack*")
-        ll_init_ack = sciencemode.smpt_get_ll_init_ack(self.device,ll_init_ack1)
+        ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
+        ll_init_ack.result = sciencemode.smpt_get_ll_init_ack(self.device,ll_init_ack)
+        print("result {}", ll_init_ack.result)
+
         print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
 
     def init_stimulation(self, list_channels: list):
@@ -74,7 +80,7 @@ class StimulatorP24(RehastimGeneric):
         self.electrode_number = calc_electrode_number(self.list_channels)
 
         ml_init = sciencemode.ffi.new("Smpt_ml_init*")
-        ml_init.stop_all_channels_on_error = False  # if true all channels will stop if one channel has an error
+        ml_init.stop_all_channels_on_error = True  # if true all channels will stop if one channel has an error
         ml_init.packet_number = self.get_next_packet_number()
 
         if not sciencemode.smpt_send_ml_init(self.device, ml_init):
@@ -82,10 +88,7 @@ class StimulatorP24(RehastimGeneric):
 
         print("Stimulation initialized")
         self._get_last_ack()
-        # while not sciencemode.smpt_new_packet_received(self.device):
-        #     time.sleep(1)
-        # sciencemode.smpt_last_ack(self.device, self.ack)
-        # print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
+
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
@@ -96,6 +99,7 @@ class StimulatorP24(RehastimGeneric):
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
 
+        # This part is used to configure the channels and the points
         for i, channel in enumerate(upd_list_channels):
             ml_update.enable_channel[i] = True
             ml_update.channel_config[i].period = channel._period
@@ -104,11 +108,10 @@ class StimulatorP24(RehastimGeneric):
             for j, point in enumerate(channel.list_point):
                 ml_update.channel_config[i].points[j].time = point.time
                 ml_update.channel_config[i].points[j].current = point.current
-
-
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("failed to start stimulation")
         print("Stimulation started")
+        self._get_last_ack()
 
         # This code is used to set the stimulation duration
 
@@ -116,7 +119,7 @@ class StimulatorP24(RehastimGeneric):
         number_of_polls = int(stimulation_duration) if stimulation_duration is not None else 20
         for i in range(number_of_polls):
             ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
-            ml_get_current_data.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+            ml_get_current_data.packet_number = self.get_next_packet_number()
             ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
 
             if ret:
@@ -125,8 +128,8 @@ class StimulatorP24(RehastimGeneric):
                 print("Failed to get current data.")
 
             time.sleep(1)
+            self._get_last_ack()
         self.stimulation_started = True
-
 
     def stop_stimulation(self):
         """
@@ -136,9 +139,9 @@ class StimulatorP24(RehastimGeneric):
 
         if not sciencemode.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("failure to stop stimulation.")
-
-        print("Stimulation stopped.")
+        self._get_last_ack()
         self.stimulation_started = False
+        print("Stimulation stopped.")
 
     def close_port(self):
         """
