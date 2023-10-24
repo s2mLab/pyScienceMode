@@ -12,3 +12,17 @@ class Point:
             raise ValueError("Time must be between 0 and 4065.")
         if not (-150 <= self.current <= 150):
             raise ValueError("Current must be between -150 and 150.")
+
+    def set_current(self, current: float):
+        """
+        Set current.
+        """
+        self.current = current
+        self.check_parameters_point()
+
+    def set_time(self, time: float):
+        """
+        Set time.
+        """
+        self.time = time
+        self.check_parameters_point()

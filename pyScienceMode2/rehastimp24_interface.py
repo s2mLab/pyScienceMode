@@ -58,16 +58,24 @@ class StimulatorP24(RehastimGeneric):
 
         if not sciencemode.smpt_send_ll_init(self.device, ll_init):
             raise RuntimeError("Ll initialization failed.")
-        print("lower level initialized") #TODO Check cmd and ack number
-        self.get_next_packet_number()
-        while not sciencemode.smpt_new_packet_received(self.device):
-            time.sleep(1)
-        sciencemode.smpt_last_ack(self.device, self.ack)
-        ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
-        ll_init_ack.result = sciencemode.smpt_get_ll_init_ack(self.device,ll_init_ack)
-        print("result {}", ll_init_ack.result)
+        print("lower level initialized")
 
-        print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
+        self._get_last_ack()
+        # # ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
+        # # ll_init_ack.result = sciencemode.smpt_get_ll_init_ack(self.device,ll_init_ack)
+        # # print("result {}", ll_init_ack.result)
+        #
+        # print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
+
+    def ll_stop(self):
+        """
+        Stop the lower level of the device.
+        """
+        packet_number = self.get_next_packet_number()
+        if not sciencemode.smpt_send_ll_stop(self.device, packet_number):
+            raise RuntimeError("Ll stop failed.")
+        print("lower level stopped")
+        self._get_last_ack()
 
     def init_stimulation(self, list_channels: list):
         """
@@ -75,8 +83,8 @@ class StimulatorP24(RehastimGeneric):
         """
         if self.stimulation_started:
             self.stop_stimulation()
-        check_unique_channel(list_channels)
         self.list_channels = list_channels
+        check_unique_channel(list_channels)
         self.electrode_number = calc_electrode_number(self.list_channels)
 
         ml_init = sciencemode.ffi.new("Smpt_ml_init*")
@@ -99,18 +107,19 @@ class StimulatorP24(RehastimGeneric):
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
 
-        # This part is used to configure the channels and the points
-        for i, channel in enumerate(upd_list_channels):
-            ml_update.enable_channel[i] = True
-            ml_update.channel_config[i].period = channel._period
-            ml_update.channel_config[i].number_of_points = len(channel.list_point)
-
+        for channel in upd_list_channels:
+            channel_index = channel._no_channel - 1
+            ml_update.enable_channel[channel_index] = True
+            ml_update.channel_config[channel_index].period = channel._period
+            ml_update.channel_config[channel_index].number_of_points = len(channel.list_point)
             for j, point in enumerate(channel.list_point):
-                ml_update.channel_config[i].points[j].time = point.time
-                ml_update.channel_config[i].points[j].current = point.current
+                ml_update.channel_config[channel_index].points[j].time = point.time
+                ml_update.channel_config[channel_index].points[j].current = point.current
+
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("failed to start stimulation")
         print("Stimulation started")
+
         self._get_last_ack()
 
         # This code is used to set the stimulation duration

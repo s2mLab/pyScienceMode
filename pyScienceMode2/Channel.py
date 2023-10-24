@@ -2,8 +2,9 @@
 Class used to construct a channel for each different electrode.
 """
 from pyScienceMode2.stimulation_point import Point
+from sciencemode import sciencemode
 
-class Channel: #TODO : adapt no_channel with the wrapper command
+class Channel:
     """
     Class representing a channel.
 
@@ -15,6 +16,12 @@ class Channel: #TODO : adapt no_channel with the wrapper command
 
     MODE = {"Single": 0, "Doublet": 1, "Triplet": 2}
     MAX_POINTS = 16
+    CHANNEL_MAPPING = {
+        1: 'Smpt_Channel_Red',
+        2: 'Smpt_Channel_Blue',
+        3: 'Smpt_Channel_Black',
+        4: 'Smpt_Channel_White'
+    }
 
     def __init__(
         self,
@@ -57,6 +64,10 @@ class Channel: #TODO : adapt no_channel with the wrapper command
         self.list_point = [] # NEW : list of points for the channel
         self.check_value_param()
 
+        if self.device_type == "RehastimP24":
+            smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
+            self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.Smpt_Channel_Undefined)
+
     def __str__(self) -> str:
         """
         Used for printing an object Channel.
@@ -89,7 +100,11 @@ class Channel: #TODO : adapt no_channel with the wrapper command
                 raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
             if self._pulse_width < 0 or self._pulse_width > 500:
                 raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
-
+        if self.device_type == "RehastimP24" :
+            if self._period < 0.5 or self._period > 16383:
+                raise ValueError("Error : Period min = 0.5, max = 16383. Period given : %s" % self._period)
+            if self._no_channel < 1 or self._no_channel > 8:
+                raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
 
     def set_mode(self, mode: MODE):
         """
@@ -191,3 +206,4 @@ class Channel: #TODO : adapt no_channel with the wrapper command
             self.list_point.append(point)
         else:
             raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
+        return point
