@@ -7,12 +7,12 @@ list_channels = []
 
 # Create an object channel
 
-
-channel_1 = Ch.Channel(mode="Single", no_channel=1, name="Biceps", period=20, device_type="RehastimP24")
+#TODO : amplitude et pulse_width si on veut uniquement faire des pulses biphasiques
+channel_1 = Ch.Channel(mode="Single", no_channel=1, name="Biceps", period=20, device_type="RehastimP24")  #TODO : changer période en fréquence
 channel_2 = Ch.Channel(mode="Single", no_channel=2, name="Triceps", period=10, device_type="RehastimP24")
 
 list_channels.append(channel_1)
-# list_channels.append(channel_2)
+list_channels.append(channel_2)
 
 stimulator = St(port="COM4", show_log=True)
 
@@ -24,7 +24,7 @@ stimulator.get_extended_version()  # TODO : add all the get_extended_version dat
 stimulator.init_stimulation(list_channels=list_channels)
 
 # Add points with the configuration you want to create your shape pulse
-
+#TODO changer le nom des attributs de points
 point1 = channel_1.add_point(100, 15)
 point2 = channel_1.add_point(100, -15)
 

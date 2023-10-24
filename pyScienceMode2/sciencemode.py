@@ -155,11 +155,12 @@ class RehastimGeneric:
     def get_next_packet_number(self):
         if hasattr(self, 'device') and self.device is not None:
             packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-            if self.show_log:
-                print(f"Next packet number is : {packet_number}")
-            return packet_number
-        else:
-            raise AttributeError("device attribute not found")
+        return packet_number
+        #     if self.show_log:
+        #         print(f"Next packet number is : {packet_number}")
+        #     return packet_number
+        # else:
+        #     raise AttributeError("device attribute not found")
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
@@ -190,7 +191,7 @@ class RehastimGeneric:
             return last_ack
         if self.device_type == "RehastimP24" :
             while not sciencemode.smpt_new_packet_received(self.device):
-                time.sleep(0.05)
+                time.sleep(0.005)
             sciencemode.smpt_last_ack(self.device, self.ack)
             print("Ack received by rehastimP24: ", self.Types(self.ack.command_number).name)
             return self.ack
@@ -243,9 +244,9 @@ class RehastimGeneric:
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
 
-        print("Thread started")
+        # print("Thread started")
         time_to_sleep = 0.005
-        while 1:
+        while 1 and self.device_type == "Rehastim2":
             list_send = self._return_command_sent()
             list_ack = self._return_command_received()
             tic = time.time()

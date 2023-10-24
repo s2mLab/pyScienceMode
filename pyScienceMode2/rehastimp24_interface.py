@@ -94,6 +94,7 @@ class StimulatorP24(RehastimGeneric):
         if not sciencemode.smpt_send_ml_init(self.device, ml_init):
             raise RuntimeError("failed to start stimulation")
         print("Stimulation initialized")
+        print("Command sent to rehastim:" , self.Types(sciencemode.Smpt_Cmd_Ml_Init).name)
         self._get_last_ack()
 
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
@@ -105,8 +106,6 @@ class StimulatorP24(RehastimGeneric):
 
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
-        print("Command sent to rehastim" ,self.cmd.command_number)
-
 
         for channel in upd_list_channels:
             channel_index = channel._no_channel - 1
@@ -119,6 +118,7 @@ class StimulatorP24(RehastimGeneric):
 
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("failed to start stimulation")
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Ml_Update).name)
         print("Stimulation started")
 
         self._get_last_ack()
@@ -136,7 +136,8 @@ class StimulatorP24(RehastimGeneric):
                 print(f"Stimulated: {ret}")
             else:
                 print("Failed to get current data.")
-
+            print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
+            self.check_stimulation_errors()
             time.sleep(1)
             # try:
             #     self.check_stimulation_errors()
@@ -154,15 +155,17 @@ class StimulatorP24(RehastimGeneric):
 
         if not sciencemode.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("failure to stop stimulation.")
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Ml_Stop).name)
         self._get_last_ack()
         self.stimulation_started = False
+
         print("Stimulation stopped.")
 
     def check_stimulation_errors(self):
 
         ret = sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
-        if not ret:
-            raise RuntimeError(f"Failed to get current data acknowledgment: {ret}")
+        # if not ret:
+        #     raise RuntimeError(f"Failed to get current data acknowledgment: {ret}")
 
         error_on_channel = False
         num_channels = len(self.list_channels)
@@ -181,8 +184,6 @@ class StimulatorP24(RehastimGeneric):
                 error_message = "Last item error"
 
             raise RuntimeError(error_message)
-
-    print("All channels ok")
 
     def close_port(self):
         """
