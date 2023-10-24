@@ -84,7 +84,10 @@ class RehastimGeneric:
         elif self.device_type == "RehastimP24":
             self.device = sciencemode.ffi.new("Smpt_device*")
             self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
+            self.cmd = sciencemode.ffi.new("Smpt_cmd*")
             self.ack = sciencemode.ffi.new("Smpt_ack*")
+            self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
+
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")
 
@@ -119,6 +122,7 @@ class RehastimGeneric:
         self.command_send = []  # Command sent to the rehastim
         self.command_received = []  # Command received by the rehastim
         self.Type = Type
+        self.Types= Types
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
@@ -188,7 +192,7 @@ class RehastimGeneric:
             while not sciencemode.smpt_new_packet_received(self.device):
                 time.sleep(0.05)
             sciencemode.smpt_last_ack(self.device, self.ack)
-            print("Ack received by rehastimP24: ", self.ack.command_number)
+            print("Ack received by rehastimP24: ", self.Types(self.ack.command_number).name)
             return self.ack
         if self.device_type == "Rehastim2":
             while 1:

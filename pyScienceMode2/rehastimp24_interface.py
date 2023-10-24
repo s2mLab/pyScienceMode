@@ -93,7 +93,6 @@ class StimulatorP24(RehastimGeneric):
 
         if not sciencemode.smpt_send_ml_init(self.device, ml_init):
             raise RuntimeError("failed to start stimulation")
-
         print("Stimulation initialized")
         self._get_last_ack()
 
@@ -106,6 +105,8 @@ class StimulatorP24(RehastimGeneric):
 
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
+        print("Command sent to rehastim" ,self.cmd.command_number)
+
 
         for channel in upd_list_channels:
             channel_index = channel._no_channel - 1
@@ -137,6 +138,11 @@ class StimulatorP24(RehastimGeneric):
                 print("Failed to get current data.")
 
             time.sleep(1)
+            # try:
+            #     self.check_stimulation_errors()
+            # except RuntimeError as e:
+            #     print(f"An error occurred during stimulation: {e}")
+
             self._get_last_ack()
         self.stimulation_started = True
 
@@ -151,6 +157,32 @@ class StimulatorP24(RehastimGeneric):
         self._get_last_ack()
         self.stimulation_started = False
         print("Stimulation stopped.")
+
+    def check_stimulation_errors(self):
+
+        ret = sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
+        if not ret:
+            raise RuntimeError(f"Failed to get current data acknowledgment: {ret}")
+
+        error_on_channel = False
+        num_channels = len(self.list_channels)
+        for j in range(num_channels):
+            if self.ml_get_current_data_ack.channel_data.channel_state[j] != sciencemode.Smpt_Ml_Channel_State_Ok:
+                error_on_channel = True
+                break
+        if error_on_channel:
+            if self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Electrode_Error:
+                error_message = "Electrode error"
+            elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Timeout_Error:
+                error_message = "Timeout error"
+            elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Low_Current_Error:
+                error_message = "Low current error"
+            elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Last_Item:
+                error_message = "Last item error"
+
+            raise RuntimeError(error_message)
+
+    print("All channels ok")
 
     def close_port(self):
         """

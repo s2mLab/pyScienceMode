@@ -1,7 +1,6 @@
 """
 Class used to construct a channel for each different electrode.
 """
-from pyScienceMode2.stimulation_point import Point
 from sciencemode import sciencemode
 
 class Channel:
@@ -207,3 +206,30 @@ class Channel:
         else:
             raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
         return point
+
+class Point:
+
+    def __init__(self, time: float, current: float):
+        self.time = time
+        self.current = current
+        self.check_parameters_point()
+
+    def check_parameters_point(self):
+        if not (0 <= self.time <= 4095):
+            raise ValueError("Time must be between 0 and 4065.")
+        if not (-150 <= self.current <= 150):
+            raise ValueError("Current must be between -150 and 150.")
+
+    def set_current(self, current: float):
+        """
+        Set current.
+        """
+        self.current = current
+        self.check_parameters_point()
+
+    def set_time(self, time: float):
+        """
+        Set time.
+        """
+        self.time = time
+        self.check_parameters_point()

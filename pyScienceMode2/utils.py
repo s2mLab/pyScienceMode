@@ -1,5 +1,6 @@
 import crccheck
-from pyScienceMode2.enums import Type
+from pyScienceMode2.enums import Type, Types
+
 
 
 def signed_int(packet: bytes) -> int:
