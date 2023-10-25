@@ -87,6 +87,7 @@ class RehastimGeneric:
             self.cmd = sciencemode.ffi.new("Smpt_cmd*")
             self.ack = sciencemode.ffi.new("Smpt_ack*")
             self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
+            self.ll_channel_config_ack = sciencemode.ffi.new("Smpt_ll_channel_config_ack*")
 
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")

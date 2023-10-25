@@ -28,13 +28,16 @@ list_stimulation_points.append(point1)
 list_stimulation_points.append(point2)
 list_stimulation_points.append(point3)
 
-stimulator.start_ll_channel_config(no_channel= 1, points =list_stimulation_points,number_of_pulses=10,time_loop=500)
+stimulator.start_ll_channel_config(no_channel= 2, points =list_stimulation_points,number_of_pulses=10,inter_pulse_interval=500)
 
-point1.set_amplitude(20)
-point2.set_amplitude(20)
-point3.set_amplitude(-20)
+point1.set_amplitude(15)
+point1.set_pulse_width(200)
+point2.set_amplitude(15)
+point2.set_pulse_width(200)
+point3.set_amplitude(-15)
+point3.set_pulse_width(200)
 
-stimulator.start_ll_channel_config(no_channel= 1, points =list_stimulation_points,number_of_pulses=10,time_loop=500)
+stimulator.start_ll_channel_config(no_channel= 1, points =list_stimulation_points,number_of_pulses=10,inter_pulse_interval=500)
 
 stimulator.ll_stop()
 # Init the stimulation. Use it before starting the stimulation or after stopping it.
@@ -50,10 +53,10 @@ channel_2.add_point(100, 15)
 channel_2.add_point(100, -15)
 
 stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
-#
-# """
-# You can change the configuration of the channel during the stimulation.
-# """
+
+"""
+You can change the configuration of the channel during the stimulation.
+"""
 channel_1.set_frequency(100)
 channel_1.set_amplitude(15)
 channel_1.set_pulse_width(200)

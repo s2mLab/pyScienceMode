@@ -39,12 +39,13 @@ class StimulatorP24(RehastimGeneric):
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
         ret = sciencemode.smpt_send_get_extended_version(self.device, packet_number)
-        print("smpt_send_get_extended_version: {}", ret)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Extended_Version).name)
         ret = False
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
-        print("smpt_get_get_extended_version_ack: {}", ret)
-        print("fw_hash {} ", extended_version_ack.fw_hash)
+        print("get extended version", ret)
+        print("fw_hash :", extended_version_ack.fw_hash)
+        # print("uc_version", extended_version_ack.uc_version)
         return ret
 
     def channel_number_to_channel_connector(self, no_channel):
@@ -95,7 +96,7 @@ class StimulatorP24(RehastimGeneric):
         self.get_next_packet_number()
         self._get_last_ack()
 
-    def start_ll_channel_config(self, no_channel, points=None , number_of_pulses: int = None, time_loop : int = None):
+    def start_ll_channel_config(self, no_channel, points=None , number_of_pulses: int = None, inter_pulse_interval : int = None):
         """
            Starts the stimulation in Low Level mode.
 
@@ -124,9 +125,11 @@ class StimulatorP24(RehastimGeneric):
 
         for _ in range(number_of_pulses):
             ll_config.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-            ret = sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
-            time.sleep(time_loop/1000)
+            sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
+            time.sleep(inter_pulse_interval/1000)
             self._get_last_ack()
+            self.check_ll_channel_config_ack()
+
     def ll_stop(self):
         """
         Stop the lower level of the device.
@@ -242,6 +245,14 @@ class StimulatorP24(RehastimGeneric):
                 error_message = "Last item error"
 
             raise RuntimeError(error_message)
+
+    def check_ll_channel_config_ack(self):
+        if not sciencemode.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
+            raise ValueError("Failed to get the ll_channel_config_ack.")
+        if self.ll_channel_config_ack.result == 0:
+            pass
+        if self.ll_channel_config_ack.result == 10:
+            raise ValueError("Electrode error.")
 
     def close_port(self):
         """
