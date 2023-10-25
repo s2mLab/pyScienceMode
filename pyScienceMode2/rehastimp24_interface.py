@@ -163,9 +163,7 @@ class StimulatorP24(RehastimGeneric):
 
     def check_stimulation_errors(self):
 
-        ret = sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
-        # if not ret:
-        #     raise RuntimeError(f"Failed to get current data acknowledgment: {ret}")
+        sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
 
         error_on_channel = False
         num_channels = len(self.list_channels)
