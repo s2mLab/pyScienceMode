@@ -113,8 +113,8 @@ class StimulatorP24(RehastimGeneric):
             ml_update.channel_config[channel_index].period = channel._period
             ml_update.channel_config[channel_index].number_of_points = len(channel.list_point)
             for j, point in enumerate(channel.list_point):
-                ml_update.channel_config[channel_index].points[j].time = point.time
-                ml_update.channel_config[channel_index].points[j].current = point.current
+                ml_update.channel_config[channel_index].points[j].time = point.pulse_width
+                ml_update.channel_config[channel_index].points[j].current = point.amplitude
 
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("failed to start stimulation")
@@ -131,9 +131,9 @@ class StimulatorP24(RehastimGeneric):
             ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
             ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
-
             if ret:
-                print(f"Stimulated: {ret}")
+                # print(f"Stimulated: {ret}")
+                pass
             else:
                 print("Failed to get current data.")
             print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)

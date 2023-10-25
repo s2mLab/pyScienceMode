@@ -27,11 +27,11 @@ class Channel:
         mode: str = "Single",
         no_channel: int = 1,
         amplitude: int = 0,
-        pulse_width: int = 1,
+        pulse_width: int = 0,
         enable_low_frequency: bool = False,
         name: str = None,
         device_type="Rehastim2",
-        period : float = 20.0,
+        frequency : float = 50.0,
     ):
         """
         Create an object Channel.
@@ -59,13 +59,16 @@ class Channel:
         self._pulse_width = pulse_width
         self._enable_low_frequency = enable_low_frequency
         self._name = name if name else f"muscle_{self._no_channel}"
-        self._period = period  # NEW : period of the channel
-        self.list_point = [] # NEW : list of points for the channel
+        self._period = 1000.0 / frequency  # NEW : frequency (Hz) of the channel
+        self.list_point = []  # NEW : list of points for the channel
         self.check_value_param()
 
         if self.device_type == "RehastimP24":
             smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
             self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.Smpt_Channel_Undefined)
+
+            if self._amplitude and self._pulse_width:
+                self.create_biphasic_pulse(self._amplitude, self._pulse_width)  # Create a biphasic pulse for the channel
 
     def __str__(self) -> str:
         """
@@ -79,6 +82,15 @@ class Channel:
             f"Channel {self._no_channel} {self._name}: {self._mode=}, {self._amplitude=}, {self._pulse_width=}, "
             f"{self._enable_low_frequency=}"
         )
+
+    def create_biphasic_pulse(self, amplitude: int, pulse_width: int):
+        """Create a biphasic pulse for the channel."""
+
+        positive_pulse = Point(pulse_width=pulse_width, amplitude=amplitude)
+        negative_pulse = Point(pulse_width=pulse_width, amplitude=-amplitude)
+
+        self.list_point.append(positive_pulse)
+        self.list_point.append(negative_pulse)
 
     def check_device_type(self) :
         """
@@ -104,6 +116,10 @@ class Channel:
                 raise ValueError("Error : Period min = 0.5, max = 16383. Period given : %s" % self._period)
             if self._no_channel < 1 or self._no_channel > 8:
                 raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
+            if self._amplitude < 0 or self._amplitude > 150:
+                raise ValueError("Error : Amplitude min = 0, max = 150. Amplitude given : %s" % self._amplitude)
+            if self._pulse_width < 0 or self._pulse_width > 4095:
+                raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
 
     def set_mode(self, mode: MODE):
         """
@@ -121,9 +137,10 @@ class Channel:
         """
         Set amplitude.
         """
-        self.check_device_type()
         self._amplitude = amp
         self.check_value_param()
+        if self.check_device_type() == "RehastimP24" and self._pulse_width:
+            self.create_biphasic_pulse(self._amplitude, self._pulse_width)
 
     def get_amplitude(self) -> int:
         """
@@ -150,6 +167,8 @@ class Channel:
         """
         self._pulse_width = pulse_width
         self.check_value_param()
+        if self.device_type == "RehastimP24" and self._amplitude:
+            self.create_biphasic_pulse(self._amplitude, self._pulse_width)
 
     def get_pulse_width(self) -> int:
         """
@@ -181,27 +200,26 @@ class Channel:
         """
         return self._enable_low_frequency
 
-    def set_period(self, period: float):
+    def set_frequency(self, frequency: float):
         """
         Set the period for a channel
         """
-        self._period = period
-        self.check_value_param()
+        if frequency <= 0:
+            raise ValueError("frequency must be positive.")
+        self._period = 1000.0 / frequency
 
-    def get_period(self) -> float:
+    def get_frequency(self) -> float:
         """
         Returns the period of a channel
         """
-        return self._period
+        return 1000.0/self._period
 
-    def add_point(self, time: float, current: float):
+    def add_point(self, pulse_width: float, amplitude: float):
         """
         Add a point to the list of points for a channel. One channel can pilot 16 points.
-        :param time: pulse width of the point
-        :param current: current of the point
         """
         if len(self.list_point) < Channel.MAX_POINTS:
-            point = Point(time, current)
+            point = Point(pulse_width, amplitude)
             self.list_point.append(point)
         else:
             raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
@@ -209,27 +227,28 @@ class Channel:
 
 class Point:
 
-    def __init__(self, time: float, current: float):
-        self.time = time
-        self.current = current
+    def __init__(self, pulse_width: float, amplitude: float):
+        self.pulse_width = pulse_width
+        self.amplitude = amplitude
         self.check_parameters_point()
 
     def check_parameters_point(self):
-        if not (0 <= self.time <= 4095):
+        if not (0 <= self.pulse_width <= 4095):
             raise ValueError("Time must be between 0 and 4065.")
-        if not (-150 <= self.current <= 150):
-            raise ValueError("Current must be between -150 and 150.")
+        if not (-150 <= self.amplitude <= 150):
+            raise ValueError("Amplitude must be between -150 and 150.")
 
-    def set_current(self, current: float):
+    def set_amplitude(self, amplitude: float):
         """
         Set current.
         """
-        self.current = current
+        self.amplitude = amplitude
         self.check_parameters_point()
 
-    def set_time(self, time: float):
+    def set_pulse_width(self, pulse_width: float):
         """
         Set time.
         """
-        self.time = time
+        self.pulse_width = pulse_width
         self.check_parameters_point()
+
