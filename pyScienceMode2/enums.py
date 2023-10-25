@@ -51,7 +51,7 @@ class Type(Enum):
 
 class Types(Enum):
     Smpt_Cmd_Ll_Init = 0
-    Smpt_Cmd_Ll_Init_Ack = 1,
+    Smpt_Cmd_Ll_Init_Ack = 1
     Smpt_Cmd_Ll_Channel_Config = 2
     Smpt_Cmd_Ll_Channel_Config_Ack = 3
     Smpt_Cmd_Ll_Stop = 4

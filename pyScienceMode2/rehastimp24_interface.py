@@ -47,6 +47,39 @@ class StimulatorP24(RehastimGeneric):
         print("fw_hash {} ", extended_version_ack.fw_hash)
         return ret
 
+    def channel_number_to_channel_connector(self, no_channel):
+
+        """
+        Converts the channel number to the corresponding channel and connector.
+
+        Args:
+        - no_channel: The channel number (from 1 to 8).
+
+        Returns:
+        - (channel, connector): A tuple of the channel and connector.
+        """
+
+        channels = [
+            sciencemode.Smpt_Channel_Red,
+            sciencemode.Smpt_Channel_Blue,
+            sciencemode.Smpt_Channel_Black,
+            sciencemode.Smpt_Channel_White
+        ]
+
+        connectors = [
+            sciencemode.Smpt_Connector_Yellow,
+            sciencemode.Smpt_Connector_Green
+        ]
+
+        # Determine the connector
+        connector_idx = (no_channel - 1) // 4
+        connector = connectors[connector_idx]
+
+        # Determine the channel
+        channel = channels[(no_channel - 1) % 4]
+
+        return channel, connector
+
     def ll_init(self):
         """
         Initialize the lower level of the device. The low-level is used for defining a custom shaped pulse.
@@ -62,7 +95,7 @@ class StimulatorP24(RehastimGeneric):
 
         self._get_last_ack()
 
-    def start_ll_channel_config(self,no_channel, points=None):
+    def start_ll_channel_config(self, no_channel, points=None):
         """
            Starts the stimulation in Low Level mode.
 
@@ -77,7 +110,7 @@ class StimulatorP24(RehastimGeneric):
            """
         if points is None or len(points) == 0:
             raise ValueError("Please provide at least one point for stimulation.")
-        channel, connector = channel_number_to_channel_connector(no_channel)
+        channel, connector = self.channel_number_to_channel_connector(no_channel)
         ll_config = sciencemode.ffi.new("Smpt_ll_channel_config*")
 
         ll_config.enable_stimulation = True

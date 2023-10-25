@@ -15,34 +15,37 @@ list_channels.append(channel_2)
 
 stimulator = St(port="COM4", show_log=True)
 
-# stimulator.ll_init()
-
+stimulator.get_extended_version()  # TODO : add all the get_extended_version data
+stimulator.ll_init()
+stimulation_points = [(100, 10), (100, 10), (100, -10)]
+stimulator.start_ll_channel_config(no_channel= 2, points =stimulation_points)
+# stimulator.start_ll_channel_config(no_channel= 2, points =stimulation_points)
+stimulator.ll_stop()
 # Init the stimulation. Use it before starting the stimulation or after stopping it.
 
-stimulator.get_extended_version()  # TODO : add all the get_extended_version data
-stimulator.init_stimulation(list_channels=list_channels)
-
-# Add points with the configuration you want to create your shape pulse
-
-point1 = channel_1.add_point(100, -15)
-point2 = channel_1.add_point(100, 15)
-
-channel_2.add_point(100, 15)
-channel_2.add_point(100, -15)
-
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
-
-"""
-You can change the configuration of the channel during the stimulation.
-"""
-# channel_1.set_frequency(100)
-# channel_1.set_amplitude(15)
-# channel_1.set_pulse_width(200)
-# point1.set_amplitude(20)
-# point2.set_amplitude(-20)
-
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=2)
-
-stimulator.stop_stimulation()
-
+# stimulator.init_stimulation(list_channels=list_channels)
+#
+# # Add points with the configuration you want to create your shape pulse
+#
+# point1 = channel_1.add_point(100, -15)
+# point2 = channel_1.add_point(100, 15)
+#
+# channel_2.add_point(100, 15)
+# channel_2.add_point(100, -15)
+#
+# stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
+#
+# """
+# You can change the configuration of the channel during the stimulation.
+# """
+# # channel_1.set_frequency(100)
+# # channel_1.set_amplitude(15)
+# # channel_1.set_pulse_width(200)
+# # point1.set_amplitude(20)
+# # point2.set_amplitude(-20)
+#
+# stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=2)
+#
+# stimulator.stop_stimulation()
+#
 stimulator.close_port()
