@@ -70,6 +70,10 @@ class Channel:
             if self._amplitude and self._pulse_width:
                 self.create_biphasic_pulse(self._amplitude, self._pulse_width)  # Create a biphasic pulse for the channel
 
+            # if not self.list_point:
+            #     raise ValueError(
+            #         "No stimulation point provided. Please either provide an amplitude and pulse width for a biphasic stimulation, or specify specific stimulation points.")
+
     def __str__(self) -> str:
         """
         Used for printing an object Channel.
@@ -224,6 +228,40 @@ class Channel:
         else:
             raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
         return point
+
+    # def channel_number_to_channel_connector(self, no_channel):
+    #     """
+    #     Converts the channel number to the corresponding channel and connector.
+    #
+    #     Args:
+    #     - no_channel: The channel number (from 1 to 8).
+    #
+    #     Returns:
+    #     - (channel, connector): A tuple of the channel and connector.
+    #     """
+    #     self._no_channel = no_channel
+    #     self.check_value_param()
+    #
+    #     channels = [
+    #         sciencemode.Smpt_Channel_Red,
+    #         sciencemode.Smpt_Channel_Blue,
+    #         sciencemode.Smpt_Channel_Black,
+    #         sciencemode.Smpt_Channel_White
+    #     ]
+    #
+    #     connectors = [
+    #         sciencemode.Smpt_Connector_Yellow,
+    #         sciencemode.Smpt_Connector_Green
+    #     ]
+    #
+    #     # Determine the connector
+    #     connector_idx = (no_channel - 1) // 4
+    #     connector = connectors[connector_idx]
+    #
+    #     # Determine the channel
+    #     channel = channels[(no_channel - 1) % 4]
+    #
+    #     return channel, connector
 
 class Point:
 

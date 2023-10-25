@@ -61,12 +61,39 @@ class StimulatorP24(RehastimGeneric):
         print("lower level initialized")
 
         self._get_last_ack()
-        # # ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
-        # # ll_init_ack.result = sciencemode.smpt_get_ll_init_ack(self.device,ll_init_ack)
-        # # print("result {}", ll_init_ack.result)
-        #
-        # print("command number {}, packet_number {}", self.ack.command_number, self.ack.packet_number)
 
+    def start_ll_channel_config(self,no_channel, points=None):
+        """
+           Starts the stimulation in Low Level mode.
+
+           Args:
+           - device: The Smpt_device object.
+           - channel: The channel color (e.g., Smpt_Channel_Red).
+           - connector: The connector color (e.g., Smpt_Connector_Yellow).
+           - points: A list of tuples where each tuple has (time, current) for the stimulation.
+
+           Returns:
+           - None
+           """
+        if points is None or len(points) == 0:
+            raise ValueError("Please provide at least one point for stimulation.")
+        channel, connector = channel_number_to_channel_connector(no_channel)
+        ll_config = sciencemode.ffi.new("Smpt_ll_channel_config*")
+
+        ll_config.enable_stimulation = True
+        ll_config.channel = channel
+        ll_config.connector = connector
+        ll_config.number_of_points = len(points)
+
+        for idx, (time_val, current_val) in enumerate(points):
+            ll_config.points[idx].time = time_val
+            ll_config.points[idx].current = current_val
+
+        for _ in range(3):
+            ll_config.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+            ret = sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
+            print("smpt_send_ll_channel_config:", ret)
+            time.sleep(1)
     def ll_stop(self):
         """
         Stop the lower level of the device.
@@ -108,6 +135,11 @@ class StimulatorP24(RehastimGeneric):
         ml_update.packet_number = self.get_next_packet_number()
 
         for channel in upd_list_channels:
+            if not channel.list_point:
+                raise ValueError(
+                    "No stimulation point provided for channel {}. Please either provide an amplitude and pulse width for a biphasic stimulation, or specify specific stimulation points.".format(
+                        channel._no_channel))
+
             channel_index = channel._no_channel - 1
             ml_update.enable_channel[channel_index] = True
             ml_update.channel_config[channel_index].period = channel._period
