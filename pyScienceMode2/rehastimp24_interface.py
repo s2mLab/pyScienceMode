@@ -92,10 +92,10 @@ class StimulatorP24(RehastimGeneric):
         if not sciencemode.smpt_send_ll_init(self.device, ll_init):
             raise RuntimeError("Ll initialization failed.")
         print("lower level initialized")
-
+        self.get_next_packet_number()
         self._get_last_ack()
 
-    def start_ll_channel_config(self, no_channel, points=None):
+    def start_ll_channel_config(self, no_channel, points=None , number_of_pulses: int = None, time_loop : int = None):
         """
            Starts the stimulation in Low Level mode.
 
@@ -118,15 +118,15 @@ class StimulatorP24(RehastimGeneric):
         ll_config.connector = connector
         ll_config.number_of_points = len(points)
 
-        for idx, (time_val, current_val) in enumerate(points):
-            ll_config.points[idx].time = time_val
-            ll_config.points[idx].current = current_val
+        for j,point in enumerate(points):
+            ll_config.points[j].time = point.pulse_width
+            ll_config.points[j].current = point.amplitude
 
-        for _ in range(3):
+        for _ in range(number_of_pulses):
             ll_config.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
             ret = sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
-            print("smpt_send_ll_channel_config:", ret)
-            time.sleep(1)
+            time.sleep(time_loop/1000)
+            self._get_last_ack()
     def ll_stop(self):
         """
         Stop the lower level of the device.
@@ -197,17 +197,12 @@ class StimulatorP24(RehastimGeneric):
             ml_get_current_data.packet_number = self.get_next_packet_number()
             ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
             if ret:
-                # print(f"Stimulated: {ret}")
                 pass
             else:
                 print("Failed to get current data.")
             print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
             self.check_stimulation_errors()
             time.sleep(1)
-            # try:
-            #     self.check_stimulation_errors()
-            # except RuntimeError as e:
-            #     print(f"An error occurred during stimulation: {e}")
 
             self._get_last_ack()
         self.stimulation_started = True
