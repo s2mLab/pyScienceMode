@@ -3,7 +3,7 @@ from pyScienceMode2.sciencemode import RehastimGeneric
 from pyScienceMode2.utils import *
 import time
 
-class StimulatorP24(RehastimGeneric):
+class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try to use only positive current point
     """
     Class used for the communication with RehastimP24.
     """
@@ -11,7 +11,14 @@ class StimulatorP24(RehastimGeneric):
     MAX_PACKET_BYTES = 69
     STUFFED_BYTES = [240, 15, 129, 85, 10]
     BAUD_RATE = 3000000
-    Flow_Control = True
+    HIGH_VOLTAGE_MAPPING = {
+        5: "Smpt_High_Voltage_120V",
+        6: "Smpt_High_Voltage_150V",
+        2: "Smpt_High_Voltage_30V",
+        3: "Smpt_High_Voltage_60V",
+        4: "Smpt_High_Voltage_90V",
+        0: "Smpt_High_Voltage_Default"
+    }
 
     def __init__(self, port: str, show_log: bool = False):
         """
@@ -30,6 +37,9 @@ class StimulatorP24(RehastimGeneric):
         self.electrode_number = 0
         self.stimulation_started = None
         self.show_log = show_log
+        self._current_no_channel = None
+        self._current_stim_sequence = None
+        self._current_pulse_interval = None
         super().__init__(port, show_log, device_type = "RehastimP24")
 
     def get_extended_version(self) -> bool:
@@ -37,7 +47,7 @@ class StimulatorP24(RehastimGeneric):
         Get the extended version of the device.
         """
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
-        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        packet_number = self.get_next_packet_number()
         ret = sciencemode.smpt_send_get_extended_version(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Extended_Version).name)
         ret = False
@@ -46,6 +56,79 @@ class StimulatorP24(RehastimGeneric):
         print("get extended version", ret)
         print("fw_hash :", extended_version_ack.fw_hash)
         # print("uc_version", extended_version_ack.uc_version)
+        return ret
+
+    def get_devide_id(self) -> bool:
+        """
+        Get the device id.
+        """
+        device_id_ack = sciencemode.ffi.new("Smpt_get_device_id_ack*")
+        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        ret = sciencemode.smpt_send_get_device_id(self.device, packet_number)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Device_Id).name)
+        ret = False
+        self._get_last_ack()
+        ret = sciencemode.smpt_get_get_device_id_ack(self.device, device_id_ack)
+        print("get device id", ret)
+        print("device id :", device_id_ack.device_id)
+        return ret
+
+    def get_stim_status(self) -> bool:
+        """
+        Get the stimulation status.
+        """
+        stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
+        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        ret = sciencemode.smpt_send_get_stim_status(self.device, packet_number)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Stim_Status).name)
+        ret = False
+        self._get_last_ack()
+        ret = sciencemode.smpt_get_get_stim_status_ack(self.device, stim_status_ack)
+        print("get stim status", ret)
+        print("stim status :", stim_status_ack.stim_status)
+        print("High voltage level :", self.HIGH_VOLTAGE_MAPPING.get(stim_status_ack.high_voltage_level, "Unknown"))
+        return ret
+
+    def get_battery_status(self) -> bool:
+        """
+        Get the battery status.
+        """
+        battery_status_ack = sciencemode.ffi.new("Smpt_get_battery_status_ack*")
+        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        ret = sciencemode.smpt_send_get_battery_status(self.device, packet_number)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Battery_Status).name)
+        ret = False
+        self._get_last_ack()
+        ret = sciencemode.smpt_get_get_battery_status_ack(self.device, battery_status_ack)
+        print("get battery status", ret)
+        print("battery level :", battery_status_ack.battery_level)
+        print("battery voltage :", battery_status_ack.battery_voltage)
+        return ret
+
+    def get_main_status(self) -> bool:
+        """
+        Get the main status.
+        """
+        main_status_ack = sciencemode.ffi.new("Smpt_get_main_status_ack*")
+        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        ret = sciencemode.smpt_send_get_main_status(self.device, packet_number)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Main_Status).name)
+        ret = False
+        self._get_last_ack()
+        ret = sciencemode.smpt_get_get_main_status_ack(self.device, main_status_ack)
+        print("get main status", ret)
+        print("main status :", main_status_ack.main_status)
+        return ret
+
+    def reset(self) -> bool:
+        """
+        Reset the device.
+        """
+        packet_number = self.get_next_packet_number()
+        ret = sciencemode.smpt_send_reset(self.device, packet_number)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Reset).name)
+        ret = False
+        self._get_last_ack()
         return ret
 
     def channel_number_to_channel_connector(self, no_channel):
@@ -96,7 +179,7 @@ class StimulatorP24(RehastimGeneric):
         self.get_next_packet_number()
         self._get_last_ack()
 
-    def start_ll_channel_config(self, no_channel, points=None , number_of_pulses: int = None, inter_pulse_interval : int = None):
+    def start_ll_channel_config(self, no_channel, points=None , stim_sequence: int = None, pulse_interval : int = None):
         """
            Starts the stimulation in Low Level mode.
 
@@ -109,6 +192,10 @@ class StimulatorP24(RehastimGeneric):
            Returns:
            - None
            """
+        self._current_no_channel = no_channel
+        self._current_stim_sequence = stim_sequence
+        self._current_pulse_interval = pulse_interval
+
         if points is None or len(points) == 0:
             raise ValueError("Please provide at least one point for stimulation.")
         channel, connector = self.channel_number_to_channel_connector(no_channel)
@@ -123,12 +210,24 @@ class StimulatorP24(RehastimGeneric):
             ll_config.points[j].time = point.pulse_width
             ll_config.points[j].current = point.amplitude
 
-        for _ in range(number_of_pulses):
+        for _ in range(stim_sequence):
             ll_config.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
             sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
-            time.sleep(inter_pulse_interval/1000)
+            time.sleep(pulse_interval/1000)
             self._get_last_ack()
             self.check_ll_channel_config_ack()
+
+    def update_ll_channel_config(self, upd_list_point, no_channel = None, stim_sequence: int = None, pulse_interval : int = None):
+        """
+        Update the stimulation in Low Level mode.
+        """
+        if stim_sequence is None:
+            stim_sequence = self._current_stim_sequence
+        if no_channel is None:
+            no_channel = self._current_no_channel
+        if pulse_interval is None:
+            pulse_interval = self._current_pulse_interval
+        self.start_ll_channel_config(no_channel, upd_list_point, stim_sequence,pulse_interval)
 
     def ll_stop(self):
         """

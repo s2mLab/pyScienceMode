@@ -226,9 +226,7 @@ class Channel:
         return point
 
 
-
 class Point:
-
     def __init__(self, pulse_width: float, amplitude: float):
         self.pulse_width = pulse_width
         self.amplitude = amplitude

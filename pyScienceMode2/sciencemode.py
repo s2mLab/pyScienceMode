@@ -57,7 +57,7 @@ class RehastimGeneric:
 
     BAUD_RATE = 460800
 
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type : str = None):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type: str = None):
         """
         Init the class.
 
@@ -156,12 +156,7 @@ class RehastimGeneric:
     def get_next_packet_number(self):
         if hasattr(self, 'device') and self.device is not None:
             packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-        return packet_number
-        #     if self.show_log:
-        #         print(f"Next packet number is : {packet_number}")
-        #     return packet_number
-        # else:
-        #     raise AttributeError("device attribute not found")
+            return packet_number
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
