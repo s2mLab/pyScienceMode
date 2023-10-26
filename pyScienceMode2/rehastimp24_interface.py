@@ -30,7 +30,6 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
             Port of the computer connected to the Rehastim.
         show_log: bool
             If True, the log of the communication will be printed.
-
         """
 
         self.list_channels = None
@@ -40,11 +39,17 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         self._current_no_channel = None
         self._current_stim_sequence = None
         self._current_pulse_interval = None
-        super().__init__(port, show_log, device_type = "RehastimP24")
+
+        super().__init__(port, show_log, device_type="RehastimP24")
 
     def get_extended_version(self) -> bool:
         """
         Get the extended version of the device.
+
+        Returns
+        -------
+        bool
+            True if the command was successful, False otherwise.
         """
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
         packet_number = self.get_next_packet_number()
@@ -58,9 +63,14 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         # print("uc_version", extended_version_ack.uc_version)
         return ret
 
-    def get_devide_id(self) -> bool:
+    def get_device_id(self) -> bool:
         """
         Get the device id.
+
+        Returns
+        -------
+        bool
+            True if the command was successful, False otherwise.
         """
         device_id_ack = sciencemode.ffi.new("Smpt_get_device_id_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
@@ -76,6 +86,11 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
     def get_stim_status(self) -> bool:
         """
         Get the stimulation status.
+
+        Returns
+        -------
+        bool
+            True if the command was successful, False otherwise.
         """
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
@@ -92,6 +107,11 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
     def get_battery_status(self) -> bool:
         """
         Get the battery status.
+
+        Returns
+        -------
+        bool
+            True if the command was successful, False otherwise.
         """
         battery_status_ack = sciencemode.ffi.new("Smpt_get_battery_status_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
@@ -108,6 +128,11 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
     def get_main_status(self) -> bool:
         """
         Get the main status.
+
+        Returns
+        -------
+        bool
+            True if the command was successful, False otherwise.
         """
         main_status_ack = sciencemode.ffi.new("Smpt_get_main_status_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
@@ -123,6 +148,11 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
     def reset(self) -> bool:
         """
         Reset the device.
+
+        Returns
+        -------
+        bool
+            True if the command was successful, False otherwise.
         """
         packet_number = self.get_next_packet_number()
         ret = sciencemode.smpt_send_reset(self.device, packet_number)
@@ -131,18 +161,36 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         self._get_last_ack()
         return ret
 
-    def channel_number_to_channel_connector(self, no_channel):
+    def get_all(self) -> bool:
+        """
+        Get all the device information.
 
+        Returns
+        -------
+        bool
+            True if all the commands were successful, False otherwise.
+        """
+        extended_version_success = self.get_extended_version()
+        device_id_success = self.get_device_id()
+        stim_status_success = self.get_stim_status()
+        battery_status_success = self.get_battery_status()
+        main_status_success = self.get_main_status()
+
+        return extended_version_success and device_id_success and stim_status_success and battery_status_success and main_status_success
+
+    def channel_number_to_channel_connector(self, no_channel):
         """
         Converts the channel number to the corresponding channel and connector.
 
-        Args:
-        - no_channel: The channel number (from 1 to 8).
+        Parameters
+        ----------
+        no_channel : int
+            The channel number.
 
-        Returns:
-        - (channel, connector): A tuple of the channel and connector.
+        Returns
+        -------
+        channel and connector
         """
-
         channels = [
             sciencemode.Smpt_Channel_Red,
             sciencemode.Smpt_Channel_Blue,
@@ -181,17 +229,19 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def start_ll_channel_config(self, no_channel, points=None , stim_sequence: int = None, pulse_interval : int = None):
         """
-           Starts the stimulation in Low Level mode.
+        Starts the stimulation in Low Level mode.
 
-           Args:
-           - device: The Smpt_device object.
-           - channel: The channel color (e.g., Smpt_Channel_Red).
-           - connector: The connector color (e.g., Smpt_Connector_Yellow).
-           - points: A list of tuples where each tuple has (time, current) for the stimulation.
-
-           Returns:
-           - None
-           """
+        Parameters
+        ----------
+        no_channel : int
+            The channel number.
+        points : list
+            Points to stimulate.
+        stim_sequence : int
+            Number of stimulation sequence.
+        pulse_interval : int
+            Interval between each stimulation sequence.
+       """
         self._current_no_channel = no_channel
         self._current_stim_sequence = stim_sequence
         self._current_pulse_interval = pulse_interval
@@ -206,7 +256,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         ll_config.connector = connector
         ll_config.number_of_points = len(points)
 
-        for j,point in enumerate(points):
+        for j, point in enumerate(points):
             ll_config.points[j].time = point.pulse_width
             ll_config.points[j].current = point.amplitude
 
@@ -217,9 +267,20 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
             self._get_last_ack()
             self.check_ll_channel_config_ack()
 
-    def update_ll_channel_config(self, upd_list_point, no_channel = None, stim_sequence: int = None, pulse_interval : int = None):
+    def update_ll_channel_config(self, upd_list_point, no_channel=None, stim_sequence: int = None, pulse_interval: int = None):
         """
         Update the stimulation in Low Level mode.
+
+        Parameters
+        ----------
+        upd_list_point : list
+            Points to update.
+        no_channel : int
+            The channel number.
+        stim_sequence : int
+            Number of stimulation sequence.
+        pulse_interval : int
+            Interval between each stimulation sequence.
         """
         if stim_sequence is None:
             stim_sequence = self._current_stim_sequence
@@ -241,7 +302,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def init_stimulation(self, list_channels: list):
         """
-        Initialize the ml stimulation on the device.
+        Initialize the ml stimulation on the device. The mid-level  is used for defining a stimulation pattern
         """
         if self.stimulation_started:
             self.stop_stimulation()
@@ -260,6 +321,16 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         self._get_last_ack()
 
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
+        """
+        Start the ml stimulation on the device.
+
+        Parameters
+        ----------
+        stimulation_duration : float
+            Duration of the stimulation in seconds.
+        upd_list_channels : list
+            Channels to stimulate.
+        """
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
@@ -268,6 +339,8 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
+
+        #  Check if points are provided for each channel stimulated
 
         for channel in upd_list_channels:
             if not channel.list_point:
@@ -293,7 +366,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         # This code is used to set the stimulation duration
 
         ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
-        number_of_polls = int(stimulation_duration) if stimulation_duration is not None else 20
+        number_of_polls = int(stimulation_duration) if stimulation_duration is not None else 5
         for i in range(number_of_polls):
             ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
@@ -311,7 +384,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def stop_stimulation(self):
         """
-        Stop the stimulation on the device
+        Stop the ml stimulation.
         """
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
 
@@ -324,6 +397,9 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         print("Stimulation stopped.")
 
     def check_stimulation_errors(self):
+        """
+        Check if there is an error during the ml stimulation.
+        """
 
         sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
 
@@ -346,6 +422,9 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
             raise RuntimeError(error_message)
 
     def check_ll_channel_config_ack(self):
+        """
+        Check if there is an error during the ll stimulation.
+        """
         if not sciencemode.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
             raise ValueError("Failed to get the ll_channel_config_ack.")
         if self.ll_channel_config_ack.result == 0:

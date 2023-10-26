@@ -19,11 +19,16 @@ list_channels.append(channel_2)
 
 stimulator = St(port="COM4", show_log=True) #TODO: Try to put the device_type in the rehastimp24_interface
 
+"""
+General level commands.
+"""
+
 # stimulator.get_extended_version()
-# stimulator.get_devide_id()
+# stimulator.get_device_id()
 # stimulator.get_battery_status()
 # stimulator.get_stim_status()
 # stimulator.get_main_status()
+# stimulator.get_all()
 # stimulator.reset()
 
 stimulator.ll_init()
