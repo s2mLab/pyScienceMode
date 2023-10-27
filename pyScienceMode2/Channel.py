@@ -74,9 +74,13 @@ class Channel:
         if self.device_type == "RehastimP24":
             smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
             self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.Smpt_Channel_Undefined)
-
-            if self._amplitude and self._pulse_width:
+            if mode == "Single" and self._amplitude and self._pulse_width:
                 self.create_biphasic_pulse(self._amplitude, self._pulse_width) # Create a biphasic pulse for the channel
+            if mode == "Doublet" and self._amplitude and self._pulse_width:
+                self.create_doublet(self._amplitude, self._pulse_width)
+            elif mode == "Triplet":
+                self.create_triplet(self._amplitude, self._pulse_width)
+
 
     def __str__(self) -> str:
         """
@@ -109,6 +113,25 @@ class Channel:
 
         self.list_point.append(positive_pulse)
         self.list_point.append(negative_pulse)
+
+    def create_doublet(self, amplitude: int, pulse_width: int):
+        # First biphasic pulse
+        self.create_biphasic_pulse(amplitude, pulse_width)
+        # Inter-pulse interval (IPI) = 5 ms
+        self.list_point.append(Point(0, 0))
+        self.list_point.append(Point(4000, 0))
+        self.list_point.append(Point(1000, 0))
+        # Second biphasic pulse
+        self.create_biphasic_pulse(amplitude, pulse_width)
+
+    def create_triplet(self, amplitude, pulse_width):
+        # First doublet pulse
+        self.create_doublet(amplitude, pulse_width)
+        # Inter-pulse interval (IPI) = 5 ms
+        self.list_point.append(Point(0, 0))
+        self.list_point.append(Point(4000, 0))
+        self.list_point.append(Point(1000, 0))
+        self.create_biphasic_pulse(amplitude, pulse_width)
 
     def check_device_type(self) :
         """

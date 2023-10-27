@@ -320,7 +320,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         print("Command sent to rehastim:" , self.Types(sciencemode.Smpt_Cmd_Ml_Init).name)
         self._get_last_ack()
 
-    def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
+    def start_stimulation(self, upd_list_channels: list, stimulation_duration: float = None):
         """
         Start the ml stimulation on the device.
 
@@ -335,7 +335,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
                 raise RuntimeError("Error update: all channels have not been initialised")
-            self.list_channels = upd_list_channels
+        self.list_channels = upd_list_channels
 
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
@@ -347,7 +347,6 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
                 raise ValueError(
                     "No stimulation point provided for channel {}. Please either provide an amplitude and pulse width for a biphasic stimulation, or specify specific stimulation points.".format(
                         channel._no_channel))
-
             channel_index = channel._no_channel - 1
             ml_update.enable_channel[channel_index] = True
             ml_update.channel_config[channel_index].period = channel._period
