@@ -11,20 +11,20 @@ list_stimulation_points = []
 
 # Create an object channel
 
-channel_1 = Ch.Channel(mode="Single", no_channel=1, name="Biceps", amplitude=40, pulse_width=500, frequency=20, device_type="RehastimP24")
+channel_1 = Ch.Channel(mode="Single", no_channel=1, name="Biceps", amplitude=40, pulse_width=500, frequency=35, ramp =8, device_type="RehastimP24")
 channel_2 = Ch.Channel(mode="Triplet", no_channel=2, amplitude=40, pulse_width=500, name="Triceps", frequency=35, device_type="RehastimP24")
 channel_3 = Ch.Channel(mode="Single", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=35, device_type="RehastimP24")
 
 
-stimulator = St(port="COM4", show_log=True)
+stimulator = St(port="COM4", show_log=False)
 """
 General level commands.
 """
 list_channels.append(channel_1)
-# list_channels.append(channel_2)
+list_channels.append(channel_2)
 # list_channels.append(channel_3)
 
-# stimulator.get_extended_version()
+stimulator.get_extended_version()
 # stimulator.get_device_id()
 # stimulator.get_battery_status()
 # stimulator.get_stim_status()
@@ -32,15 +32,15 @@ list_channels.append(channel_1)
 # stimulator.get_all()
 # stimulator.reset()
 
-# stimulator.ll_init()
+stimulator.ll_init()
 #
-# point1 = Point(500, 20)
-# point2 = Point(500, -20)
-# point3 = Point(0, 0)
-# point4 = Point(4000, 0)
-# point5 = Point(1000, 0)
-# point6 = Point(500, 20)
-# point7 = Point(500, -20)
+point1 = Point(500, 20)
+point2 = Point(500, -20)
+point3 = Point(0, 0)
+point4 = Point(4000, 0)
+point5 = Point(1000, 0)
+point6 = Point(500, 20)
+point7 = Point(500, -20)
 
 # point3 = Point(0, 0)
 # point4 = Point(3000, 0)
@@ -52,15 +52,16 @@ list_channels.append(channel_1)
 # point10 = Point(100, -15)
 # point3 = Point(100, -10)
 
-# list_stimulation_points.append(point1)
-# list_stimulation_points.append(point2)
-# list_stimulation_points.append(point3)
-# list_stimulation_points.append(point4)
-# list_stimulation_points.append(point5)
-# list_stimulation_points.append(point6)
+list_stimulation_points.append(point1)
+list_stimulation_points.append(point2)
+list_stimulation_points.append(point3)
+list_stimulation_points.append(point4)
+list_stimulation_points.append(point5)
+list_stimulation_points.append(point6)
+list_stimulation_points.append(point7)
 
 
-# stimulator.start_ll_channel_config(no_channel=2, points=list_stimulation_points,stim_sequence=10, pulse_interval=500)
+stimulator.start_ll_channel_config(no_channel=1, points=list_stimulation_points,stim_sequence=10, pulse_interval=500)
 
 # point1.set_amplitude(15)
 # point1.set_pulse_width(200)
@@ -71,7 +72,7 @@ list_channels.append(channel_1)
 #
 # stimulator.update_ll_channel_config(upd_list_point=list_stimulation_points)
 
-# stimulator.ll_stop()
+stimulator.ll_stop()
 # Init the stimulation. Use it before starting the stimulation or after stopping it.
 
 stimulator.init_stimulation(list_channels=list_channels)

@@ -205,3 +205,12 @@ def _stuff_byte(byte: int) -> int:
     stuffing_key = 0x55
 
     return (byte & ~stuffing_key) | (~byte & stuffing_key)
+
+
+def generic_error_check(ack_object, error_map):
+    if ack_object.result in error_map and error_map[ack_object.result] is not None:
+        raise ValueError(error_map[ack_object.result])
+
+
+
+

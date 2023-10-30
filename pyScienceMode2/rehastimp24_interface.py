@@ -21,6 +21,16 @@ class StimulatorP24(RehastimGeneric):
         4: "Smpt_High_Voltage_90V",
         0: "Smpt_High_Voltage_Default"
     }
+    ERROR_MAP = {
+        0: None,
+        1: "Transfer error.",
+        2: "Parameter error.",
+        3: "Protocol error.",
+        5: "Timeout error.",
+        7: "Current level not initialized. Close the current level or initialize it.",
+        10: "Electrode error.",
+        11: "Invalid command error."
+    }
 
     def __init__(self, port: str, show_log: bool = False):
         """
@@ -44,6 +54,7 @@ class StimulatorP24(RehastimGeneric):
 
         super().__init__(port, show_log, device_type="RehastimP24")
 
+    #  General level commands
     def get_extended_version(self) -> bool:
         """
         Get the extended version of the device. General Level command.
@@ -55,9 +66,8 @@ class StimulatorP24(RehastimGeneric):
         """
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
         packet_number = self.get_next_packet_number()
-        ret = sciencemode.smpt_send_get_extended_version(self.device, packet_number)
+        sciencemode.smpt_send_get_extended_version(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Extended_Version).name)
-        ret = False
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
         print("get extended version", ret)
@@ -180,7 +190,8 @@ class StimulatorP24(RehastimGeneric):
 
         return extended_version_success and device_id_success and stim_status_success and battery_status_success and main_status_success
 
-    def channel_number_to_channel_connector(self, no_channel):
+    @staticmethod
+    def channel_number_to_channel_connector(no_channel):
         """
         Converts the channel number to the corresponding channel and connector.
 
@@ -214,6 +225,8 @@ class StimulatorP24(RehastimGeneric):
 
         return channel, connector
 
+    #  Low level commands
+
     def ll_init(self):
         """
         Initialize the lower level of the device. The low-level is used for defining a custom shaped pulse.
@@ -228,6 +241,12 @@ class StimulatorP24(RehastimGeneric):
         print("lower level initialized")
         self.get_next_packet_number()
         self._get_last_ack()
+        self.check_ll_init_ack()
+
+    def check_ll_init_ack(self):
+        if not sciencemode.smpt_get_ll_init_ack(self.device, self.ll_init_ack) :
+            raise RuntimeError("Ll initialization failed.")
+        generic_error_check(self.ll_init_ack, self.ERROR_MAP)
 
     def start_ll_channel_config(self, no_channel, points=None, stim_sequence: int = None, pulse_interval: int = None):
         """
@@ -269,6 +288,13 @@ class StimulatorP24(RehastimGeneric):
             self._get_last_ack()
             self.check_ll_channel_config_ack()
 
+    def check_ll_channel_config_ack(self):
+        """
+        Check if there is an error during the ll stimulation.
+        """
+        if not sciencemode.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
+            raise ValueError("Failed to get the ll_channel_config_ack.")
+
     def update_ll_channel_config(self, upd_list_point, no_channel=None, stim_sequence: int = None, pulse_interval: int = None):
         """
         Update the stimulation in Low Level mode.
@@ -295,6 +321,7 @@ class StimulatorP24(RehastimGeneric):
     def ll_stop(self):
         """
         Stop the lower level of the device.
+        generic_error_check(self.ll_channel_config_ack, self.ERROR_MAP)
         """
         packet_number = self.get_next_packet_number()
         if not sciencemode.smpt_send_ll_stop(self.device, packet_number):
@@ -439,21 +466,4 @@ class StimulatorP24(RehastimGeneric):
 
                 raise RuntimeError(error_message)
 
-    def check_ll_channel_config_ack(self):
-        """
-        Check if there is an error during the ll stimulation.
-        """
-        if not sciencemode.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
-            raise ValueError("Failed to get the ll_channel_config_ack.")
-        if self.ll_channel_config_ack.result == 0:
-            pass
-        if self.ll_channel_config_ack.result == 10:
-            raise ValueError("Electrode error.")
 
-    def close_port(self):
-        """
-        Close the serial port
-        """
-        ret = sciencemode.smpt_close_serial_port(self.device)
-
-        return ret

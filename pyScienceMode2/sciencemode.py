@@ -88,6 +88,7 @@ class RehastimGeneric:
             self.ack = sciencemode.ffi.new("Smpt_ack*")
             self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
             self.ll_channel_config_ack = sciencemode.ffi.new("Smpt_ll_channel_config_ack*")
+            self.ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
 
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")
@@ -423,7 +424,10 @@ class RehastimGeneric:
         """
         Closes the port.
         """
-        self.port.close()
+        if self.device_type == "RehastimP24":
+            sciencemode.smpt_close_serial_port(self.device)
+        elif self.device_type == "Rehastim2":
+            self.port.close()
 
     def _read_packet(self) -> list:
         """
