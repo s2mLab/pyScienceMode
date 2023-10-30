@@ -3,7 +3,9 @@ from pyScienceMode2.sciencemode import RehastimGeneric
 from pyScienceMode2.utils import *
 import time
 
-class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try to use only positive current point
+
+class StimulatorP24(RehastimGeneric):
+
     """
     Class used for the communication with RehastimP24.
     """
@@ -22,7 +24,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def __init__(self, port: str, show_log: bool = False):
         """
-        Creates an object stimulator for the rehastim P24.
+        Creates an object stimulator for the RehastimP24.
 
         Parameters
         ----------
@@ -44,7 +46,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def get_extended_version(self) -> bool:
         """
-        Get the extended version of the device.
+        Get the extended version of the device. General Level command.
 
         Returns
         -------
@@ -70,7 +72,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         Returns
         -------
         bool
-            True if the command was successful, False otherwise.
+            True if the command was successful, False otherwise. General Level command.
         """
         device_id_ack = sciencemode.ffi.new("Smpt_get_device_id_ack*")
         packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
@@ -85,7 +87,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def get_stim_status(self) -> bool:
         """
-        Get the stimulation status.
+        Get the stimulation status. General Level command.
 
         Returns
         -------
@@ -106,7 +108,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def get_battery_status(self) -> bool:
         """
-        Get the battery status.
+        Get the battery status. General Level command.
 
         Returns
         -------
@@ -127,7 +129,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def get_main_status(self) -> bool:
         """
-        Get the main status.
+        Get the main status. General Level command.
 
         Returns
         -------
@@ -147,7 +149,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def reset(self) -> bool:
         """
-        Reset the device.
+        Reset the device. General Level command.
 
         Returns
         -------
@@ -163,7 +165,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
 
     def get_all(self) -> bool:
         """
-        Get all the device information.
+        Get all the device information. General Level command.
 
         Returns
         -------
@@ -227,7 +229,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         self.get_next_packet_number()
         self._get_last_ack()
 
-    def start_ll_channel_config(self, no_channel, points=None , stim_sequence: int = None, pulse_interval : int = None):
+    def start_ll_channel_config(self, no_channel, points=None, stim_sequence: int = None, pulse_interval: int = None):
         """
         Starts the stimulation in Low Level mode.
 
@@ -317,7 +319,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         if not sciencemode.smpt_send_ml_init(self.device, ml_init):
             raise RuntimeError("failed to start stimulation")
         print("Stimulation initialized")
-        print("Command sent to rehastim:" , self.Types(sciencemode.Smpt_Cmd_Ml_Init).name)
+        print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Ml_Init).name)
         self._get_last_ack()
 
     def start_stimulation(self, upd_list_channels: list, stimulation_duration: float = None):
@@ -365,7 +367,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         # This code is used to set the stimulation duration
 
         ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
-        number_of_polls = int(stimulation_duration) if stimulation_duration is not None else 5
+        number_of_polls = int(stimulation_duration) if stimulation_duration is not None else 1
         for i in range(number_of_polls):
             ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
@@ -385,7 +387,7 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
         """
         Stop the ml stimulation.
         """
-        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        packet_number = self.get_next_packet_number()
 
         if not sciencemode.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("failure to stop stimulation.")
@@ -410,13 +412,15 @@ class StimulatorP24(RehastimGeneric): #TODO : put a flag safety if the user try 
                 break
         if error_on_channel:
             if self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Electrode_Error:
-                error_message = "Electrode error"
+                error_message = f"Electrode error on channel {j}"
             elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Timeout_Error:
-                error_message = "Timeout error"
+                error_message = f"Timeout error on channel {j}"
             elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Low_Current_Error:
-                error_message = "Low current error"
+                error_message = f"Low current error on channel {j}"
             elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Last_Item:
-                error_message = "Last item error"
+                error_message = f"Last item error on channel {j}"
+            else:
+                error_message = f"Unknown error on channel {j}"
 
             raise RuntimeError(error_message)
 

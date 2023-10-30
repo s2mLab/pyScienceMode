@@ -64,8 +64,8 @@ class Channel:
         self._pulse_width = pulse_width
         self._enable_low_frequency = enable_low_frequency
         self._name = name if name else f"muscle_{self._no_channel}"
-        self._period = 1000.0 / frequency  # NEW : frequency (Hz) of the channel
-        self.list_point = []  # NEW : list of points for the channel
+        self._period = 1000.0 / frequency  # frequency (Hz) of the channel
+        self.list_point = []  # list of points for the channel
         self.check_value_param()
 
         if self.device_type == "Rehastim2" and frequency:
@@ -74,13 +74,13 @@ class Channel:
         if self.device_type == "RehastimP24":
             smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
             self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.Smpt_Channel_Undefined)
+
             if mode == "Single" and self._amplitude and self._pulse_width:
                 self.create_biphasic_pulse(self._amplitude, self._pulse_width) # Create a biphasic pulse for the channel
-            if mode == "Doublet" and self._amplitude and self._pulse_width:
+            if mode == "Doublet" and self._amplitude and self._pulse_width:  # Create a doublet pulse for the channel
                 self.create_doublet(self._amplitude, self._pulse_width)
-            elif mode == "Triplet":
+            elif mode == "Triplet" and self._amplitude and self._pulse_width:  # Create a triplet pulse for the channel
                 self.create_triplet(self._amplitude, self._pulse_width)
-
 
     def __str__(self) -> str:
         """
@@ -115,16 +115,39 @@ class Channel:
         self.list_point.append(negative_pulse)
 
     def create_doublet(self, amplitude: int, pulse_width: int):
+        """
+        Create a doublet pulse for the channel.
+
+        Parameters
+        ----------
+        amplitude: int
+            Current to send in the channel. [0,150] milli amp
+        pulse_width: int
+            Width of the stimulation. [0,4093] μs
+        """
+
         # First biphasic pulse
         self.create_biphasic_pulse(amplitude, pulse_width)
-        # Inter-pulse interval (IPI) = 5 ms
+
+        # Inter-pulse interval (IPI) = 5 ms. Can be adjusted if needed.
         self.list_point.append(Point(0, 0))
         self.list_point.append(Point(4000, 0))
         self.list_point.append(Point(1000, 0))
+
         # Second biphasic pulse
         self.create_biphasic_pulse(amplitude, pulse_width)
 
     def create_triplet(self, amplitude, pulse_width):
+        """
+        Create a triplet pulse for the channel.
+
+        Parameters
+        ----------
+        amplitude: int
+            Current to send in the channel. [0,150] milli amp
+        pulse_width: int
+            Width of the stimulation. [0,4093] μs
+        """
         # First doublet pulse
         self.create_doublet(amplitude, pulse_width)
         # Inter-pulse interval (IPI) = 5 ms
@@ -133,7 +156,7 @@ class Channel:
         self.list_point.append(Point(1000, 0))
         self.create_biphasic_pulse(amplitude, pulse_width)
 
-    def check_device_type(self) :
+    def check_device_type(self):
         """
         Check if the device type is correct. Raise an error otherwise.
         """
@@ -229,7 +252,7 @@ class Channel:
         """
         self._pulse_width = pulse_width
         self.check_value_param()
-        if self.device_type == "RehastimP24" and self._amplitude:
+        if self.device_type == "RehastimP24" and self._amplitude:  # Maybe remove this condition.
             self.create_biphasic_pulse(self._amplitude, self._pulse_width)
 
     def get_pulse_width(self) -> int:
@@ -274,7 +297,7 @@ class Channel:
 
     def set_frequency(self, frequency: float):
         """
-        Set the period for a channel
+        Set the frequency for a channel
 
         Parameters
         ----------
@@ -287,7 +310,7 @@ class Channel:
 
     def get_frequency(self) -> float:
         """
-        Returns the period of a channel
+        Returns the frequency of a channel
         """
         return 1000.0/self._period
 

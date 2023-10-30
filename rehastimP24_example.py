@@ -15,11 +15,8 @@ channel_1 = Ch.Channel(mode="Triplet", no_channel=1, name="Biceps", amplitude=40
 channel_2 = Ch.Channel(mode="Triplet", no_channel=2, amplitude=40, pulse_width=350, name="Triceps", frequency=20, device_type="RehastimP24")
 channel_3 = Ch.Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=350, name="Triceps", frequency=20, device_type="RehastimP24")
 
-print("taille channel_1:",  len(channel_1.list_point))
-print("taille channel_2:",  len(channel_2.list_point))
 
-
-stimulator = St(port="COM4", show_log=True)  #  TODO: Try to put the device_type in the rehastimp24_interface
+stimulator = St(port="COM4", show_log=True)
 """
 General level commands.
 """
