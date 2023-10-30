@@ -11,9 +11,9 @@ list_stimulation_points = []
 
 # Create an object channel
 
-channel_1 = Ch.Channel(mode="Triplet", no_channel=1, name="Biceps", amplitude=40, pulse_width=350, frequency=40, device_type="RehastimP24")
-channel_2 = Ch.Channel(mode="Triplet", no_channel=2, amplitude=40, pulse_width=350, name="Triceps", frequency=20, device_type="RehastimP24")
-channel_3 = Ch.Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=350, name="Triceps", frequency=20, device_type="RehastimP24")
+channel_1 = Ch.Channel(mode="Single", no_channel=1, name="Biceps", amplitude=40, pulse_width=500, frequency=20, device_type="RehastimP24")
+channel_2 = Ch.Channel(mode="Triplet", no_channel=2, amplitude=40, pulse_width=500, name="Triceps", frequency=35, device_type="RehastimP24")
+channel_3 = Ch.Channel(mode="Single", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=35, device_type="RehastimP24")
 
 
 stimulator = St(port="COM4", show_log=True)
@@ -21,8 +21,8 @@ stimulator = St(port="COM4", show_log=True)
 General level commands.
 """
 list_channels.append(channel_1)
-list_channels.append(channel_2)
-list_channels.append(channel_3)
+# list_channels.append(channel_2)
+# list_channels.append(channel_3)
 
 # stimulator.get_extended_version()
 # stimulator.get_device_id()
@@ -91,7 +91,7 @@ stimulator.init_stimulation(list_channels=list_channels)
 # channel_2.add_point(100, 15)
 # channel_2.add_point(100, -15)
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=5)
 """
 You can change the configuration of the channel during the stimulation.
 """

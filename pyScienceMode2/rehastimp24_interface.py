@@ -352,6 +352,7 @@ class StimulatorP24(RehastimGeneric):
             channel_index = channel._no_channel - 1
             ml_update.enable_channel[channel_index] = True
             ml_update.channel_config[channel_index].period = channel._period
+            ml_update.channel_config[channel_index].ramp = channel._ramp
             ml_update.channel_config[channel_index].number_of_points = len(channel.list_point)
             for j, point in enumerate(channel.list_point):
                 ml_update.channel_config[channel_index].points[j].time = point.pulse_width
@@ -383,6 +384,23 @@ class StimulatorP24(RehastimGeneric):
             self._get_last_ack()
         self.stimulation_started = True
 
+    def update_stimulation(self, upd_list_channels: list, stimulation_duration: float = None):
+        """
+        Update the ml stimulation on the device with new channel configurations.
+
+        Parameters
+        ----------
+        upd_list_channels : list
+            Channels to stimulate.
+        stimulation_duration : float, optional
+            Duration of the updated stimulation in seconds.
+        """
+
+        if self.stimulation_started:
+            self.stop_stimulation()
+
+        self.start_stimulation(upd_list_channels, stimulation_duration)
+
     def stop_stimulation(self):
         """
         Stop the ml stimulation.
@@ -404,25 +422,22 @@ class StimulatorP24(RehastimGeneric):
 
         sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
 
-        error_on_channel = False
         num_channels = len(self.list_channels)
         for j in range(num_channels):
-            if self.ml_get_current_data_ack.channel_data.channel_state[j] != sciencemode.Smpt_Ml_Channel_State_Ok:
-                error_on_channel = True
-                break
-        if error_on_channel:
-            if self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Electrode_Error:
-                error_message = f"Electrode error on channel {j}"
-            elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Timeout_Error:
-                error_message = f"Timeout error on channel {j}"
-            elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Low_Current_Error:
-                error_message = f"Low current error on channel {j}"
-            elif self.ml_get_current_data_ack.channel_data.channel_state[j] == sciencemode.Smpt_Ml_Channel_State_Last_Item:
-                error_message = f"Last item error on channel {j}"
-            else:
-                error_message = f"Unknown error on channel {j}"
+            channel_state = self.ml_get_current_data_ack.channel_data.channel_state[j]
+            if channel_state != sciencemode.Smpt_Ml_Channel_State_Ok:
+                if channel_state == sciencemode.Smpt_Ml_Channel_State_Electrode_Error:
+                    error_message = f"Electrode error on channel {j+1}"
+                elif channel_state == sciencemode.Smpt_Ml_Channel_State_Timeout_Error:
+                    error_message = f"Timeout error on channel {j+1}"
+                elif channel_state == sciencemode.Smpt_Ml_Channel_State_Low_Current_Error:
+                    error_message = f"Low current error on channel {j+1}"
+                elif channel_state == sciencemode.Smpt_Ml_Channel_State_Last_Item:
+                    error_message = f"Last item error on channel {j+1}"
+                else:
+                    error_message = f"Unknown error on channel {j+1}"
 
-            raise RuntimeError(error_message)
+                raise RuntimeError(error_message)
 
     def check_ll_channel_config_ack(self):
         """

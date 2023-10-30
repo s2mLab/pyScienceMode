@@ -32,7 +32,8 @@ class Channel:
         enable_low_frequency: bool = False,
         name: str = None,
         device_type="Rehastim2",
-        frequency : float = 50.0,
+        frequency: float = 50.0,
+        ramp: int = 0
     ):
         """
         Create an object Channel.
@@ -66,8 +67,11 @@ class Channel:
         self._name = name if name else f"muscle_{self._no_channel}"
         self._period = 1000.0 / frequency  # frequency (Hz) of the channel
         self.list_point = []  # list of points for the channel
+        self._ramp = ramp
         self.check_value_param()
 
+        if self.device_type == "Rehastim2" and ramp:
+            raise RuntimeError("Ramp is not supported for Rehastim2")
         if self.device_type == "Rehastim2" and frequency:
             raise RuntimeError("Frequency is not supported for Rehastim2")
 
@@ -185,6 +189,8 @@ class Channel:
                 raise ValueError("Error : Amplitude min = 0, max = 150. Amplitude given : %s" % self._amplitude)
             if self._pulse_width < 0 or self._pulse_width > 4095:
                 raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
+            if self._ramp < 0 or self._ramp > 16:
+                raise ValueError("Error : Ramp min = 0, max = 16. Ramp given : %s" % self._ramp)
 
     def set_mode(self, mode: MODE):
         """
@@ -314,6 +320,24 @@ class Channel:
         """
         return 1000.0/self._period
 
+    def get_ramp(self):
+        """
+        Returns the ramp of a channel
+        """
+        return self._ramp
+
+    def set_ramp(self, ramp: int):
+        """
+        Set the ramp for a channel
+
+        Parameters
+        ----------
+        ramp: int
+            Ramp of the channel (pulses)
+        """
+        self._ramp = ramp
+        self.check_value_param()
+
     def add_point(self, pulse_width: float, amplitude: float):
         """
         Add a point to the list of points for a channel. One channel can pilot 16 points.
@@ -379,5 +403,6 @@ class Point:
 
         self.pulse_width = pulse_width
         self.check_parameters_point()
+
 
 
