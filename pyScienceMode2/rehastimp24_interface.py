@@ -85,10 +85,9 @@ class StimulatorP24(RehastimGeneric):
             True if the command was successful, False otherwise. General Level command.
         """
         device_id_ack = sciencemode.ffi.new("Smpt_get_device_id_ack*")
-        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-        ret = sciencemode.smpt_send_get_device_id(self.device, packet_number)
+        packet_number = self.get_next_packet_number()
+        sciencemode.smpt_send_get_device_id(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Device_Id).name)
-        ret = False
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_device_id_ack(self.device, device_id_ack)
         print("get device id", ret)
@@ -105,10 +104,9 @@ class StimulatorP24(RehastimGeneric):
             True if the command was successful, False otherwise.
         """
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
-        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-        ret = sciencemode.smpt_send_get_stim_status(self.device, packet_number)
+        packet_number = self.get_next_packet_number()
+        sciencemode.smpt_send_get_stim_status(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Stim_Status).name)
-        ret = False
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_stim_status_ack(self.device, stim_status_ack)
         print("get stim status", ret)
@@ -126,10 +124,9 @@ class StimulatorP24(RehastimGeneric):
             True if the command was successful, False otherwise.
         """
         battery_status_ack = sciencemode.ffi.new("Smpt_get_battery_status_ack*")
-        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-        ret = sciencemode.smpt_send_get_battery_status(self.device, packet_number)
+        packet_number = self.get_next_packet_number()
+        sciencemode.smpt_send_get_battery_status(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Battery_Status).name)
-        ret = False
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_battery_status_ack(self.device, battery_status_ack)
         print("get battery status", ret)
@@ -147,10 +144,9 @@ class StimulatorP24(RehastimGeneric):
             True if the command was successful, False otherwise.
         """
         main_status_ack = sciencemode.ffi.new("Smpt_get_main_status_ack*")
-        packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
-        ret = sciencemode.smpt_send_get_main_status(self.device, packet_number)
+        packet_number = self.get_next_packet_number()
+        sciencemode.smpt_send_get_main_status(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Get_Main_Status).name)
-        ret = False
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_main_status_ack(self.device, main_status_ack)
         print("get main status", ret)
@@ -169,7 +165,6 @@ class StimulatorP24(RehastimGeneric):
         packet_number = self.get_next_packet_number()
         ret = sciencemode.smpt_send_reset(self.device, packet_number)
         print("Command sent to rehastim:", self.Types(sciencemode.Smpt_Cmd_Reset).name)
-        ret = False
         self._get_last_ack()
         return ret
 

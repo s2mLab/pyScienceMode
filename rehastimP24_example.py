@@ -21,10 +21,10 @@ stimulator = St(port="COM4", show_log=False)
 General level commands.
 """
 list_channels.append(channel_1)
-list_channels.append(channel_2)
+# list_channels.append(channel_2)
 # list_channels.append(channel_3)
 
-stimulator.get_extended_version()
+# stimulator.get_extended_version()
 # stimulator.get_device_id()
 # stimulator.get_battery_status()
 # stimulator.get_stim_status()
