@@ -88,19 +88,16 @@ In this level you can define a stimulation pattern.
 
 
 """
-Init the stimulation. Use it before starting the stimulation or after stopping it.
-Open the mid level stimulation.
-"""
-
-"""
 Init the mid level stimulation. Use it before starting the stimulation or after stopping it.
+Open the mid level stimulation.
 """
 stimulator.init_stimulation(list_channels=list_channels)
 
 """
 If you want to create your own shape pulse, you can pilot create and pilot stimulation points.
-16 max per channels
+16 max per channels.
 Otherwise, you can use the default biphasic shape pulse mode="Single" or "Doublet" or "Triplet".
+
 """
 
 point1 = channel_1.add_point(3000, 20)
