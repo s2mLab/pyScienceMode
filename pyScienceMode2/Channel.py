@@ -72,7 +72,7 @@ class Channel:
 
         if self.device_type == "Rehastim2" and ramp:
             raise RuntimeError("Ramp is not supported for Rehastim2")
-        if self.device_type == "Rehastim2" and frequency:
+        if self.device_type == "Rehastim2" and frequency != 50.0:
             raise RuntimeError("Frequency is not supported for Rehastim2")
 
         if self.device_type == "RehastimP24":

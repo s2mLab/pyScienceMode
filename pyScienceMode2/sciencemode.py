@@ -81,6 +81,7 @@ class RehastimGeneric:
                     stopbits=serial.STOPBITS_ONE,
                     timeout=0.1,
                 )
+
         elif self.device_type == "RehastimP24":
             self.device = sciencemode.ffi.new("Smpt_device*")
             self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
@@ -95,10 +96,10 @@ class RehastimGeneric:
 
             if not self.open_serial_port():
                 raise RuntimeError(f"Unable to open port {self.port_name}.")
-            # self.get_next_packet_number()
         else:
             raise ValueError("Device type not recognized")
 
+        self.port_open = True
         self.time_last_cmd = 0
         self.packet_count = 0
         self.reha_connected = False
@@ -122,13 +123,13 @@ class RehastimGeneric:
         self.__comparison_thread_started = False
         self.__watchdog_thread_started = False
         self.command_send = []  # Command sent to the rehastim
-        self.command_received = []  # Command received by the rehastim
+        self.ack_received = []  # Command received by the rehastim
         self.Type = Type
         self.Types= Types
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
-
+        self.stimulation_active = True  # If the stimulation is active, set to true
         self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
 
         if self.reha_connected and not self.__comparison_thread_started:
@@ -171,28 +172,31 @@ class RehastimGeneric:
         -------
         bytes
         """
-
+        if self.error_occured:
+            raise RuntimeError("Stimulation error")
+        # packet = None
         if self.is_motomed_connected:
             if init:
                 while not self.last_init_ack:
                     pass
                 last_ack = self.last_init_ack
-                self.command_received.append(last_ack)
+                self.ack_received.append(last_ack)
                 self.last_init_ack = None
             else:
                 while not self.last_ack:
                     pass
                 last_ack = self.last_ack
-                self.command_received.append(last_ack)
+                self.ack_received.append(last_ack)
                 self.last_ack = None
             return last_ack
+
         if self.device_type == "RehastimP24" :
             while not sciencemode.smpt_new_packet_received(self.device):
                 time.sleep(0.005)
             sciencemode.smpt_last_ack(self.device, self.ack)
             print("Ack received by rehastimP24: ", self.Types(self.ack.command_number).name)
             return self.ack
-        if self.device_type == "Rehastim2":
+        elif self.device_type == "Rehastim2":
             while 1:
                 packet = self._read_packet()
                 if packet and len(packet) != 0:
@@ -200,22 +204,19 @@ class RehastimGeneric:
             if packet and not self.error_occured:
                 if self.show_log and packet[-1][6] in [t.value for t in self.Type]:
                     print(f"Ack received by rehastim: {self.Type(packet[-1][6]).name}")
-                    self.command_received.append(packet[-1])
-        if self.error_occured:
-            raise RuntimeError("Stimulation error")
+                    self.ack_received.append(packet[-1])
+            return packet[-1]
 
-        return packet[-1]
-
-    def _return_command_received(self) -> list:
+    def _return_list_ack_received(self) -> list:
         """
         Return the list of the command received from the rehastim
 
         Returns
         -------
-        self.command_received : list
+        self.ack_received : list
             Commands received from the rehastim
         """
-        return self.command_received
+        return self.ack_received
 
     def _return_command_sent(self) -> list:
         """
@@ -241,11 +242,13 @@ class RehastimGeneric:
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
 
-        # print("Thread started")
+        print("Thread started")
         time_to_sleep = 0.005
-        while 1 and self.device_type == "Rehastim2":
-            list_send = self._return_command_sent()
-            list_ack = self._return_command_received()
+        while self.stimulation_active and self.device_type == "Rehastim2":
+            # self.error_occured = True
+
+            list_send = self.command_send
+            list_ack = self.ack_received
             tic = time.time()
             """
             Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
@@ -282,10 +285,14 @@ class RehastimGeneric:
                                     self.event_ack.set()
 
             if list_send and list_ack:
+                print("ouiii")
+
                 for i in reversed(range(min(len(list_send), len(list_ack)))):
                     if list_ack[i][6] == self.Type["StimulationError"].value:
                         ack = rehastim_error(signed_int(list_ack[i][7:8]))
+
                         if signed_int(list_ack[i][7:8]) in [-1, -2, -3]:
+                            self.stimulation_active = False
                             self.error_occured = True
                             raise RuntimeError("Stimulation error : ", ack)
                     elif list_ack[i][6] == self.Type["ActualValues"].value and not self.is_motomed_connected:

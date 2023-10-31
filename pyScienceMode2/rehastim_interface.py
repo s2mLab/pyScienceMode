@@ -270,8 +270,8 @@ class Stimulator(RehastimGeneric):
         list_channels: list[Channel]
             List containing the channels and their parameters.
         """
-        if self.stimulation_started:
-            self._stop_channel_list()
+        if self.stimulation_active:
+            self.stop_channel_list()
 
         check_stimulation_interval(stimulation_interval)
         check_unique_channel(list_channels)
@@ -317,7 +317,7 @@ class Stimulator(RehastimGeneric):
         time_start_stim = time.time()
 
         self._get_last_ack()
-        self.stimulation_started = True
+        self.stimulation_active = True
 
         if stimulation_duration is not None:
             if stimulation_duration < time.time() - time_start_stim:
@@ -336,14 +336,14 @@ class Stimulator(RehastimGeneric):
         self._get_last_ack()
         self.amplitude = tmp_amp
 
-    def _stop_channel_list(self):
+    def stop_channel_list(self):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
         self._send_packet("StopChannelListMode")
         self._get_last_ack()
         self.packet_count = 0
-        self.stimulation_started = False
+        self.stimulation_active = False
 
     def get_motomed_angle(self) -> float:
         """

@@ -282,7 +282,7 @@ class StimulatorP24(RehastimGeneric):
             ll_config.points[j].current = point.amplitude
 
         for _ in range(stim_sequence):
-            ll_config.packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+            ll_config.packet_number = self.get_next_packet_number()
             sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
             time.sleep(pulse_interval/1000)
             self._get_last_ack()
