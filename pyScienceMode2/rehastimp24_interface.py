@@ -294,6 +294,7 @@ class StimulatorP24(RehastimGeneric):
         """
         if not sciencemode.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
             raise ValueError("Failed to get the ll_channel_config_ack.")
+        generic_error_check(self.ll_channel_config_ack, self.ERROR_MAP)
 
     def update_ll_channel_config(self, upd_list_point, no_channel=None, stim_sequence: int = None, pulse_interval: int = None):
         """

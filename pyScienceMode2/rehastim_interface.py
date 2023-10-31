@@ -343,7 +343,7 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StopChannelListMode")
         self._get_last_ack()
         self.packet_count = 0
-        self.stimulation_active = False
+
 
     def get_motomed_angle(self) -> float:
         """

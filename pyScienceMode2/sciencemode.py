@@ -57,7 +57,7 @@ class RehastimGeneric:
 
     BAUD_RATE = 460800
 
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type: str = None):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type: str = "Rehastim2"):
         """
         Init the class.
 
@@ -241,14 +241,10 @@ class RehastimGeneric:
         """
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
-
         print("Thread started")
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == "Rehastim2":
-            # self.error_occured = True
 
-            list_send = self.command_send
-            list_ack = self.ack_received
             tic = time.time()
             """
             Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
@@ -284,22 +280,18 @@ class RehastimGeneric:
                                     self.last_ack = packet
                                     self.event_ack.set()
 
-            if list_send and list_ack:
-                print("ouiii")
-
-                for i in reversed(range(min(len(list_send), len(list_ack)))):
-                    if list_ack[i][6] == self.Type["StimulationError"].value:
-                        ack = rehastim_error(signed_int(list_ack[i][7:8]))
-
-                        if signed_int(list_ack[i][7:8]) in [-1, -2, -3]:
-                            self.stimulation_active = False
+            if self.command_send and self.ack_received:
+                for i in reversed(range(min(len(self.command_send), len(self.ack_received)))):
+                    if self.ack_received[i][6] == self.Type["StimulationError"].value:
+                        ack = rehastim_error(signed_int(self.ack_received[i][7:8]))
+                        if signed_int(self.ack_received[i][7:8]) in [-1, -2, -3]:
                             self.error_occured = True
                             raise RuntimeError("Stimulation error : ", ack)
-                    elif list_ack[i][6] == self.Type["ActualValues"].value and not self.is_motomed_connected:
+                    elif self.ack_received[i][6] == self.Type["ActualValues"].value and not self.is_motomed_connected:
                         self.error_occured = True
                         raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
-                    elif list_send[i][6] + 1 == list_ack[i][6] and i > 0:
-                        for packet in list_ack:
+                    elif self.command_send[i][6] + 1 == self.ack_received[i][6] and i > 0:
+                        for packet in self.ack_received:
                             if packet[6] == self.Type["InitChannelListModeAck"].value:
                                 init_stimulation_ack(packet)
                                 if init_stimulation_ack(packet) != "Stimulation initialized":
@@ -320,8 +312,8 @@ class RehastimGeneric:
                                     self.error_occured = True
                                     raise RuntimeError("Error : StartChannelListMode :" + start_stimulation_ack(packet))
 
-                        del list_send[i]
-                        del list_ack[i]
+                        del self.command_send[i]
+                        del self.ack_received[i]
 
             loop_duration = tic - time.time()
             time.sleep(time_to_sleep - loop_duration)
@@ -476,6 +468,7 @@ class RehastimGeneric:
         if self.reha_connected:
             self._stop_thread_catch_ack()
         self.is_motomed_connected = False
+        self.stimulation_active = False
 
     def _stop_thread_catch_ack(self):
         """

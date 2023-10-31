@@ -11,7 +11,7 @@ list_channels = []
 
 # Create all channels possible
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=1, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps", device_type="Rehastim2"
+    mode="Single", no_channel=3, amplitude=20, pulse_width=100, enable_low_frequency=False, name="Biceps", device_type="Rehastim2"
 )
 
 channel_2 = Ch.Channel()
@@ -59,17 +59,17 @@ stimulator.start_stimulation()
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,
-list_channels[0].set_amplitude(10)
+list_channels[0].set_amplitude(5)
 # list_channels[3].set_amplitude(15)
 
 # Wait a given time in seconds
-sleep(1)
+sleep(5)
 
 # Update the parameters of the stimulation
 stimulator.start_stimulation(upd_list_channels=list_channels)
 
 # Wait a given time in seconds
-sleep(2)
+sleep(3)
 
 """
 Stop the stimulation. But does not disconnect the Pc and the Rehastim.
