@@ -193,9 +193,10 @@ class RehastimGeneric:
         if self.device_type == "RehastimP24" :
             while not sciencemode.smpt_new_packet_received(self.device):
                 time.sleep(0.005)
-            sciencemode.smpt_last_ack(self.device, self.ack)
-            print("Ack received by rehastimP24: ", self.Types(self.ack.command_number).name)
-            return self.ack
+            ret = sciencemode.smpt_last_ack(self.device, self.ack)
+            if self.show_log :
+                print("Ack received by rehastimP24: ", self.Types(self.ack.command_number).name)
+            return ret
         elif self.device_type == "Rehastim2":
             while 1:
                 packet = self._read_packet()

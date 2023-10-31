@@ -11,7 +11,7 @@ list_channels = []
 
 # Create all channels possible
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=3, amplitude=20, pulse_width=100, enable_low_frequency=False, name="Biceps", device_type="Rehastim2"
+    mode="Single", no_channel=3,frequency=20, amplitude=20, pulse_width=100, enable_low_frequency=False, name="Biceps", device_type="Rehastim2"
 )
 
 channel_2 = Ch.Channel()

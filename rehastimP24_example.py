@@ -12,13 +12,13 @@ list_stimulation_points = []
 # Create an object channel
 channel_1 = Ch.Channel(no_channel=1, name="Biceps", amplitude=40, pulse_width=500, frequency=35, device_type="RehastimP24")
 channel_2 = Ch.Channel(mode="Doublet", no_channel=2, amplitude=40, pulse_width=500, name="Triceps", frequency=35, ramp=5, device_type="RehastimP24")
-channel_3 = Ch.Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=35, ramp=15, device_type="RehastimP24")
+channel_3 = Ch.Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=15, ramp=15, device_type="RehastimP24")
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log=False)
+stimulator = St(port="COM4", show_log=True) # Enter the port on which the rehastim is connected
 
 # Add the channels you want to use to the list
-list_channels.append(channel_1)
+# list_channels.append(channel_1)
 list_channels.append(channel_2)
 # list_channels.append(channel_3)
 
@@ -100,10 +100,10 @@ Otherwise, you can use the default biphasic shape pulse mode="Single" or "Double
 
 """
 
-point1 = channel_1.add_point(3000, 20)
-point2 = channel_1.add_point(3000, -20)
-point3 = channel_1.add_point(3000, 20)
-point4 = channel_1.add_point(3000, -20)
+# point1 = channel_1.add_point(3000, 20)
+# point2 = channel_1.add_point(3000, -20)
+# point3 = channel_1.add_point(3000, 20)
+# point4 = channel_1.add_point(3000, -20)
 
 # point5 = channel_2.add_point(100, 15)
 # point6 = channel_2.add_point(100, -15)
@@ -112,26 +112,26 @@ point4 = channel_1.add_point(3000, -20)
 Start the stimulation with the list of channels provided for 5s.
 """
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=5)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3)
 
 # You can modify some parameters during the stimulation.
-channel_1.set_frequency(10)
-
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.
 channel_2.set_amplitude(15)
-channel_2.set_pulse_width(200)
+channel_2.set_pulse_width(500)
+channel_2.set_frequency(50)
 
 # If you have created your own shape pulse, you can modify the amplitude and the pulse width of the points.
 # You can also create new points during the stimulation.
-point1.set_amplitude(10)
-point2.set_amplitude(-10)
-point5 = channel_1.add_point(100, 15)
-point6 = channel_1.add_point(100, -15)
+# point1.set_amplitude(10)
+# point2.set_amplitude(-10)
+# point5 = channel_1.add_point(500, 15)
+# point6 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.
 """
-stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5)
+stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2)
+
 
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.

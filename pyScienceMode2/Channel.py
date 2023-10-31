@@ -111,7 +111,7 @@ class Channel:
             Width of the stimulation. [0,4093] μs
 
         """
-
+        self.list_point.clear()
         positive_pulse = Point(pulse_width=pulse_width, amplitude=amplitude)
         negative_pulse = Point(pulse_width=pulse_width, amplitude=-amplitude)
 
@@ -129,9 +129,13 @@ class Channel:
         pulse_width: int
             Width of the stimulation. [0,4093] μs
         """
-
+        self.list_point.clear()
         # First biphasic pulse
-        self.create_biphasic_pulse(amplitude, pulse_width)
+        positive_pulse = Point(pulse_width=pulse_width, amplitude=amplitude)
+        negative_pulse = Point(pulse_width=pulse_width, amplitude=-amplitude)
+
+        self.list_point.append(positive_pulse)
+        self.list_point.append(negative_pulse)
 
         # Inter-pulse interval (IPI) = 5 ms. Can be adjusted if needed.
         self.list_point.append(Point(0, 0))
@@ -139,7 +143,8 @@ class Channel:
         self.list_point.append(Point(1000, 0))
 
         # Second biphasic pulse
-        self.create_biphasic_pulse(amplitude, pulse_width)
+        self.list_point.append(positive_pulse)
+        self.list_point.append(negative_pulse)
 
     def create_triplet(self, amplitude, pulse_width):
         """
@@ -153,12 +158,28 @@ class Channel:
             Width of the stimulation. [0,4093] μs
         """
         # First doublet pulse
-        self.create_doublet(amplitude, pulse_width)
+        self.list_point.clear()
+        positive_pulse = Point(pulse_width=pulse_width, amplitude=amplitude)
+        negative_pulse = Point(pulse_width=pulse_width, amplitude=-amplitude)
+
+        self.list_point.append(positive_pulse)
+        self.list_point.append(negative_pulse)
+        # Inter-pulse interval (IPI) = 5 ms. Can be adjusted if needed.
+        self.list_point.append(Point(0, 0))
+        self.list_point.append(Point(4000, 0))
+        self.list_point.append(Point(1000, 0))
+
+        self.list_point.append(positive_pulse)
+        self.list_point.append(negative_pulse)
+
         # Inter-pulse interval (IPI) = 5 ms
         self.list_point.append(Point(0, 0))
         self.list_point.append(Point(4000, 0))
         self.list_point.append(Point(1000, 0))
-        self.create_biphasic_pulse(amplitude, pulse_width)
+
+        # biphasic pulse
+        self.list_point.append(positive_pulse)
+        self.list_point.append(negative_pulse)
 
     def check_device_type(self):
         """
@@ -209,19 +230,18 @@ class Channel:
         """
         return self._mode
 
-    def set_amplitude(self, amp: int):
+    def set_amplitude(self, amplitude: int):
         """
         Set amplitude.
 
         Parameters
         ----------
-        amp: int
+        amplitude: int
             Current to send in the channel.
         """
-        self._amplitude = amp
+        self._amplitude = amplitude
         self.check_value_param()
-        if self.check_device_type() == "RehastimP24" and self._pulse_width:
-            self.create_biphasic_pulse(self._amplitude, self._pulse_width)
+        self.generate_pulse()
 
     def get_amplitude(self) -> int:
         """
@@ -240,6 +260,7 @@ class Channel:
         """
         self._no_channel = no_channel
         self.check_value_param()
+        self.generate_pulse()
 
     def get_no_channel(self) -> int:
         """
@@ -258,8 +279,7 @@ class Channel:
         """
         self._pulse_width = pulse_width
         self.check_value_param()
-        if self.device_type == "RehastimP24" and self._amplitude:  # Maybe remove this condition.
-            self.create_biphasic_pulse(self._amplitude, self._pulse_width)
+        self.generate_pulse()
 
     def get_pulse_width(self) -> int:
         """
@@ -314,6 +334,8 @@ class Channel:
             raise ValueError("frequency must be positive.")
         self._period = 1000.0 / frequency
 
+        self.generate_pulse()
+
     def get_frequency(self) -> float:
         """
         Returns the frequency of a channel
@@ -337,6 +359,7 @@ class Channel:
         """
         self._ramp = ramp
         self.check_value_param()
+        self.generate_pulse()
 
     def add_point(self, pulse_width: float, amplitude: float):
         """
@@ -359,6 +382,15 @@ class Channel:
         else:
             raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
         return point
+
+    def generate_pulse(self):
+        if self.device_type == "RehastimP24":
+            if self._mode == Channel.MODE["Single"]:
+                self.create_biphasic_pulse(self._amplitude, self._pulse_width)
+            elif self._mode == Channel.MODE["Doublet"]:
+                self.create_doublet(self._amplitude, self._pulse_width)
+            elif self._mode == Channel.MODE["Triplet"]:
+                self.create_triplet(self._amplitude, self._pulse_width)
 
 
 class Point:
