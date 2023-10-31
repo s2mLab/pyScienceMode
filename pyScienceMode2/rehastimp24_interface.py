@@ -419,9 +419,6 @@ class StimulatorP24(RehastimGeneric):
             Duration of the updated stimulation in seconds.
         """
 
-        if self.stimulation_started:
-            self.stop_stimulation()
-
         self.start_stimulation(upd_list_channels, stimulation_duration)
 
     def stop_stimulation(self):

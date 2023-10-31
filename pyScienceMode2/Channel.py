@@ -14,7 +14,7 @@ class Channel:
         Contain the different names of the different modes
     """
 
-    MODE = {"Single": 0, "Doublet": 1, "Triplet": 2}
+    MODE = {"Single": 0, "Doublet": 1, "Triplet": 2, None: 3}
     MAX_POINTS = 16
     CHANNEL_MAPPING = {
         1: 'Smpt_Channel_Red',
@@ -25,7 +25,7 @@ class Channel:
 
     def __init__(
         self,
-        mode: str = "Single",
+        mode: str = None,
         no_channel: int = 1,
         amplitude: int = 0,
         pulse_width: int = 0,
