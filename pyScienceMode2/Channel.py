@@ -27,11 +27,11 @@ class Channel:
         self,
         mode: str = None,
         no_channel: int = 1,
-        amplitude: int = 0,
+        amplitude: int | float = 0,
         pulse_width: int = 0,
         enable_low_frequency: bool = False,
         name: str = None,
-        device_type="Rehastim2",
+        device_type: str = None,
         frequency: float = 50.0,
         ramp: int = 0
     ):
@@ -42,21 +42,26 @@ class Channel:
         Parameters
         ----------
         mode: MODE
-            Tell which mode is used.
+            Indicate which mode is used. Single, Doublet, Triplet or None.
+                If single, the channel will send a single biphasic pulse.
+                If doublet, the channel will send a doublet biphasic pulse.
+                If triplet, the channel will send a triplet biphasic pulse.
+                If None, the channel will send the customed pulse.
         no_channel: int
-            Number of the channel [1,8].
-        amplitude: int
-            Current to send in the channel. [0,130] milli amp
+            Channel number [1,8].
+        amplitude: int | float
+            Channel current. [0,130] mA for Rehastim2, [0,150] mA for RehastimP24
         pulse_width: int
-            Width of the stimulation. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
+            Stimulation width. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
+            [0,4095] μs for RehastimP24
         enable_low_frequency: bool
             Choose if the channel skip (True) or not (False) a given number of stimulation.
         name: str
-            Name of the muscle corresponding to the channel.
+            Muscle name corresponding to the channel.
         device_type: str
-            Type of the device used. Rehastim2 or RehastimP24
+            Device type used. Rehastim2 or RehastimP24
         frequency: float
-            Frequency of the channel. [0.5, 1000] Hz
+            Channel frequency. [0.5, 1000] Hz
         """
         self.device_type = device_type   # Check if the device is rehastim2 or rehastimP24
         self._mode = self.MODE[mode]
@@ -68,12 +73,15 @@ class Channel:
         self._period = 1000.0 / frequency  # frequency (Hz) of the channel
         self.list_point = []  # list of points for the channel
         self._ramp = ramp
+        self.check_device_type()
         self.check_value_param()
 
         if self.device_type == "Rehastim2" and ramp:
             raise RuntimeError("Ramp is not supported for Rehastim2")
         if self.device_type == "Rehastim2" and frequency != 50.0:
-            raise RuntimeError("Frequency is not supported for Rehastim2")
+            # If the user enters a frequency for a rehastim2 channel, raise an error.
+            # the frequency must still have a default value (50 in this case), otherwise division by 0.
+            raise RuntimeError("Frequency can not be set for individual channel for the Rehastim2")
 
         if self.device_type == "RehastimP24":
             smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
@@ -94,16 +102,16 @@ class Channel:
             f"{self._enable_low_frequency=}"
         )
 
-    def create_biphasic_pulse(self, amplitude: int, pulse_width: int):
+    def create_biphasic_pulse(self, amplitude: int | float, pulse_width: int):
         """
-        Create a biphasic pulse for the channel.
+        Create a single biphasic pulse for the channel.
 
         Parameters
         ----------
-        amplitude: int
-            Current to send in the channel. [0,150] milli amp
+        amplitude: int | float
+            Current to send to the channel. [0,150] mA
         pulse_width: int
-            Width of the stimulation. [0,4093] μs
+            Stimulation width. [0,4093] μs
 
         """
         self.list_point.clear()
@@ -113,18 +121,19 @@ class Channel:
         self.list_point.append(positive_pulse)
         self.list_point.append(negative_pulse)
 
-    def create_doublet(self, amplitude: int, pulse_width: int):
+    def create_doublet(self, amplitude: int | float, pulse_width: int):
         """
-        Create a doublet pulse for the channel.
+        Create a doublet biphasic pulse for the channel.
 
         Parameters
         ----------
-        amplitude: int
-            Current to send in the channel. [0,150] milli amp
+        amplitude: int | float
+            Current to send in the channel. [0,150] mA
         pulse_width: int
-            Width of the stimulation. [0,4093] μs
+            Stimulation width. [0,4093] μs
         """
         self.list_point.clear()
+
         # First biphasic pulse
         positive_pulse = Point(pulse_width=pulse_width, amplitude=amplitude)
         negative_pulse = Point(pulse_width=pulse_width, amplitude=-amplitude)
@@ -141,16 +150,16 @@ class Channel:
         self.list_point.append(positive_pulse)
         self.list_point.append(negative_pulse)
 
-    def create_triplet(self, amplitude, pulse_width):
+    def create_triplet(self, amplitude : int | float, pulse_width : int):
         """
-        Create a triplet pulse for the channel.
+        Create a triplet biphasic pulse for the channel.
 
         Parameters
         ----------
-        amplitude: int
-            Current to send in the channel. [0,150] milli amp
+        amplitude: int | float
+            Current to send in the channel. [0,150] mA
         pulse_width: int
-            Width of the stimulation. [0,4093] μs
+            Stimulation width. [0,4093] μs
         """
         # First doublet pulse
         self.list_point.clear()
@@ -178,7 +187,7 @@ class Channel:
 
     def check_device_type(self):
         """
-        Check if the device type is correct. Raise an error otherwise.
+        Check if  device type is correct. Raise an error otherwise.
         """
         if self.device_type != "Rehastim2" and self.device_type != "RehastimP24":
             raise ValueError("Error : Device type must be Rehastim2 or RehastimP24. Device type given : %s" % self.device_type)
@@ -186,7 +195,7 @@ class Channel:
 
     def check_value_param(self):
         """
-        Checks if the values given correspond are in limits.
+        Checks if the values given are in limits.
         """
         if self.device_type == "Rehastim2":
             if self._amplitude < 0 or self._amplitude > 130:
@@ -204,7 +213,7 @@ class Channel:
             if self._amplitude < 0 or self._amplitude > 150:
                 raise ValueError("Error : Amplitude min = 0, max = 150. Amplitude given : %s" % self._amplitude)
             if self._pulse_width < 0 or self._pulse_width > 4095:
-                raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
+                raise ValueError("Error : Pulse Width [0,4095], given : %s" % self._pulse_width)
             if self._ramp < 0 or self._ramp > 16:
                 raise ValueError("Error : Ramp min = 0, max = 16. Ramp given : %s" % self._ramp)
 
@@ -215,7 +224,7 @@ class Channel:
         Parameters
         ----------
         mode: MODE
-            Tell which mode is used.
+            Indicate which mode is used.
         """
         self._mode = mode
 
@@ -225,20 +234,20 @@ class Channel:
         """
         return self._mode
 
-    def set_amplitude(self, amplitude: int):
+    def set_amplitude(self, amplitude: int | float):
         """
         Set amplitude.
 
         Parameters
         ----------
-        amplitude: int
-            Current to send in the channel.
+        amplitude: int | float
+            Current to send to the channel.
         """
         self._amplitude = amplitude
         self.check_value_param()
         self.generate_pulse()
 
-    def get_amplitude(self) -> int:
+    def get_amplitude(self) -> int | float:
         """
         Returns amplitude.
         """
@@ -251,7 +260,7 @@ class Channel:
         Parameters
         ----------
         no_channel: int
-            Number of the channel.
+            Channel number [1,8].
         """
         self._no_channel = no_channel
         self.check_value_param()
@@ -270,7 +279,7 @@ class Channel:
         Parameters
         ----------
         pulse_width: int
-            Width of the stimulation.
+            Stimulation Width [0,4095] μs
         """
         self._pulse_width = pulse_width
         self.check_value_param()
@@ -289,7 +298,7 @@ class Channel:
         Parameters
         ----------
         name: str
-            Name of the muscle corresponding to the channel.
+            Muscle name corresponding to the channel.
         """
         self._name = name
 
@@ -316,14 +325,14 @@ class Channel:
         """
         return self._enable_low_frequency
 
-    def set_frequency(self, frequency: float):
+    def set_frequency(self, frequency: int | float):
         """
         Set the frequency for a channel
 
         Parameters
         ----------
-        frequency: float
-            Frequency of the channel (Hz)
+        frequency: int | float
+            Channel frequency [0.5, 1000] Hz
         """
         if frequency <= 0:
             raise ValueError("frequency must be positive.")
@@ -331,7 +340,7 @@ class Channel:
 
         self.generate_pulse()
 
-    def get_frequency(self) -> float:
+    def get_frequency(self) -> int | float:
         """
         Returns the frequency of a channel
         """
@@ -350,22 +359,22 @@ class Channel:
         Parameters
         ----------
         ramp: int
-            Ramp of the channel (pulses)
+            Channel ramp [0,16] pulses.
         """
         self._ramp = ramp
         self.check_value_param()
         self.generate_pulse()
 
-    def add_point(self, pulse_width: float, amplitude: float):
+    def add_point(self, pulse_width: int, amplitude: int | float):
         """
         Add a point to the list of points for a channel. One channel can pilot 16 points.
 
         Parameters
         ----------
-        pulse_width: float
+        pulse_width: int
             Width of the stimulation. [0,4093] μs
-        amplitude: float
-            Current to send in the channel. [-150,150] milli amp
+        amplitude: int | float
+            Current to send in the channel. [-150,150] mA
 
         Returns
         -------
@@ -385,9 +394,9 @@ class Channel:
         if self.device_type == "RehastimP24":
             if self._mode == Channel.MODE["Single"]:  # Create a biphasic pulse for the channel
                 self.create_biphasic_pulse(self._amplitude, self._pulse_width)
-            elif self._mode == Channel.MODE["Doublet"]:  # Create a doublet pulse for the channel
+            elif self._mode == Channel.MODE["Doublet"]:  # Create a biphasic doublet pulse for the channel
                 self.create_doublet(self._amplitude, self._pulse_width)
-            elif self._mode == Channel.MODE["Triplet"]:  # Create a triplet pulse for the channel
+            elif self._mode == Channel.MODE["Triplet"]:  # Create a biphasic triplet pulse for the channel
                 self.create_triplet(self._amplitude, self._pulse_width)
 
 
@@ -395,28 +404,29 @@ class Point:
     """
     Class to pilot a point for a channel.
     """
-    def __init__(self, pulse_width: float, amplitude: float):
+    def __init__(self, pulse_width: int, amplitude: int | float):
         self.pulse_width = pulse_width
         self.amplitude = amplitude
         self.check_parameters_point()
 
     def check_parameters_point(self):
         """
-        Check if the values given correspond are in limits.
+        Check if the values given are in limits.
         """
 
         if not (0 <= self.pulse_width <= 4095):
-            raise ValueError("Time must be between 0 and 4065.")
+            raise ValueError("Pulse width must be between 0 and 4065.")
         if not (-150 <= self.amplitude <= 150):
             raise ValueError("Amplitude must be between -150 and 150.")
 
-    def set_amplitude(self, amplitude: float):
+    def set_amplitude(self, amplitude: int | float):
         """
         Set current  for a point.
 
         Parameters
         ----------
-        amplitude: float.
+        amplitude: int | float.
+            Current for a stimulation point. [-150,150] mA
         """
 
         self.amplitude = amplitude
@@ -428,7 +438,8 @@ class Point:
 
         Parameters
         ----------
-        pulse_width: float.
+        pulse_width: int.
+            Stimulation width. [0,4095] μs
         """
 
         self.pulse_width = pulse_width

@@ -20,8 +20,7 @@ class Stimulator(RehastimGeneric):
         self,
         port: str,
         show_log: bool = False,
-        with_motomed: bool = False,
-        device_type: str = "Rehastim2",
+        with_motomed: bool = False
     ):
         """
         Creates an object stimulator.
@@ -48,8 +47,9 @@ class Stimulator(RehastimGeneric):
         self.muscle = []
         self.given_channels = []
         self.stimulation_started = None
+        self.device_type = "Rehastim2"
 
-        super().__init__(port, show_log, with_motomed, device_type=device_type)
+        super().__init__(port, show_log, with_motomed, device_type=self.device_type)
 
         if with_motomed:
             self.motomed = _Motomed(self)
@@ -343,7 +343,6 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StopChannelListMode")
         self._get_last_ack()
         self.packet_count = 0
-
 
     def get_motomed_angle(self) -> float:
         """

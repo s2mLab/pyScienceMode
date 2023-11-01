@@ -74,7 +74,7 @@ sleep(3)
 """
 Stop the stimulation. But does not disconnect the Pc and the Rehastim.
 """
-stimulator.stop_stimulation()
+stimulator.stop_stimulation() #pause stimulation
 
 """
 Restart a stimulation with the same parameter for 2 seconds.
@@ -99,7 +99,7 @@ stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
 
 stimulator.start_stimulation(2, list_channels)
 
-stimulator.stop_channel_list()
+stimulator.stop_channel_list() #end stim
 
 # Disconnect before closing port
 stimulator.disconnect()

@@ -51,8 +51,9 @@ class StimulatorP24(RehastimGeneric):
         self._current_no_channel = None
         self._current_stim_sequence = None
         self._current_pulse_interval = None
+        self.device_type = "RehastimP24"
 
-        super().__init__(port, show_log, device_type="RehastimP24")
+        super().__init__(port, show_log, device_type=self.device_type)
 
     #  General level commands
     def get_extended_version(self) -> bool:
