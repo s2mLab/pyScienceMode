@@ -27,8 +27,8 @@ General level commands.
 In this level you can get several information about the device.
 """
 
-stimulator.get_extended_version()
-stimulator.get_device_id()
+# print(stimulator.get_extended_version())
+# print(stimulator.get_device_id())
 # stimulator.get_battery_status()
 # stimulator.get_stim_status()
 # stimulator.get_main_status()
@@ -61,7 +61,7 @@ list_stimulation_points.append(point4)
 Start the ll stimulation with the list of points provided. 
 It is possible to update the parameters of the point by giving a new list of points.
 """
-stimulator.start_ll_channel_config(no_channel=1, points=list_stimulation_points,stim_sequence=3, pulse_interval=500)
+stimulator.start_ll_channel_config(no_channel=1, points=list_stimulation_points,stim_sequence=3, pulse_interval=500.5)
 
 # You can update the configuration of the point during the stimulation.
 point1.set_amplitude(30)
@@ -101,9 +101,9 @@ Otherwise, you can use the default biphasic shape pulse mode="Single" or "Double
 """
 
 point1 = channel_1.add_point(3000, 20)
-point2 = channel_1.add_point(3000, -20)
-point3 = channel_1.add_point(3000, 20)
-point4 = channel_1.add_point(3000, -20)
+# point2 = channel_1.add_point(3000, -20)
+# point3 = channel_1.add_point(3000, 20)
+# point4 = channel_1.add_point(3000, -20)
 
 # point5 = channel_2.add_point(100, 15)
 # point6 = channel_2.add_point(100, -15)
@@ -123,7 +123,7 @@ channel_2.set_frequency(10)
 # If you have created your own shape pulse, you can modify the amplitude and the pulse width of the points.
 # You can also create new points during the stimulation.
 point1.set_amplitude(10)
-point2.set_amplitude(-10)
+# point2.set_amplitude(-10)
 point5 = channel_1.add_point(500, 15)
 point6 = channel_1.add_point(500, -15)
 

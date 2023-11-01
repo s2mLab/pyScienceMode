@@ -49,7 +49,7 @@ class Type(Enum):
     GetMotomedMode = 12
 
 
-class Types(Enum):
+class Type_rehap24(Enum):
     Smpt_Cmd_Ll_Init = 0
     Smpt_Cmd_Ll_Init_Ack = 1
     Smpt_Cmd_Ll_Channel_Config = 2

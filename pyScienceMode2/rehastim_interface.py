@@ -271,7 +271,7 @@ class Stimulator(RehastimGeneric):
             List containing the channels and their parameters.
         """
         if self.stimulation_active:
-            self.stop_channel_list()
+            self.end_stimulation()
 
         check_stimulation_interval(stimulation_interval)
         check_unique_channel(list_channels)
@@ -323,9 +323,9 @@ class Stimulator(RehastimGeneric):
             if stimulation_duration < time.time() - time_start_stim:
                 raise RuntimeError("Asked stimulation duration too short")
             time.sleep(stimulation_duration - (time.time() - time_start_stim))
-            self.stop_stimulation()
+            self.pause_stimulation()
 
-    def stop_stimulation(self):
+    def pause_stimulation(self):
         """
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
@@ -336,7 +336,7 @@ class Stimulator(RehastimGeneric):
         self._get_last_ack()
         self.amplitude = tmp_amp
 
-    def stop_channel_list(self):
+    def end_stimulation(self):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """

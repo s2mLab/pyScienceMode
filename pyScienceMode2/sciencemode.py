@@ -46,18 +46,7 @@ class RehastimGeneric:
         Stuffed byte of protocol.
     """
 
-    VERSION = 0x01
-
-    START_BYTE = 0xF0
-    STOP_BYTE = 0x0F
-    STUFFING_BYTE = 0x81
-    STUFFING_KEY = 0x55
-    MAX_PACKET_BYTES = 69
-    STUFFED_BYTES = [240, 15, 129, 85, 10]
-
-    BAUD_RATE = 460800
-
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type: str = "Rehastim2"):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type: str = None):
         """
         Init the class.
 
@@ -69,10 +58,21 @@ class RehastimGeneric:
             Tell if the log will be displayed (True) or not (False).
         with_motomed : bool
             If the motomed is connected to the Rehastim, put this flag to True.
+        device_type : str
+            Device type. Can be "Rehastim2" or "RehastimP24".
         """
         self.device_type = device_type
         self.port_name = port
         if self.device_type == "Rehastim2":
+            self.BAUD_RATE = 460800
+            self.VERSION = 0x01
+            self.START_BYTE = 0xF0
+            self.STOP_BYTE = 0x0F
+            self.STUFFING_BYTE = 0x81
+            self.STUFFING_KEY = 0x55
+            self.MAX_PACKET_BYTES = 69
+            self.STUFFED_BYTES = [240, 15, 129, 85, 10]
+
             self.port = serial.Serial(
                     port,
                     self.BAUD_RATE,
@@ -125,7 +125,7 @@ class RehastimGeneric:
         self.command_send = []  # Command sent to the rehastim
         self.ack_received = []  # Command received by the rehastim
         self.Type = Type
-        self.Types= Types
+        self.Type_rehap24= Type_rehap24
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
@@ -174,7 +174,7 @@ class RehastimGeneric:
         """
         if self.error_occured:
             raise RuntimeError("Stimulation error")
-        # packet = None
+
         if self.is_motomed_connected:
             if init:
                 while not self.last_init_ack:
@@ -195,7 +195,7 @@ class RehastimGeneric:
                 time.sleep(0.005)
             ret = sciencemode.smpt_last_ack(self.device, self.ack)
             if self.show_log :
-                print("Ack received by rehastimP24: ", self.Types(self.ack.command_number).name)
+                print("Ack received by rehastimP24: ", self.Type_rehap24(self.ack.command_number).name)
             return ret
         elif self.device_type == "Rehastim2":
             while 1:
@@ -210,18 +210,18 @@ class RehastimGeneric:
 
     def _return_list_ack_received(self) -> list:
         """
-        Return the list of the command received from the rehastim
+        Return the list of the ack received from the rehastim
 
         Returns
         -------
         self.ack_received : list
-            Commands received from the rehastim
+            Acks received from the rehastim
         """
         return self.ack_received
 
     def _return_command_sent(self) -> list:
         """
-        Return the list of the command sent to the rehastim
+        Return the command sent list to the rehastim
 
         Returns
         -------
@@ -396,7 +396,6 @@ class RehastimGeneric:
 
         self.time_last_cmd = time.time()
         self.packet_send_history = packet
-        self._return_command_sent()
         self.packet_count = (self.packet_count + 1) % 256
 
         if cmd == "InitAck":

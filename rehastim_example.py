@@ -11,7 +11,7 @@ list_channels = []
 
 # Create all channels possible
 channel_1 = Ch.Channel(
-    mode="Single", no_channel=3,frequency=20, amplitude=20, pulse_width=100, enable_low_frequency=False, name="Biceps", device_type="Rehastim2"
+    mode="Single", no_channel=1, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps"
 )
 
 channel_2 = Ch.Channel()
@@ -38,7 +38,7 @@ list_channels.append(channel_1)
 
 # Create our object Stimulator
 stimulator = St(
-    port="COM3",  # Enter the port on which the stimulator is connected
+    port="/dev/ttyUSB0",  # Enter the port on which the stimulator is connected
     show_log=True,
 )
 
@@ -59,22 +59,22 @@ stimulator.start_stimulation()
 # stimulator.start_stimulation(stimulation_duration=10, upd_list_channels=nw_list_channel)
 
 # Modify some parameters,
-list_channels[0].set_amplitude(5)
+list_channels[0].set_amplitude(10)
 # list_channels[3].set_amplitude(15)
 
 # Wait a given time in seconds
-sleep(5)
+sleep(10)
 
 # Update the parameters of the stimulation
 stimulator.start_stimulation(upd_list_channels=list_channels)
 
 # Wait a given time in seconds
-sleep(3)
+sleep(5)
 
 """
 Stop the stimulation. But does not disconnect the Pc and the Rehastim.
 """
-stimulator.stop_stimulation() #pause stimulation
+stimulator.pause_stimulation()
 
 """
 Restart a stimulation with the same parameter for 2 seconds.
@@ -99,7 +99,7 @@ stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
 
 stimulator.start_stimulation(2, list_channels)
 
-stimulator.stop_channel_list() #end stim
+stimulator.end_stimulation()
 
 # Disconnect before closing port
 stimulator.disconnect()

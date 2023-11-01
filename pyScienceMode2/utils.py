@@ -1,5 +1,5 @@
 import crccheck
-from pyScienceMode2.enums import Type, Types
+from pyScienceMode2.enums import Type, Type_rehap24
 
 
 
