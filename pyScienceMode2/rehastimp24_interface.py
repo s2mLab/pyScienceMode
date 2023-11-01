@@ -239,6 +239,9 @@ class StimulatorP24(RehastimGeneric):
         self.check_ll_init_ack()
 
     def check_ll_init_ack(self):
+        """
+        Check the ll initialization status.
+        """
         if not sciencemode.smpt_get_ll_init_ack(self.device, self.ll_init_ack) :
             raise RuntimeError("Ll initialization failed.")
         generic_error_check(self.ll_init_ack, self.ERROR_MAP)
@@ -285,7 +288,7 @@ class StimulatorP24(RehastimGeneric):
 
     def check_ll_channel_config_ack(self):
         """
-        Check if there is an error during the ll stimulation.
+        Check the ll channel config status.
         """
         if not sciencemode.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
             raise ValueError("Failed to get the ll_channel_config_ack.")
@@ -325,9 +328,16 @@ class StimulatorP24(RehastimGeneric):
         print("lower level stopped")
         self._get_last_ack()
 
-    def init_stimulation(self, list_channels: list):
+    def init_stimulation(self, list_channels: list, stop_all_on_error: bool = True):
         """
         Initialize the ml stimulation on the device. The mid-level  is used for defining a stimulation pattern
+
+        Parameters
+        ----------
+        list_channels : list
+            Channels to stimulate.
+        stop_all_on_error : bool
+            If true all channels will stop if one channel has an error.
         """
         if self.stimulation_started:
             self.stop_stimulation()
@@ -336,7 +346,7 @@ class StimulatorP24(RehastimGeneric):
         self.electrode_number = calc_electrode_number(self.list_channels)
 
         ml_init = sciencemode.ffi.new("Smpt_ml_init*")
-        ml_init.stop_all_channels_on_error = True  # if true all channels will stop if one channel has an error
+        ml_init.stop_all_channels_on_error = stop_all_on_error
         ml_init.packet_number = self.get_next_packet_number()
 
         if not sciencemode.smpt_send_ml_init(self.device, ml_init):

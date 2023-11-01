@@ -58,7 +58,7 @@ class Channel:
         frequency: float
             Frequency of the channel. [0.5, 1000] Hz
         """
-        self.device_type = device_type  # NEW : Check if the device is rehastim2 or rehastimP24
+        self.device_type = device_type   # Check if the device is rehastim2 or rehastimP24
         self._mode = self.MODE[mode]
         self._no_channel = no_channel
         self._amplitude = amplitude
@@ -79,12 +79,7 @@ class Channel:
             smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
             self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.Smpt_Channel_Undefined)
 
-            if mode == "Single" and self._amplitude and self._pulse_width:
-                self.create_biphasic_pulse(self._amplitude, self._pulse_width) # Create a biphasic pulse for the channel
-            if mode == "Doublet" and self._amplitude and self._pulse_width:  # Create a doublet pulse for the channel
-                self.create_doublet(self._amplitude, self._pulse_width)
-            elif mode == "Triplet" and self._amplitude and self._pulse_width:  # Create a triplet pulse for the channel
-                self.create_triplet(self._amplitude, self._pulse_width)
+            self.generate_pulse()
 
     def __str__(self) -> str:
         """
@@ -384,12 +379,15 @@ class Channel:
         return point
 
     def generate_pulse(self):
+        """
+        Generate a pulse for a channel. The pulse is generated according to the mode and the parameters given.
+        """
         if self.device_type == "RehastimP24":
-            if self._mode == Channel.MODE["Single"]:
+            if self._mode == Channel.MODE["Single"]:  # Create a biphasic pulse for the channel
                 self.create_biphasic_pulse(self._amplitude, self._pulse_width)
-            elif self._mode == Channel.MODE["Doublet"]:
+            elif self._mode == Channel.MODE["Doublet"]:  # Create a doublet pulse for the channel
                 self.create_doublet(self._amplitude, self._pulse_width)
-            elif self._mode == Channel.MODE["Triplet"]:
+            elif self._mode == Channel.MODE["Triplet"]:  # Create a triplet pulse for the channel
                 self.create_triplet(self._amplitude, self._pulse_width)
 
 
