@@ -104,6 +104,7 @@ point1 = channel_1.add_point(3000, 20)
 point2 = channel_1.add_point(3000, -20)
 point3 = channel_1.add_point(3000, 20)
 point4 = channel_1.add_point(3000, -20)
+# point10 = channel_1.add_point(3000,-20)
 
 # point5 = channel_2.add_point(100, 15)
 # point6 = channel_2.add_point(100, -15)
@@ -113,7 +114,7 @@ Start the stimulation with the list of channels provided for 5s.
 """
 start_time = time()
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=True)
 end_time = time()
 stimulation_dur = end_time - start_time
 print("Stimulation duration : %s" % stimulation_dur)
@@ -130,6 +131,7 @@ point1.set_amplitude(10)
 point2.set_amplitude(-10)
 point5 = channel_1.add_point(500, 15)
 point6 = channel_1.add_point(500, -15)
+point8 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.

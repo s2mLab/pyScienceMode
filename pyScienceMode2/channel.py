@@ -76,6 +76,7 @@ class Channel:
         self.check_device_type()
         self.check_value_param()
 
+
         if self.device_type == "Rehastim2" and ramp:
             raise RuntimeError("Ramp is not supported for Rehastim2")
         if self.device_type == "Rehastim2" and frequency != 50.0:
@@ -101,6 +102,34 @@ class Channel:
             f"Channel {self._no_channel} {self._name}: {self._mode=}, {self._amplitude=}, {self._pulse_width=}, "
             f"{self._enable_low_frequency=}"
         )
+
+    def is_pulse_symmetric(self, safety=True):
+        """
+        Checks if the pulse is symmetric by ensuring the positive area is equal to the negative area.
+
+        Parameters
+        ----------
+        safety: bool
+            Whether to perform the symmetry check or not.
+
+        Returns
+        -------
+        bool:
+            True if the pulse is symmetric or if the safety check is disabled, otherwise False.
+        """
+        if not safety:
+            return True
+
+        positive_area = 0
+        negative_area = 0
+
+        for point in self.list_point:
+            if point.amplitude > 0:
+                positive_area += point.amplitude * point.pulse_width
+            else:
+                negative_area -= point.amplitude * point.pulse_width
+
+        return abs(positive_area - negative_area) < 1e-6
 
     def create_biphasic_pulse(self, amplitude: int | float, pulse_width: int):
         """

@@ -723,7 +723,7 @@ class StimulatorP24(RehastimGeneric):
         self.log("Stimulation initialized", "Command sent to rehastim: {}".format(self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Init).name))
         self._get_last_ack()
 
-    def start_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
+    def start_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None, safety: bool = True):
         """
         Start the mid level stimulation on the device.
 
@@ -733,7 +733,10 @@ class StimulatorP24(RehastimGeneric):
             Duration of the stimulation in seconds.
         upd_list_channels : list
             Channels to stimulate.
+        safety : bool
+            Set to True if you want to check the pulse symmetry. False otherwise.
         """
+
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
@@ -745,6 +748,8 @@ class StimulatorP24(RehastimGeneric):
 
         #  Check if points are provided for each channel stimulated
         for channel in upd_list_channels:
+            if not channel.is_pulse_symmetric(safety=safety):
+                raise ValueError(f"Pulse for channel {channel._no_channel} is not symmetric. Please put the same positive and negative current.")
             if not channel.list_point:
                 raise ValueError(
                     "No stimulation point provided for channel {}. Please either provide an amplitude and pulse width for a biphasic stimulation, or specify specific stimulation points.".format(
@@ -775,7 +780,7 @@ class StimulatorP24(RehastimGeneric):
             self._get_last_ack()
         self.stimulation_started = True
 
-    def update_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
+    def update_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None, safety: bool = True):
         """
         Update the ml stimulation on the device with new channel configurations.
 
@@ -785,9 +790,11 @@ class StimulatorP24(RehastimGeneric):
             Channels to stimulate.
         stimulation_duration : int | float
             Duration of the updated stimulation in seconds.
+        safety : bool
+            Set to True if you want to check the pulse symmetry. False otherwise.
         """
 
-        self.start_stimulation(upd_list_channels, stimulation_duration)
+        self.start_stimulation(upd_list_channels, stimulation_duration, safety)
 
     def stop_stimulation(self):
         """
