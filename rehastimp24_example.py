@@ -15,7 +15,7 @@ channel_2 = Ch.Channel(mode="Doublet", no_channel=2, amplitude=40, pulse_width=5
 channel_3 = Ch.Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=15, ramp=15, device_type="RehastimP24")
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log=False)  # Enter the port on which the rehastim is connected
+stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastim is connected
 
 # Add the channels you want to use to the list
 list_channels.append(channel_1)

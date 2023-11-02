@@ -17,6 +17,7 @@ from pyScienceMode2.acks import (
 )
 from sciencemode import sciencemode
 import numpy as np
+from typing import Union
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
@@ -46,7 +47,7 @@ class RehastimGeneric:
         Stuffed byte of protocol.
     """
 
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False, device_type: str = None):
+    def __init__(self, port: str, show_log: Union[bool,str] = False, with_motomed: bool = False, device_type: str = None):
         """
         Init the class.
 
@@ -54,8 +55,10 @@ class RehastimGeneric:
         ----------
         port : str
             COM port of the Rehastim.
-        show_log : bool
-            Tell if the log will be displayed (True) or not (False).
+        show_log: Union[bool, str]
+            If True, all logs of the communication will be printed.
+            If "Partial", only specific logs will be printed.
+            If False, no logs will be printed.
         with_motomed : bool
             If the motomed is connected to the Rehastim, put this flag to True.
         device_type : str
@@ -158,6 +161,34 @@ class RehastimGeneric:
             packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
             return packet_number
 
+    def log(self, partial_msg: str, full_msg: str = None):
+        """
+        Log messages based on the show_log level.
+
+        Parameters:
+        - partial_msg: The message to show when show_log is "Partial" or True.
+        - full_msg: The additional message to show when show_log is True.
+        """
+        if self.show_log == True and full_msg:
+            print(full_msg)
+        if self.show_log == True or self.show_log == "Partial":
+            print(partial_msg)
+
+    def _get_current_data(self):
+        """
+        Retrieve current data from the rehastimP24 mid level stimulation.
+        """
+        if self.device_type == "RehastimP24":
+            ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
+            ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
+            ml_get_current_data.packet_number = self.get_next_packet_number()
+
+            ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
+            if not ret:
+                print("Failed to get current data.")
+            if self.show_log == True:
+                print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
+
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
         Get the last ack received.
@@ -192,7 +223,7 @@ class RehastimGeneric:
             while not sciencemode.smpt_new_packet_received(self.device):
                 time.sleep(0.005)
             ret = sciencemode.smpt_last_ack(self.device, self.ack)
-            if self.show_log :
+            if self.show_log == True:
                 print("Ack received by rehastimP24: ", self.TypeRehap24(self.ack.command_number).name)
             return ret
         elif self.device_type == "Rehastim2":
@@ -357,6 +388,7 @@ class RehastimGeneric:
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
         while 1 and self.reha_connected:
+            print("2")
             if time.time() - self.time_last_cmd > 0.8:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
             time.sleep(0.8)
