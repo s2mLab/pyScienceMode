@@ -68,7 +68,7 @@ class StimulatorP24(RehastimGeneric):
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.smpt_send_get_extended_version(self.device, packet_number)
-        print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Get_Extended_Version).name)
+        print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Get_Extended_Version).name)
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
         fw_hash = f"fw_hash :{extended_version_ack.fw_hash}"
@@ -87,7 +87,7 @@ class StimulatorP24(RehastimGeneric):
         device_id_ack = sciencemode.ffi.new("Smpt_get_device_id_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.smpt_send_get_device_id(self.device, packet_number)
-        print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Get_Device_Id).name)
+        print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Get_Device_Id).name)
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_device_id_ack(self.device, device_id_ack)
         device_id = f"device_id : {device_id_ack.device_id} "
@@ -108,7 +108,7 @@ class StimulatorP24(RehastimGeneric):
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.smpt_send_get_stim_status(self.device, packet_number)
-        print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Get_Stim_Status).name)
+        print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Get_Stim_Status).name)
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_stim_status_ack(self.device, stim_status_ack)
         stim_status = f"stim status : {stim_status_ack.stim_status}"
@@ -130,7 +130,7 @@ class StimulatorP24(RehastimGeneric):
         battery_status_ack = sciencemode.ffi.new("Smpt_get_battery_status_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.smpt_send_get_battery_status(self.device, packet_number)
-        print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Get_Battery_Status).name)
+        print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Get_Battery_Status).name)
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_battery_status_ack(self.device, battery_status_ack)
         battery_level = f"battery level : {battery_status_ack.battery_level}"
@@ -149,7 +149,7 @@ class StimulatorP24(RehastimGeneric):
         main_status_ack = sciencemode.ffi.new("Smpt_get_main_status_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.smpt_send_get_main_status(self.device, packet_number)
-        print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Get_Main_Status).name)
+        print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Get_Main_Status).name)
         self._get_last_ack()
         ret = sciencemode.smpt_get_get_main_status_ack(self.device, main_status_ack)
         main_status = f"main status : {main_status_ack.main_status}"
@@ -161,7 +161,7 @@ class StimulatorP24(RehastimGeneric):
         """
         packet_number = self.get_next_packet_number()
         ret = sciencemode.smpt_send_reset(self.device, packet_number)
-        print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Reset).name)
+        print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Reset).name)
         self._get_last_ack()
 
     def get_all(self):
@@ -181,7 +181,7 @@ class StimulatorP24(RehastimGeneric):
         """
         Converts the channel number to the corresponding channel and connector.
         For example, if the user enters no_channel 3,
-        it will convert this number and interpret it as channel 2 of 3 [0,3] of the yellow connector.
+        it will convert this number and interpret it as channel 2 of 4 [0,3] for the yellow connector.
 
         Parameters
         ----------
@@ -228,7 +228,7 @@ class StimulatorP24(RehastimGeneric):
             raise RuntimeError("Low level initialization failed.")
         print("Low level initialized")
         if self.show_log:
-            print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ll_Init).name)
+            print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ll_Init).name)
         self.get_next_packet_number()
         self._get_last_ack()
         self.check_ll_init_ack()
@@ -279,7 +279,7 @@ class StimulatorP24(RehastimGeneric):
             ll_config.packet_number = self.get_next_packet_number()
             sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
             if self.show_log:
-                print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ll_Channel_Config).name)
+                print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ll_Channel_Config).name)
             time.sleep(pulse_interval/1000)
             self._get_last_ack()
             self.check_ll_channel_config_ack()
@@ -324,7 +324,7 @@ class StimulatorP24(RehastimGeneric):
             raise RuntimeError("Low level stop failed.")
         print("Low level stopped")
         if self.show_log:
-            print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ll_Stop).name)
+            print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ll_Stop).name)
         self._get_last_ack()
 
     def init_stimulation(self, list_channels: list, stop_all_on_error: bool = True):
@@ -352,16 +352,16 @@ class StimulatorP24(RehastimGeneric):
             raise RuntimeError("Failed to start stimulation")
         print("Stimulation initialized")
         if self.show_log:
-            print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ml_Init).name)
+            print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Init).name)
         self._get_last_ack()
 
-    def start_stimulation(self, upd_list_channels: list, stimulation_duration: float = None):
+    def start_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
         """
         Start the mid level stimulation on the device.
 
         Parameters
         ----------
-        stimulation_duration : float
+        stimulation_duration : int | float
             Duration of the stimulation in seconds.
         upd_list_channels : list
             Channels to stimulate.
@@ -376,7 +376,6 @@ class StimulatorP24(RehastimGeneric):
         ml_update.packet_number = self.get_next_packet_number()
 
         #  Check if points are provided for each channel stimulated
-
         for channel in upd_list_channels:
             if not channel.list_point:
                 raise ValueError(
@@ -394,16 +393,15 @@ class StimulatorP24(RehastimGeneric):
         if not sciencemode.smpt_send_ml_update(self.device, ml_update):
             raise RuntimeError("Failed to start stimulation")
         if self.show_log:
-            print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ml_Update).name)
+            print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Update).name)
         print("Stimulation started")
 
         self._get_last_ack()
 
         # This code is used to set the stimulation duration
-
         ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
-        number_of_polls = int(stimulation_duration) if stimulation_duration is not None else 1
-        for i in range(number_of_polls):
+        total_time = 0
+        while total_time < stimulation_duration:
             ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
             ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
@@ -412,14 +410,15 @@ class StimulatorP24(RehastimGeneric):
             else:
                 print("Failed to get current data.")
             if self.show_log:
-                print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
+                print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
             self.check_stimulation_errors()
-            time.sleep(1)
-
+            sleep_time = min(1, stimulation_duration - total_time)
+            time.sleep(sleep_time)
+            total_time += sleep_time
             self._get_last_ack()
         self.stimulation_started = True
 
-    def update_stimulation(self, upd_list_channels: list, stimulation_duration: float = None):
+    def update_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
         """
         Update the ml stimulation on the device with new channel configurations.
 
@@ -427,7 +426,7 @@ class StimulatorP24(RehastimGeneric):
         ----------
         upd_list_channels : list
             Channels to stimulate.
-        stimulation_duration : float, optional
+        stimulation_duration : int | float
             Duration of the updated stimulation in seconds.
         """
 
@@ -442,7 +441,7 @@ class StimulatorP24(RehastimGeneric):
         if not sciencemode.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("Failure to stop stimulation.")
         if self.show_log:
-            print("Command sent to rehastim:", self.Type_rehap24(sciencemode.Smpt_Cmd_Ml_Stop).name)
+            print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Stop).name)
         self._get_last_ack()
         self.stimulation_started = False
 
@@ -450,7 +449,7 @@ class StimulatorP24(RehastimGeneric):
 
     def check_stimulation_errors(self):
         """
-        Check if there is an error during the ml stimulation.
+        Check if there is an error during the mid level stimulation.
         """
 
         sciencemode.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)

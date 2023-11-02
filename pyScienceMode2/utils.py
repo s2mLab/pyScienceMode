@@ -1,6 +1,5 @@
 import crccheck
-from pyScienceMode2.enums import Type, Type_rehap24
-
+from pyScienceMode2.enums import TypeReha2, TypeRehap24
 
 
 def signed_int(packet: bytes) -> int:
@@ -142,7 +141,7 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
     stuffing_byte = 0x81
 
     packet = [start_byte]
-    packet_command = Type[packet_type].value
+    packet_command = TypeReha2[packet_type].value
     packet_payload = [packet_count, packet_command]
     packet_payload = _stuff_packet_byte(packet_payload)
     if packet_data is not None:

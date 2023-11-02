@@ -52,14 +52,14 @@ class Channel:
         amplitude: int | float
             Channel current. [0,130] mA for Rehastim2, [0,150] mA for RehastimP24
         pulse_width: int
-            Stimulation width. [0,500] μs (current version of rehastim [20, 500] μs, if (pw < 20) then pw = 20)
+            Stimulation width. [0,500] μs (current version of rehastim2 [20, 500] μs, if (pw < 20) then pw = 20)
             [0,4095] μs for RehastimP24
         enable_low_frequency: bool
             Choose if the channel skip (True) or not (False) a given number of stimulation.
         name: str
             Muscle name corresponding to the channel.
         device_type: str
-            Device type used. Rehastim2 or RehastimP24
+            Device type used. Either Rehastim2 or RehastimP24
         frequency: float
             Channel frequency. [0.5, 1000] Hz
         """

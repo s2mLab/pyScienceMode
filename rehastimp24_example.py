@@ -1,7 +1,7 @@
 from time import sleep, time
-from pyScienceMode2 import Channel as Ch
-from pyScienceMode2.rehastimp24_interface import StimulatorP24 as St
-from pyScienceMode2.Channel import Point
+from pyScienceMode2 import channel as Ch
+from pyScienceMode2.rehastim_interface import StimulatorP24 as St
+from pyScienceMode2.channel import Point
 
 # list which contains the channels you want to use
 list_channels = []
@@ -61,7 +61,7 @@ list_stimulation_points.append(point4)
 Start the ll stimulation with the list of points provided. 
 It is possible to update the parameters of the point by giving a new list of points.
 """
-stimulator.start_ll_channel_config(no_channel=1, points=list_stimulation_points,stim_sequence=3, pulse_interval=500.5)
+stimulator.start_ll_channel_config(no_channel=1, points=list_stimulation_points, stim_sequence=3, pulse_interval=500.5)
 
 # You can update the configuration of the point during the stimulation.
 point1.set_amplitude(30)
@@ -101,9 +101,9 @@ Otherwise, you can use the default biphasic shape pulse mode="Single" or "Double
 """
 
 point1 = channel_1.add_point(3000, 20)
-# point2 = channel_1.add_point(3000, -20)
-# point3 = channel_1.add_point(3000, 20)
-# point4 = channel_1.add_point(3000, -20)
+point2 = channel_1.add_point(3000, -20)
+point3 = channel_1.add_point(3000, 20)
+point4 = channel_1.add_point(3000, -20)
 
 # point5 = channel_2.add_point(100, 15)
 # point6 = channel_2.add_point(100, -15)
@@ -111,8 +111,12 @@ point1 = channel_1.add_point(3000, 20)
 """
 Start the stimulation with the list of channels provided for 5s.
 """
+start_time = time()
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5)
+end_time = time()
+stimulation_dur = end_time - start_time
+print("Stimulation duration : %s" % stimulation_dur)
 
 # You can modify some parameters during the stimulation.
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.
@@ -123,15 +127,18 @@ channel_2.set_frequency(10)
 # If you have created your own shape pulse, you can modify the amplitude and the pulse width of the points.
 # You can also create new points during the stimulation.
 point1.set_amplitude(10)
-# point2.set_amplitude(-10)
+point2.set_amplitude(-10)
 point5 = channel_1.add_point(500, 15)
 point6 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.
 """
-stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2)
-
+start_time = time()
+stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2.5)
+end_time = time()
+stimulation_dur = end_time - start_time
+print("Stimulation duration : %s" % stimulation_dur)
 
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.

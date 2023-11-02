@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Type(Enum):
+class TypeReha2(Enum):
     Init = 1
     InitAck = 2
     UnknownCommand = 3
@@ -49,7 +49,7 @@ class Type(Enum):
     GetMotomedMode = 12
 
 
-class Type_rehap24(Enum):
+class TypeRehap24(Enum):
     Smpt_Cmd_Ll_Init = 0
     Smpt_Cmd_Ll_Init_Ack = 1
     Smpt_Cmd_Ll_Channel_Config = 2

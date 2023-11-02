@@ -1,7 +1,7 @@
 import time
 
-from pyScienceMode2.rehastim_interface import Stimulator as St
-from pyScienceMode2 import Channel as Ch
+from pyScienceMode2.rehastim_interface import Stimulator2 as St
+from pyScienceMode2 import channel as Ch
 
 
 def init_rehastim():
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     while 1:
         angle_crank = motomed.get_angle()
         if (10 <= angle_crank < 20 or 180 <= angle_crank < 220) and (tric_delt_stim or bic_delt_stim):
-            stimulator.stop_stimulation()
+            stimulator.pause_stimulation()
             tric_delt_stim, bic_delt_stim = False, False
             print("angle crank", angle_crank)
             print("stimulation_state", (tric_delt_stim or bic_delt_stim))
