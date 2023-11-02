@@ -27,11 +27,9 @@ General level commands.
 In this level you can get several information about the device.
 """
 
-# print(stimulator.get_extended_version())
-# print(stimulator.get_device_id())
-# stimulator.get_battery_status()
-# stimulator.get_stim_status()
-# stimulator.get_main_status()
+stimulator.get_battery_status()
+stimulator.get_stim_status()
+stimulator.get_main_status()
 # stimulator.get_all()
 # stimulator.reset()
 
@@ -100,10 +98,10 @@ Otherwise, you can use the default biphasic shape pulse mode="Single" or "Double
 
 """
 
-point1 = channel_1.add_point(3000, 20)
+point1 = channel_1.add_point(3000, 19)
 point2 = channel_1.add_point(3000, -20)
 point3 = channel_1.add_point(3000, 20)
-point4 = channel_1.add_point(3000, -20)
+point4 = channel_1.add_point(3000, -19)
 # point10 = channel_1.add_point(3000,-20)
 
 # point5 = channel_2.add_point(100, 15)
@@ -131,13 +129,12 @@ point1.set_amplitude(10)
 point2.set_amplitude(-10)
 point5 = channel_1.add_point(500, 15)
 point6 = channel_1.add_point(500, -15)
-point8 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.
 """
 start_time = time()
-stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2.5)
+stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2.5,safety=False)
 end_time = time()
 stimulation_dur = end_time - start_time
 print("Stimulation duration : %s" % stimulation_dur)
@@ -145,7 +142,7 @@ print("Stimulation duration : %s" % stimulation_dur)
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.
 """
-stimulator.stop_stimulation()  # end stimulation
+stimulator.stop_stimulation()
 
 """
 Close the port and disconnect the Pc and the RehastimP24.

@@ -144,7 +144,7 @@ class RehastimGeneric:
         """
         ret = sciencemode.smpt_check_serial_port(self.com)
         if self.show_log:
-            print(f"Port check for {self.port_name} is {'successful' if ret else 'unsuccessful'}")
+            print(f"Port check for {self.port_name} : {'successful' if ret else 'unsuccessful'}")
         return ret
 
     def open_serial_port(self):
@@ -153,7 +153,7 @@ class RehastimGeneric:
         """
         ret = sciencemode.smpt_open_serial_port(self.device, self.com)
         if self.show_log:
-            print(f"smpt_open_serial_port for {self.port_name}: {'successful' if ret else 'unsuccessful'}")
+            print(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
         return ret
 
     def get_next_packet_number(self):
@@ -169,9 +169,9 @@ class RehastimGeneric:
         - partial_msg: The message to show when show_log is "Partial" or True.
         - full_msg: The additional message to show when show_log is True.
         """
-        if self.show_log == True and full_msg:
+        if self.show_log is True and full_msg:
             print(full_msg)
-        if self.show_log == True or self.show_log == "Partial":
+        if self.show_log is True or self.show_log == "Partial":
             print(partial_msg)
 
     def _get_current_data(self):
@@ -186,7 +186,7 @@ class RehastimGeneric:
             ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
             if not ret:
                 print("Failed to get current data.")
-            if self.show_log == True:
+            if self.show_log is True:
                 print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
 
     def _get_last_ack(self, init: bool = False) -> bytes:
@@ -223,7 +223,7 @@ class RehastimGeneric:
             while not sciencemode.smpt_new_packet_received(self.device):
                 time.sleep(0.005)
             ret = sciencemode.smpt_last_ack(self.device, self.ack)
-            if self.show_log == True:
+            if self.show_log is True:
                 print("Ack received by rehastimP24: ", self.TypeRehap24(self.ack.command_number).name)
             return ret
         elif self.device_type == "Rehastim2":
