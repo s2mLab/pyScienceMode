@@ -15,9 +15,8 @@ from pyScienceMode2.acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
 )
-from sciencemode import sciencemode
+from sciencemode_p24 import sciencemode
 import numpy as np
-from typing import Union
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
@@ -47,7 +46,7 @@ class RehastimGeneric:
         Stuffed byte of protocol.
     """
 
-    def __init__(self, port: str, show_log: Union[bool,str] = False, with_motomed: bool = False, device_type: str = None):
+    def __init__(self, port: str, show_log: bool | str = False, with_motomed: bool = False, device_type: str = None):
         """
         Init the class.
 
@@ -55,7 +54,7 @@ class RehastimGeneric:
         ----------
         port : str
             COM port of the Rehastim.
-        show_log: Union[bool, str]
+        show_log: bool | str
             If True, all logs of the communication will be printed.
             If "Partial", only specific logs will be printed.
             If False, no logs will be printed.

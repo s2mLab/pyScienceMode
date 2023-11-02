@@ -9,7 +9,7 @@ from pyScienceMode2 import channel
 from pyScienceMode2.utils import *
 from pyScienceMode2.sciencemode import RehastimGeneric
 from pyScienceMode2.motomed_interface import _Motomed
-from sciencemode import sciencemode
+from sciencemode_p24 import sciencemode
 
 
 class Stimulator2(RehastimGeneric):

@@ -1,7 +1,6 @@
 from time import sleep, time
-from pyScienceMode2 import channel as Ch
+from pyScienceMode2.channel import Channel, Point
 from pyScienceMode2.rehastim_interface import StimulatorP24 as St
-from pyScienceMode2.channel import Point
 
 # list which contains the channels you want to use
 list_channels = []
@@ -10,9 +9,9 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel
-channel_1 = Ch.Channel(no_channel=1, name="Biceps", amplitude=40.1, pulse_width=500, frequency=35, device_type="RehastimP24")
-channel_2 = Ch.Channel(mode="Doublet", no_channel=2, amplitude=40, pulse_width=500, name="Triceps", frequency=35, ramp=5, device_type="RehastimP24")
-channel_3 = Ch.Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=15, ramp=15, device_type="RehastimP24")
+channel_1 = Channel(no_channel=1, name="Biceps", amplitude=40.1, pulse_width=500, frequency=35, device_type="RehastimP24")
+channel_2 = Channel(mode="Doublet", no_channel=2, amplitude=40, pulse_width=500, name="Triceps", frequency=35, ramp=5, device_type="RehastimP24")
+channel_3 = Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=15, ramp=15, device_type="RehastimP24")
 
 # Create an object stimulator
 stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastim is connected
@@ -98,10 +97,10 @@ Otherwise, you can use the default biphasic shape pulse mode="Single" or "Double
 
 """
 
-point1 = channel_1.add_point(3000, 19)
+point1 = channel_1.add_point(3000, 20)
 point2 = channel_1.add_point(3000, -20)
 point3 = channel_1.add_point(3000, 20)
-point4 = channel_1.add_point(3000, -19)
+point4 = channel_1.add_point(3000, -20)
 # point10 = channel_1.add_point(3000,-20)
 
 # point5 = channel_2.add_point(100, 15)

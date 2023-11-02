@@ -1,7 +1,7 @@
 """
 Class used to construct a channel for each different electrode.
 """
-from sciencemode import sciencemode
+from sciencemode_p24 import sciencemode
 
 
 class Channel:
