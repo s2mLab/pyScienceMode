@@ -26,9 +26,9 @@ General level commands.
 In this level you can get several information about the device.
 """
 
-stimulator.get_battery_status()
-stimulator.get_stim_status()
-stimulator.get_main_status()
+# stimulator.get_battery_status()
+# stimulator.get_stim_status()
+# stimulator.get_main_status()
 # stimulator.get_all()
 # stimulator.reset()
 
@@ -101,7 +101,6 @@ point1 = channel_1.add_point(3000, 20)
 point2 = channel_1.add_point(3000, -20)
 point3 = channel_1.add_point(3000, 20)
 point4 = channel_1.add_point(3000, -20)
-# point10 = channel_1.add_point(3000,-20)
 
 # point5 = channel_2.add_point(100, 15)
 # point6 = channel_2.add_point(100, -15)
@@ -109,12 +108,8 @@ point4 = channel_1.add_point(3000, -20)
 """
 Start the stimulation with the list of channels provided for 5s.
 """
-start_time = time()
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=True)
-end_time = time()
-stimulation_dur = end_time - start_time
-print("Stimulation duration : %s" % stimulation_dur)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=False)
 
 # You can modify some parameters during the stimulation.
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.
@@ -132,11 +127,7 @@ point6 = channel_1.add_point(500, -15)
 """
 Restart the stimulation with the new point configuration for 5s.
 """
-start_time = time()
 stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2.5,safety=False)
-end_time = time()
-stimulation_dur = end_time - start_time
-print("Stimulation duration : %s" % stimulation_dur)
 
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.

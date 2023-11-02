@@ -14,7 +14,7 @@ from sciencemode_p24 import sciencemode
 
 class Stimulator2(RehastimGeneric):
     """
-    Class used for the communication with Rehastim.
+    Class used for the communication with Rehastim2.
     """
 
     def __init__(
@@ -29,7 +29,7 @@ class Stimulator2(RehastimGeneric):
         Parameters
         ----------
         port : str
-            Port of the computer connected to the Rehastim.
+            Port of the computer connected to the Rehastim2.
         show_log: bool
             If True, the log of the communication will be printed.
         with_motomed: bool
@@ -397,7 +397,7 @@ class StimulatorP24(RehastimGeneric):
         11: "Invalid command error."
     }
 
-    def __init__(self, port: str, show_log: Union[bool, str] = False):
+    def __init__(self, port: str, show_log: bool | str = False):
         """
         Creates an object stimulator for the RehastimP24.
 
@@ -405,7 +405,7 @@ class StimulatorP24(RehastimGeneric):
         ----------
         port : str
             Port of the computer connected to the Rehastim.
-        show_log: Union[bool, str]
+        show_log: bool | str
             If True, all logs of the communication will be printed.
             If "Partial", only basic logs will be printed.
             If False, no logs will be printed.
