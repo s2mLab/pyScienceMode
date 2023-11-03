@@ -209,7 +209,3 @@ def _stuff_byte(byte: int) -> int:
 def generic_error_check(ack_object, error_map):
     if ack_object.result in error_map and error_map[ack_object.result] is not None:
         raise ValueError(error_map[ack_object.result])
-
-
-
-

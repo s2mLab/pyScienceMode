@@ -1,5 +1,6 @@
 from pyScienceMode2.channel import Channel, Point
 from pyScienceMode2.rehastim_interface import StimulatorP24 as St
+
 """
 This example shows how to use the RehastimP24 device. 
 There are several commands divided into three levels (general, low and mid).
@@ -14,9 +15,29 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel
-channel_1 = Channel(no_channel=1, name="Biceps", amplitude=40.1, pulse_width=500, frequency=35, device_type="RehastimP24")
-channel_2 = Channel(mode="Doublet", no_channel=2, amplitude=40, pulse_width=500, name="Triceps", frequency=35, ramp=5, device_type="RehastimP24")
-channel_3 = Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500, name="Triceps", frequency=15, ramp=15, device_type="RehastimP24")
+channel_1 = Channel(
+    no_channel=1, name="Biceps", amplitude=40.1, pulse_width=500, frequency=35, device_type="RehastimP24"
+)
+channel_2 = Channel(
+    mode="Doublet",
+    no_channel=2,
+    amplitude=40,
+    pulse_width=500,
+    name="Triceps",
+    frequency=35,
+    ramp=5,
+    device_type="RehastimP24",
+)
+channel_3 = Channel(
+    mode="Triplet",
+    no_channel=3,
+    amplitude=40,
+    pulse_width=500,
+    name="Triceps",
+    frequency=15,
+    ramp=15,
+    device_type="RehastimP24",
+)
 
 # Create an object stimulator
 stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastim is connected
@@ -135,7 +156,7 @@ point6 = channel_1.add_point(500, -15)
 """
 Restart the stimulation with the new point configuration for 5s.
 """
-stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5,safety=False)
+stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5, safety=False)
 
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.

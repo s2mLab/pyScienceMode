@@ -16,12 +16,7 @@ class Channel:
 
     MODE = {"Single": 0, "Doublet": 1, "Triplet": 2, None: 3}
     MAX_POINTS = 16
-    CHANNEL_MAPPING = {
-        1: 'Smpt_Channel_Red',
-        2: 'Smpt_Channel_Blue',
-        3: 'Smpt_Channel_Black',
-        4: 'Smpt_Channel_White'
-    }
+    CHANNEL_MAPPING = {1: "Smpt_Channel_Red", 2: "Smpt_Channel_Blue", 3: "Smpt_Channel_Black", 4: "Smpt_Channel_White"}
 
     def __init__(
         self,
@@ -33,7 +28,7 @@ class Channel:
         name: str = None,
         device_type: str = None,
         frequency: float = 50.0,
-        ramp: int = 0
+        ramp: int = 0,
     ):
         """
         Create an object Channel.
@@ -63,30 +58,29 @@ class Channel:
         frequency: float
             Channel frequency. [0.5, 1000] Hz
         """
-        self.device_type = device_type   # Check if the device is rehastim2 or rehastimP24
+        self.device_type = device_type  # Check if the device is Rehastim2 or RehastimP24
         self._mode = self.MODE[mode]
         self._no_channel = no_channel
         self._amplitude = amplitude
         self._pulse_width = pulse_width
         self._enable_low_frequency = enable_low_frequency
         self._name = name if name else f"muscle_{self._no_channel}"
-        self._period = 1000.0 / frequency  # frequency (Hz) of the channel
-        self.list_point = []  # list of points for the channel
+        self._period = 1000.0 / frequency  # Frequency (Hz) of the channel
+        self.list_point = []  # List of points for the channel
         self._ramp = ramp
         self.check_device_type()
         self.check_value_param()
 
-
         if self.device_type == "Rehastim2" and ramp:
             raise RuntimeError("Ramp is not supported for Rehastim2")
         if self.device_type == "Rehastim2" and frequency != 50.0:
-            # If the user enters a frequency for a rehastim2 channel, raise an error.
+            # If the user enters a frequency for a Rehastim2 channel, raise an error.
             # the frequency must still have a default value (50 in this case), otherwise division by 0.
             raise RuntimeError("Frequency can not be set for individual channel for the Rehastim2")
 
         if self.device_type == "RehastimP24":
-            smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, 'Smpt_Channel_Undefined')
-            self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.Smpt_Channel_Undefined)
+            smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, "Smpt_Channel_Undefined")
+            self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.lib.Smpt_Channel_Undefined)
 
             self.generate_pulse()
 
@@ -179,7 +173,7 @@ class Channel:
         self.list_point.append(positive_pulse)
         self.list_point.append(negative_pulse)
 
-    def create_triplet(self, amplitude : int | float, pulse_width : int):
+    def create_triplet(self, amplitude: int | float, pulse_width: int):
         """
         Create a triplet biphasic pulse for the channel.
 
@@ -219,7 +213,9 @@ class Channel:
         Check if  device type is correct. Raise an error otherwise.
         """
         if self.device_type != "Rehastim2" and self.device_type != "RehastimP24":
-            raise ValueError("Error : Device type must be Rehastim2 or RehastimP24. Device type given : %s" % self.device_type)
+            raise ValueError(
+                "Error : Device type must be Rehastim2 or RehastimP24. Device type given : %s" % self.device_type
+            )
         return self.device_type
 
     def check_value_param(self):
@@ -373,7 +369,7 @@ class Channel:
         """
         Returns the frequency of a channel
         """
-        return 1000.0/self._period
+        return 1000.0 / self._period
 
     def get_ramp(self):
         """
@@ -433,6 +429,7 @@ class Point:
     """
     Class to pilot a point for a channel.
     """
+
     def __init__(self, pulse_width: int, amplitude: int | float):
         self.pulse_width = pulse_width
         self.amplitude = amplitude
@@ -473,6 +470,3 @@ class Point:
 
         self.pulse_width = pulse_width
         self.check_parameters_point()
-
-
-

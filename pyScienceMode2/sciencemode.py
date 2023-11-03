@@ -76,13 +76,13 @@ class RehastimGeneric:
             self.STUFFED_BYTES = [240, 15, 129, 85, 10]
 
             self.port = serial.Serial(
-                    port,
-                    self.BAUD_RATE,
-                    bytesize=serial.EIGHTBITS,
-                    parity=serial.PARITY_EVEN,
-                    stopbits=serial.STOPBITS_ONE,
-                    timeout=0.1,
-                )
+                port,
+                self.BAUD_RATE,
+                bytesize=serial.EIGHTBITS,
+                parity=serial.PARITY_EVEN,
+                stopbits=serial.STOPBITS_ONE,
+                timeout=0.1,
+            )
 
         elif self.device_type == "RehastimP24":
             self.device = sciencemode.ffi.new("Smpt_device*")
@@ -127,7 +127,7 @@ class RehastimGeneric:
         self.command_send = []  # Command sent to the rehastim
         self.ack_received = []  # Command received by the rehastim
         self.TypeReha2 = TypeReha2
-        self.TypeRehap24= TypeRehap24
+        self.TypeRehap24 = TypeRehap24
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
@@ -141,7 +141,7 @@ class RehastimGeneric:
         """
         Verify if the serial port is available and functional.
         """
-        ret = sciencemode.smpt_check_serial_port(self.com)
+        ret = sciencemode.lib.smpt_check_serial_port(self.com)
         if self.show_log:
             print(f"Port check for {self.port_name} : {'successful' if ret else 'unsuccessful'}")
         return ret
@@ -150,14 +150,14 @@ class RehastimGeneric:
         """
         Try to open the serial port.
         """
-        ret = sciencemode.smpt_open_serial_port(self.device, self.com)
+        ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
         if self.show_log:
             print(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
         return ret
 
     def get_next_packet_number(self):
-        if hasattr(self, 'device') and self.device is not None:
-            packet_number = sciencemode.smpt_packet_number_generator_next(self.device)
+        if hasattr(self, "device") and self.device is not None:
+            packet_number = sciencemode.lib.smpt_packet_number_generator_next(self.device)
             return packet_number
 
     def log(self, partial_msg: str, full_msg: str = None):
@@ -179,14 +179,14 @@ class RehastimGeneric:
         """
         if self.device_type == "RehastimP24":
             ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
-            ml_get_current_data.data_selection = sciencemode.Smpt_Ml_Data_Channels
+            ml_get_current_data.data_selection = sciencemode.lib.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
 
-            ret = sciencemode.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
+            ret = sciencemode.lib.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
             if not ret:
                 print("Failed to get current data.")
             if self.show_log is True:
-                print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ml_Get_Current_Data).name)
+                print("Command sent to rehastim:", self.TypeRehap24(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name)
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
@@ -218,10 +218,10 @@ class RehastimGeneric:
                 self.last_ack = None
             return last_ack
 
-        if self.device_type == "RehastimP24" :
-            while not sciencemode.smpt_new_packet_received(self.device):
+        if self.device_type == "RehastimP24":
+            while not sciencemode.lib.smpt_new_packet_received(self.device):
                 time.sleep(0.005)
-            ret = sciencemode.smpt_last_ack(self.device, self.ack)
+            ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
             if self.show_log is True:
                 print("Ack received by rehastimP24: ", self.TypeRehap24(self.ack.command_number).name)
             return ret
@@ -272,7 +272,6 @@ class RehastimGeneric:
         """
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == "Rehastim2":
-
             tic = time.time()
             """
             Compare the command sent and received by the rehastim in 2 lists. Raise an error if the command sent is 
@@ -315,7 +314,10 @@ class RehastimGeneric:
                         if signed_int(self.ack_received[i][7:8]) in [-1, -2, -3]:
                             self.error_occured = True
                             raise RuntimeError("Stimulation error : ", ack)
-                    elif self.ack_received[i][6] == self.TypeReha2["ActualValues"].value and not self.is_motomed_connected:
+                    elif (
+                        self.ack_received[i][6] == self.TypeReha2["ActualValues"].value
+                        and not self.is_motomed_connected
+                    ):
                         self.error_occured = True
                         raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
                     elif self.command_send[i][6] + 1 == self.ack_received[i][6] and i > 0:
@@ -411,8 +413,8 @@ class RehastimGeneric:
             self._start_watchdog()
 
         if self.show_log:
-            if self.Type(packet[6]).name != "Watchdog":
-                print(f"Command sent to Rehastim : {self.Type(packet[6]).name}")
+            if self.TypeReha2(packet[6]).name != "Watchdog":
+                print(f"Command sent to Rehastim : {self.TypeReha2(packet[6]).name}")
                 self.command_send.append(packet)
 
         with self.lock:
@@ -452,7 +454,7 @@ class RehastimGeneric:
         Closes the port.
         """
         if self.device_type == "RehastimP24":
-            sciencemode.smpt_close_serial_port(self.device)
+            sciencemode.lib.smpt_close_serial_port(self.device)
         elif self.device_type == "Rehastim2":
             self.port.close()
 
