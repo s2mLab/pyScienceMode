@@ -1,6 +1,11 @@
-from time import sleep, time
 from pyScienceMode2.channel import Channel, Point
 from pyScienceMode2.rehastim_interface import StimulatorP24 as St
+"""
+This example shows how to use the RehastimP24 device. 
+There are several commands divided into three levels (general, low and mid).
+You can't call commands from different levels, you must first close the current level
+to be able to use commands from another one.
+"""
 
 # list which contains the channels you want to use
 list_channels = []
@@ -16,7 +21,7 @@ channel_3 = Channel(mode="Triplet", no_channel=3, amplitude=40, pulse_width=500,
 # Create an object stimulator
 stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastim is connected
 
-# Add the channels you want to use to the list
+# Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
 list_channels.append(channel_2)
 # list_channels.append(channel_3)
@@ -42,7 +47,7 @@ Init the ll stimulation. Use it before starting the stimulation or after stoppin
 """
 stimulator.ll_init()
 
-# Create a point with the configuration you want to create your shape pulse.
+# Create a point with the configuration you want to create your own shape pulse.
 point1 = Point(500, 20)
 point2 = Point(500, -20)
 point3 = Point(500, 10)
@@ -57,6 +62,8 @@ list_stimulation_points.append(point4)
 """
 Start the ll stimulation with the list of points provided. 
 It is possible to update the parameters of the point by giving a new list of points.
+If you set the safety flag to False, it will not check if the stimulation points  provided are symmetrical
+for a muscle loading and unloading phase. 
 """
 stimulator.start_ll_channel_config(no_channel=1, points=list_stimulation_points, stim_sequence=3, pulse_interval=500.5)
 
@@ -91,10 +98,9 @@ Open the mid level stimulation.
 stimulator.init_stimulation(list_channels=list_channels)
 
 """
-If you want to create your own shape pulse, you can pilot create and pilot stimulation points.
+If you want to create your own shape pulse, you can create and pilot stimulation points.
 16 max per channels.
 Otherwise, you can use the default biphasic shape pulse mode="Single" or "Doublet" or "Triplet".
-
 """
 
 point1 = channel_1.add_point(3000, 20)
@@ -107,6 +113,8 @@ point4 = channel_1.add_point(3000, -20)
 
 """
 Start the stimulation with the list of channels provided for 5s.
+If you set the safety flag to False, it will not  check if the stimulation points provided are symmetrical
+for a muscle loading and unloading phase. 
 """
 
 stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=False)
@@ -127,10 +135,11 @@ point6 = channel_1.add_point(500, -15)
 """
 Restart the stimulation with the new point configuration for 5s.
 """
-stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=2.5,safety=False)
+stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5,safety=False)
 
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.
+To restart a stimulation you have to initialize the level again
 """
 stimulator.stop_stimulation()
 

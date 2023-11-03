@@ -628,7 +628,10 @@ class StimulatorP24(RehastimGeneric):
             raise RuntimeError("Low level initialization failed.")
         generic_error_check(self.ll_init_ack, self.ERROR_MAP)
 
-    def start_ll_channel_config(self, no_channel, points=None, stim_sequence: int = None, pulse_interval: int | float = None):
+    def start_ll_channel_config(self, no_channel,
+                                points=None, stim_sequence: int = None,
+                                pulse_interval: int | float = None,
+                                safety : bool = True):
         """
         Starts the low level mode stimulation.
 
@@ -642,11 +645,16 @@ class StimulatorP24(RehastimGeneric):
             Number of stimulation sequence to be repeated.
         pulse_interval : int | float
             Interval between each stimulation sequence in ms.
+        safety : bool
+            Set to True if you want to check the pulse symmetry. False otherwise.
        """
         self._current_no_channel = no_channel
         self._current_stim_sequence = stim_sequence
         self._current_pulse_interval = pulse_interval
         self.log("Low level stimulation started")
+
+        positive_area = 0
+        negative_area = 0
 
         if points is None or len(points) == 0:
             raise ValueError("Please provide at least one point for stimulation.")
@@ -662,10 +670,19 @@ class StimulatorP24(RehastimGeneric):
             ll_config.points[j].time = point.pulse_width
             ll_config.points[j].current = point.amplitude
 
+        if safety is True:
+            for point in points:
+                if point.amplitude > 0:
+                    positive_area += point.amplitude * point.pulse_width
+                else :
+                    negative_area -= point.amplitude * point.pulse_width
+            if abs(positive_area - negative_area) > 1e-6:
+                raise ValueError("The points are not symmetric based on amplitude.")
+
         for _ in range(stim_sequence):
             ll_config.packet_number = self.get_next_packet_number()
             sciencemode.smpt_send_ll_channel_config(self.device, ll_config)
-            if self.show_log == True:
+            if self.show_log is True:
                 print("Command sent to rehastim:", self.TypeRehap24(sciencemode.Smpt_Cmd_Ll_Channel_Config).name)
             time.sleep(pulse_interval/1000)
             self._get_last_ack()
