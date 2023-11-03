@@ -2,7 +2,7 @@
 Stimulator Interface class used to control the rehamove2.
 See ScienceMode2 - Description and protocol for more information.
 """
-from typing import Tuple, Union
+from typing import Tuple
 import time
 from pyScienceMode2.acks import *
 from pyScienceMode2 import channel
