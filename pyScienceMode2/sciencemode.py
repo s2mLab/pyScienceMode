@@ -126,8 +126,8 @@ class RehastimGeneric:
         self.__watchdog_thread_started = False
         self.command_send = []  # Command sent to the rehastim
         self.ack_received = []  # Command received by the rehastim
-        self.TypeReha2 = TypeReha2
-        self.TypeRehap24 = TypeRehap24
+        self.Rehastim2Commands = Rehastim2Commands
+        self.RehastimP24Commands = RehastimP24Commands
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
@@ -186,7 +186,7 @@ class RehastimGeneric:
             if not ret:
                 print("Failed to get current data.")
             if self.show_log is True:
-                print("Command sent to rehastim:", self.TypeRehap24(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name)
+                print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name)
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
@@ -223,7 +223,7 @@ class RehastimGeneric:
                 time.sleep(0.005)
             ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
             if self.show_log is True:
-                print("Ack received by rehastimP24: ", self.TypeRehap24(self.ack.command_number).name)
+                print("Ack received by rehastimP24: ", self.RehastimP24Commands(self.ack.command_number).name)
             return ret
         elif self.device_type == "Rehastim2":
             while 1:
@@ -231,8 +231,8 @@ class RehastimGeneric:
                 if packet and len(packet) != 0:
                     break
             if packet and not self.error_occured:
-                if self.show_log and packet[-1][6] in [t.value for t in self.TypeReha2]:
-                    print(f"Ack received by rehastim: {self.TypeReha2(packet[-1][6]).name}")
+                if self.show_log and packet[-1][6] in [t.value for t in self.Rehastim2Commands]:
+                    print(f"Ack received by rehastim: {self.Rehastim2Commands(packet[-1][6]).name}")
                     self.ack_received.append(packet[-1])
             return packet[-1]
 
@@ -282,22 +282,22 @@ class RehastimGeneric:
                 if packets:
                     for packet in packets:
                         if len(packet) > 7:
-                            if self.show_log and packet[6] in [t.value for t in self.TypeReha2]:
-                                if self.TypeReha2(packet[6]).name == "MotomedError":
+                            if self.show_log and packet[6] in [t.value for t in self.Rehastim2Commands]:
+                                if self.Rehastim2Commands(packet[6]).name == "MotomedError":
                                     ack = motomed_error_ack(signed_int(packet[7:8]))
                                     if signed_int(packet[7:8]) in [-4, -6]:
                                         print(f"Ack received by rehastim: {ack}")
-                                elif self.TypeReha2(packet[6]).name != "ActualValues":
-                                    print(f"Ack received by rehastim: {self.TypeReha2(packet[6]).name}")
-                            if packet[6] == self.TypeReha2["ActualValues"].value:
+                                elif self.Rehastim2Commands(packet[6]).name != "ActualValues":
+                                    print(f"Ack received by rehastim: {self.Rehastim2Commands(packet[6]).name}")
+                            if packet[6] == self.Rehastim2Commands["ActualValues"].value:
                                 self._actual_values_ack(packet)
-                            elif packet[6] == TypeReha2["PhaseResult"].value:
+                            elif packet[6] == Rehastim2Commands["PhaseResult"].value:
                                 return self._phase_result_ack(packet)
                             elif packet[6] == 90:
                                 pass
-                            elif packet[6] == self.TypeReha2["MotomedCommandDone"].value:
+                            elif packet[6] == self.Rehastim2Commands["MotomedCommandDone"].value:
                                 self.motomed_done.set()
-                            elif packet[6] in [t.value for t in self.TypeReha2]:
+                            elif packet[6] in [t.value for t in self.Rehastim2Commands]:
                                 if packet[6] == 1:
                                     self.last_init_ack = packet
                                     self.event_ack.set()
@@ -309,34 +309,34 @@ class RehastimGeneric:
 
             if self.command_send and self.ack_received:
                 for i in reversed(range(min(len(self.command_send), len(self.ack_received)))):
-                    if self.ack_received[i][6] == self.TypeReha2["StimulationError"].value:
+                    if self.ack_received[i][6] == self.Rehastim2Commands["StimulationError"].value:
                         ack = rehastim_error(signed_int(self.ack_received[i][7:8]))
                         if signed_int(self.ack_received[i][7:8]) in [-1, -2, -3]:
                             self.error_occured = True
                             raise RuntimeError("Stimulation error : ", ack)
                     elif (
-                        self.ack_received[i][6] == self.TypeReha2["ActualValues"].value
+                        self.ack_received[i][6] == self.Rehastim2Commands["ActualValues"].value
                         and not self.is_motomed_connected
                     ):
                         self.error_occured = True
                         raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
                     elif self.command_send[i][6] + 1 == self.ack_received[i][6] and i > 0:
                         for packet in self.ack_received:
-                            if packet[6] == self.TypeReha2["InitChannelListModeAck"].value:
+                            if packet[6] == self.Rehastim2Commands["InitChannelListModeAck"].value:
                                 init_stimulation_ack(packet)
                                 if init_stimulation_ack(packet) != "Stimulation initialized":
                                     self.error_occured = True
                                     raise RuntimeError("Stimulation not initialized")
-                            elif packet[6] == self.TypeReha2["GetStimulationModeAck"].value:
+                            elif packet[6] == self.Rehastim2Commands["GetStimulationModeAck"].value:
                                 get_mode_ack(packet)
-                            elif packet[6] == self.TypeReha2["StopChannelListModeAck"].value:
+                            elif packet[6] == self.Rehastim2Commands["StopChannelListModeAck"].value:
                                 stop_stimulation_ack(packet)
                                 if stop_stimulation_ack(packet) != "Stimulation stopped":
                                     self.error_occured = True
                                     raise RuntimeError(
                                         "Error : StoppedChannelListMode :" + stop_stimulation_ack(packet)
                                     )
-                            elif packet[6] == self.TypeReha2["StartChannelListModeAck"].value:
+                            elif packet[6] == self.Rehastim2Commands["StartChannelListModeAck"].value:
                                 start_stimulation_ack(packet)
                                 if start_stimulation_ack(packet) != "Stimulation started":
                                     self.error_occured = True
@@ -413,8 +413,8 @@ class RehastimGeneric:
             self._start_watchdog()
 
         if self.show_log:
-            if self.TypeReha2(packet[6]).name != "Watchdog":
-                print(f"Command sent to Rehastim : {self.TypeReha2(packet[6]).name}")
+            if self.Rehastim2Commands(packet[6]).name != "Watchdog":
+                print(f"Command sent to Rehastim : {self.Rehastim2Commands(packet[6]).name}")
                 self.command_send.append(packet)
 
         with self.lock:

@@ -1,5 +1,5 @@
-from pyScienceMode2.channel import Channel, Point
-from pyScienceMode2.rehastim_interface import StimulatorP24 as St
+from pyScienceMode2 import Channel, Point
+from pyScienceMode2 import RehastimP24 as St
 
 """
 This example shows how to use the RehastimP24 device. 

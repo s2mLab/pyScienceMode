@@ -5,7 +5,7 @@ See ScienceMode2 - Description and protocol for more information.
 
 from pyScienceMode2.acks import *
 from pyScienceMode2.utils import *
-from pyScienceMode2.enums import TypeReha2
+from pyScienceMode2.enums import Rehastim2Commands
 from time import sleep
 import numpy as np
 
@@ -355,33 +355,33 @@ class _Motomed:
         # self.rehastim.event_ack.wait()
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
-        elif packet[6] == TypeReha2["GetMotomedModeAck"].value:
+        elif packet[6] == Rehastim2Commands["GetMotomedModeAck"].value:
             return get_motomed_mode_ack(packet)
-        elif packet[6] == TypeReha2["InitPhaseTrainingAck"].value:
+        elif packet[6] == Rehastim2Commands["InitPhaseTrainingAck"].value:
             return init_phase_training_ack(packet)
-        elif packet[6] == TypeReha2["StartPhaseAck"].value:
+        elif packet[6] == Rehastim2Commands["StartPhaseAck"].value:
             return start_phase_ack(packet)
-        elif packet[6] == TypeReha2["PausePhaseAck"].value:
+        elif packet[6] == Rehastim2Commands["PausePhaseAck"].value:
             return pause_phase_ack(packet)
-        elif packet[6] == TypeReha2["StopPhaseTrainingAck"].value:
+        elif packet[6] == Rehastim2Commands["StopPhaseTrainingAck"].value:
             return stop_phase_training_ack(packet)
-        elif packet[6] == TypeReha2["SetRotationDirectionAck"].value:
+        elif packet[6] == Rehastim2Commands["SetRotationDirectionAck"].value:
             return set_rotation_direction_ack(packet)
-        elif packet[6] == TypeReha2["SetSpeedAck"].value:
+        elif packet[6] == Rehastim2Commands["SetSpeedAck"].value:
             return set_speed_ack(packet)
-        elif packet[6] == TypeReha2["SetGearAck"].value:
+        elif packet[6] == Rehastim2Commands["SetGearAck"].value:
             return set_gear_ack(packet)
-        elif packet[6] == TypeReha2["StartBasicTrainingAck"].value:
+        elif packet[6] == Rehastim2Commands["StartBasicTrainingAck"].value:
             return start_basic_training_ack(packet)
-        elif packet[6] == TypeReha2["PauseBasicTrainingAck"].value:
+        elif packet[6] == Rehastim2Commands["PauseBasicTrainingAck"].value:
             return pause_basic_training_ack(packet)
-        elif packet[6] == TypeReha2["ContinueBasicTrainingAck"].value:
+        elif packet[6] == Rehastim2Commands["ContinueBasicTrainingAck"].value:
             return continue_basic_training_ack(packet)
-        elif packet[6] == TypeReha2["StopBasicTrainingAck"].value:
+        elif packet[6] == Rehastim2Commands["StopBasicTrainingAck"].value:
             return stop_basic_training_ack(packet)
-        elif packet[6] == TypeReha2["MotomedCommandDone"].value:
+        elif packet[6] == Rehastim2Commands["MotomedCommandDone"].value:
             return stop_basic_training_ack(packet)
-        elif packet[6] == TypeReha2["MotomedError"].value:
+        elif packet[6] == Rehastim2Commands["MotomedError"].value:
             return motomed_error_ack(signed_int(packet[7:8]))
         else:
             raise RuntimeError("Error packet : not understood")

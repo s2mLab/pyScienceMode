@@ -1,7 +1,6 @@
 import time
-
-from pyScienceMode2.rehastim_interface import Stimulator2 as St
-from pyScienceMode2 import channel as Ch
+from pyScienceMode2 import Rehastim2 as St
+from pyScienceMode2 import Channel as Ch
 
 
 def init_rehastim():
@@ -9,10 +8,10 @@ def init_rehastim():
     list_channels = []
 
     # Create all channels possible
-    channel_1 = Ch.Channel(mode="Single", no_channel=1, amplitude=10, pulse_width=100, name="Biceps")
-    channel_2 = Ch.Channel(mode="Single", no_channel=2, amplitude=8, pulse_width=100, name="delt_ant")
-    channel_3 = Ch.Channel(mode="Single", no_channel=3, amplitude=8, pulse_width=100, name="Triceps")
-    channel_4 = Ch.Channel(mode="Single", no_channel=4, amplitude=9, pulse_width=100, name="delt_post")
+    channel_1 = Ch(mode="Single", no_channel=1, amplitude=10, pulse_width=100, name="Biceps")
+    channel_2 = Ch(mode="Single", no_channel=2, amplitude=8, pulse_width=100, name="delt_ant")
+    channel_3 = Ch(mode="Single", no_channel=3, amplitude=8, pulse_width=100, name="Triceps")
+    channel_4 = Ch(mode="Single", no_channel=4, amplitude=9, pulse_width=100, name="delt_post")
 
     # Choose which channel will be used
     list_channels.append(channel_1)
