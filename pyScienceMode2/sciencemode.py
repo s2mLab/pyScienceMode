@@ -45,6 +45,14 @@ class RehastimGeneric:
     STUFFING_BYTE : list
         Stuffed byte of protocol.
     """
+    BAUD_RATE = 460800
+    VERSION = 0x01
+    START_BYTE = 0xF0
+    STOP_BYTE = 0x0F
+    STUFFING_BYTE = 0x81
+    STUFFING_KEY = 0x55
+    MAX_PACKET_BYTES = 69
+    STUFFED_BYTES = [240, 15, 129, 85, 10]
 
     def __init__(self, port: str, show_log: bool | str = False, with_motomed: bool = False, device_type: str = None):
         """
@@ -66,15 +74,6 @@ class RehastimGeneric:
         self.device_type = device_type
         self.port_name = port
         if self.device_type == "Rehastim2":
-            self.BAUD_RATE = 460800
-            self.VERSION = 0x01
-            self.START_BYTE = 0xF0
-            self.STOP_BYTE = 0x0F
-            self.STUFFING_BYTE = 0x81
-            self.STUFFING_KEY = 0x55
-            self.MAX_PACKET_BYTES = 69
-            self.STUFFED_BYTES = [240, 15, 129, 85, 10]
-
             self.port = serial.Serial(
                 port,
                 self.BAUD_RATE,

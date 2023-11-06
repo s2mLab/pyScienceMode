@@ -55,6 +55,7 @@ class Rehastim2(RehastimGeneric):
             packet = self._get_last_ack(init=True)
 
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
+        self.stimulation_active = True
 
     def set_stimulation_signal(self, list_channels: list):
         """

@@ -14,19 +14,19 @@ channel_1 = Ch(
     mode="Single", no_channel=1, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps"
 )
 
-channel_2 = Ch.Channel()
+channel_2 = Ch()
 channel_2.set_mode("Single")
 channel_2.set_no_channel(2)
 channel_2.set_amplitude(2)
 channel_2.set_pulse_width(100)
 channel_2.set_name("Triceps")
 
-channel_3 = Ch.Channel("Doublet", 3, 50, 100)
-channel_4 = Ch.Channel("Single", 4, 50, 100)
-channel_5 = Ch.Channel("Triplet", 5, 50, 100)
-channel_6 = Ch.Channel("Single", 6, 50, 100, True)
-channel_7 = Ch.Channel("Single", 7, 50, 100)
-channel_8 = Ch.Channel("Single", 8, 50, 100)
+channel_3 = Ch("Doublet", 3, 50, 100)
+channel_4 = Ch("Single", 4, 50, 100)
+channel_5 = Ch("Triplet", 5, 50, 100)
+channel_6 = Ch("Single", 6, 50, 100, True)
+channel_7 = Ch("Single", 7, 50, 100)
+channel_8 = Ch("Single", 8, 50, 100)
 
 # Choose which channel will be used
 list_channels.append(channel_1)
@@ -72,7 +72,7 @@ stimulator.start_stimulation(upd_list_channels=list_channels)
 sleep(5)
 
 """
-Stop the stimulation. But does not disconnect the Pc and the Rehastim.
+Stop the stimulation. But does not disconnect the Pc and the Rehastim2.
 """
 stimulator.pause_stimulation()
 

@@ -5,7 +5,6 @@ from pyScienceMode2 import RehastimGeneric
 from sciencemode_p24 import sciencemode
 
 
-
 class RehastimP24(RehastimGeneric):
     """
     Class used for the communication with RehastimP24.
@@ -236,6 +235,7 @@ class RehastimP24(RehastimGeneric):
         """
         Initialize the lower level of the device. The low-level is used for defining a custom shaped pulse.
         Each stimulation pulse needs to triggered from the computer.
+        You can only stimulate one channel. This is useful for the execution of stimulation pulses with a high frequency.
         """
         ll_init = sciencemode.ffi.new("Smpt_ll_init*")
         ll_init.high_voltage_level = (
@@ -262,7 +262,7 @@ class RehastimP24(RehastimGeneric):
             raise RuntimeError("Low level initialization failed.")
         generic_error_check(self.ll_init_ack)
 
-    def start_ll_channel_config(
+    def stim_start_one_channel_stimulation(
         self,
         no_channel: int,
         points=list,
@@ -270,7 +270,7 @@ class RehastimP24(RehastimGeneric):
         pulse_interval: int | float = 50,
         safety: bool = True,
     ):
-        from pyScienceMode2 import Point
+
         """
         Starts the low level mode stimulation.
 
@@ -287,6 +287,8 @@ class RehastimP24(RehastimGeneric):
         safety : bool
             Set to True if you want to check the pulse symmetry. False otherwise.
         """
+        from pyScienceMode2 import Point
+        self.ll_init()
         self._current_no_channel = no_channel
         self._current_stim_sequence = stim_sequence
         self._current_pulse_interval = pulse_interval
@@ -339,7 +341,7 @@ class RehastimP24(RehastimGeneric):
             raise ValueError("Failed to get the ll_channel_config_ack.")
         generic_error_check(self.ll_channel_config_ack)
 
-    def update_ll_channel_config(
+    def update_stim_one_channel(
         self, upd_list_point, no_channel=None, stim_sequence: int = None, pulse_interval: int | float = None
     ):
         """
@@ -362,7 +364,7 @@ class RehastimP24(RehastimGeneric):
             no_channel = self._current_no_channel
         if pulse_interval is None:
             pulse_interval = self._current_pulse_interval
-        self.start_ll_channel_config(no_channel, upd_list_point, stim_sequence, pulse_interval)
+        self.stim_start_one_channel_stimulation(no_channel, upd_list_point, stim_sequence, pulse_interval)
 
     def ll_stop(self):
         """
