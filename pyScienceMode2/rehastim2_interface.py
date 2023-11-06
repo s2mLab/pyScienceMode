@@ -56,6 +56,7 @@ class Rehastim2(RehastimGeneric):
 
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
         self.stimulation_active = True
+        self._start_thread_catch_ack() # Start the thread which catches rehastim and motomed data
 
     def set_stimulation_signal(self, list_channels: list):
         """

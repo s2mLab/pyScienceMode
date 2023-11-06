@@ -133,8 +133,7 @@ class RehastimGeneric:
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
-        self.stimulation_active = True  # If the stimulation is active, set to true
-        self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
+        self.stimulation_active = False
 
         if self.reha_connected and not self.__comparison_thread_started:
             self._start_thread_catch_ack()
@@ -273,6 +272,7 @@ class RehastimGeneric:
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
         from pyScienceMode2 import Rehastim2Commands
+        print("thread started")
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == "Rehastim2":
             tic = time.time()
@@ -344,7 +344,6 @@ class RehastimGeneric:
                                 if start_stimulation_ack(packet) != "Stimulation started":
                                     self.error_occured = True
                                     raise RuntimeError("Error : StartChannelListMode :" + start_stimulation_ack(packet))
-
                         del self.command_send[i]
                         del self.ack_received[i]
 

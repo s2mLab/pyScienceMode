@@ -388,6 +388,25 @@ class Channel:
         self.check_value_param()
         self.generate_pulse()
 
+    def set_device_type(self,device_type : str):
+        """
+        Set the device (Rehastim2 or RehastimP24) for a channel
+
+        Parameters
+        ----------
+        device_type : str
+            Device type used for the stimulation
+
+        """
+        self.device_type = device_type
+        self.check_device_type()
+
+    def get_device_type(self):
+        """
+        Get the actual device_type
+        """
+        return self.device_type
+
     def add_point(self, pulse_width: int, amplitude: int | float):
         """
         Add a point to the list of points for a channel. One channel can pilot 16 points.
