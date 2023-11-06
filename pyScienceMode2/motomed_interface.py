@@ -3,9 +3,9 @@ Motomed Interface class used to control and get data from Motomed while connecte
 See ScienceMode2 - Description and protocol for more information.
 """
 
-from pyScienceMode2.acks import *
-from pyScienceMode2.utils import *
-from pyScienceMode2.enums import Rehastim2Commands
+from pyScienceMode2.acks import get_motomed_mode_ack,init_phase_training_ack,start_phase_ack,pause_phase_ack,stop_phase_training_ack,set_rotation_direction_ack,set_speed_ack,set_gear_ack,start_basic_training_ack,pause_basic_training_ack,continue_basic_training_ack,stop_basic_training_ack,motomed_error_ack
+from pyScienceMode2.utils import packet_construction, signed_int
+
 from time import sleep
 import numpy as np
 
@@ -353,6 +353,8 @@ class _Motomed:
             A string which is the message corresponding to the processing of the packet.
         """
         # self.rehastim.event_ack.wait()
+        from pyScienceMode2 import Rehastim2Commands
+
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
         elif packet[6] == Rehastim2Commands["GetMotomedModeAck"].value:

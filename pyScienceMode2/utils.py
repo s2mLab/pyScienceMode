@@ -1,5 +1,4 @@
 import crccheck
-from pyScienceMode2.enums import Rehastim2Commands, RehastimP24Commands
 
 
 def signed_int(packet: bytes) -> int:
@@ -136,6 +135,7 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
     packet_construct: bytes
         Packet constructed which will be sent.
     """
+    from pyScienceMode2 import Rehastim2Commands
     start_byte = 0xF0
     stop_byte = 0x0F
     stuffing_byte = 0x81
@@ -206,6 +206,10 @@ def _stuff_byte(byte: int) -> int:
     return (byte & ~stuffing_key) | (~byte & stuffing_key)
 
 
-def generic_error_check(ack_object, error_map):
-    if ack_object.result in error_map and error_map[ack_object.result] is not None:
-        raise ValueError(error_map[ack_object.result])
+def generic_error_check(ack_object):
+    from pyScienceMode2.enums import ErrorCode
+    # if ack_object.result in error_map and error_map[ack_object.result] is not None:
+    #     raise ValueError(error_map[ack_object.result])
+    error_code = ErrorCode(ack_object.result)
+    if error_code.message:
+        raise ValueError(error_code.message)

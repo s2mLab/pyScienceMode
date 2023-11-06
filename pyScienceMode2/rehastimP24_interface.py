@@ -1,10 +1,9 @@
 
 import time
-from pyScienceMode2.acks import *
-from pyScienceMode2 import channel
-from pyScienceMode2.utils import *
-from pyScienceMode2.sciencemode import RehastimGeneric
+from pyScienceMode2.utils import check_unique_channel, calc_electrode_number, generic_error_check
+from pyScienceMode2 import RehastimGeneric
 from sciencemode_p24 import sciencemode
+
 
 
 class RehastimP24(RehastimGeneric):
@@ -12,14 +11,6 @@ class RehastimP24(RehastimGeneric):
     Class used for the communication with RehastimP24.
     """
 
-    HIGH_VOLTAGE_MAPPING = {
-        0: "Smpt_High_Voltage_Default",
-        2: "Smpt_High_Voltage_30V",
-        3: "Smpt_High_Voltage_60V",
-        4: "Smpt_High_Voltage_90V",
-        5: "Smpt_High_Voltage_120V",
-        6: "Smpt_High_Voltage_150V",
-    }
     ERROR_MAP = {
         0: None,
         1: "Transfer error.",
@@ -55,6 +46,7 @@ class RehastimP24(RehastimGeneric):
         self._current_stim_sequence = None
         self._current_pulse_interval = None
         self.device_type = "RehastimP24"
+        self._safety = True
 
         super().__init__(port, device_type=self.device_type, show_log=self.show_log)
 
@@ -115,6 +107,7 @@ class RehastimP24(RehastimGeneric):
         voltage_level : str
             Current voltage level.
         """
+        from pyScienceMode2.enums import HighVoltage
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.lib.smpt_send_get_stim_status(self.device, packet_number)
@@ -125,7 +118,7 @@ class RehastimP24(RehastimGeneric):
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_stim_status_ack(self.device, stim_status_ack)
         stim_status = f"stim status : {stim_status_ack.stim_status}"
-        voltage_level = f"voltage level : {self.HIGH_VOLTAGE_MAPPING.get(stim_status_ack.high_voltage_level,'Unknown')}"
+        voltage_level = f"voltage level : {HighVoltage(stim_status_ack.high_voltage_level).name}"
         return stim_status, voltage_level
 
     def get_battery_status(self) -> tuple:
@@ -204,7 +197,7 @@ class RehastimP24(RehastimGeneric):
         )
 
     @staticmethod
-    def channel_number_to_channel_connector(no_channel):
+    def _channel_number_to_channel_connector(no_channel):
         """
         Converts the channel number to the corresponding channel and connector.
         For example, if the user enters no_channel 3,
@@ -267,16 +260,17 @@ class RehastimP24(RehastimGeneric):
         """
         if not sciencemode.lib.smpt_get_ll_init_ack(self.device, self.ll_init_ack):
             raise RuntimeError("Low level initialization failed.")
-        generic_error_check(self.ll_init_ack, self.ERROR_MAP)
+        generic_error_check(self.ll_init_ack)
 
     def start_ll_channel_config(
         self,
-        no_channel,
-        points=None,
-        stim_sequence: int = None,
-        pulse_interval: int | float = None,
+        no_channel: int,
+        points=list,
+        stim_sequence: int = 1,
+        pulse_interval: int | float = 50,
         safety: bool = True,
     ):
+        from pyScienceMode2 import Point
         """
         Starts the low level mode stimulation.
 
@@ -297,13 +291,17 @@ class RehastimP24(RehastimGeneric):
         self._current_stim_sequence = stim_sequence
         self._current_pulse_interval = pulse_interval
         self.log("Low level stimulation started")
-
         positive_area = 0
         negative_area = 0
 
-        if points is None or len(points) == 0:
+        if not isinstance(points, list):
+            raise TypeError("points must be a list.")
+        if not points:
             raise ValueError("Please provide at least one point for stimulation.")
-        channel, connector = self.channel_number_to_channel_connector(no_channel)
+        if not all(isinstance(point, Point) for point in points):
+            raise TypeError("All items in the points list must be instances of the Point class.")
+
+        channel, connector = self._channel_number_to_channel_connector(no_channel)
         ll_config = sciencemode.ffi.new("Smpt_ll_channel_config*")
 
         ll_config.enable_stimulation = True
@@ -339,7 +337,7 @@ class RehastimP24(RehastimGeneric):
         """
         if not sciencemode.lib.smpt_get_ll_channel_config_ack(self.device, self.ll_channel_config_ack):
             raise ValueError("Failed to get the ll_channel_config_ack.")
-        generic_error_check(self.ll_channel_config_ack, self.ERROR_MAP)
+        generic_error_check(self.ll_channel_config_ack)
 
     def update_ll_channel_config(
         self, upd_list_point, no_channel=None, stim_sequence: int = None, pulse_interval: int | float = None
@@ -391,7 +389,7 @@ class RehastimP24(RehastimGeneric):
             If flag is set to True ,stop stimulation if one channel has an error.
         """
         if self.stimulation_started:
-            self.stop_stimulation()
+            self.end_stimulation()
         self.list_channels = list_channels
         check_unique_channel(list_channels)
         self.electrode_number = calc_electrode_number(self.list_channels)
@@ -423,28 +421,30 @@ class RehastimP24(RehastimGeneric):
         """
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
+
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
                 raise RuntimeError("Error update: all channels have not been initialised")
-        self.list_channels = upd_list_channels
 
+        self.list_channels = upd_list_channels
+        self._safety = safety
         ml_update = sciencemode.ffi.new("Smpt_ml_update*")
         ml_update.packet_number = self.get_next_packet_number()
 
-        #  Check if points are provided for each channel stimulated
         for channel in upd_list_channels:
-            if not channel.is_pulse_symmetric(safety=safety):
+            if safety and not channel.is_pulse_symmetric():
                 raise ValueError(
                     f"Pulse for channel {channel._no_channel} is not symmetric. "
                     f"Please put the same positive and negative current."
                 )
+            #  Check if points are provided for each channel stimulated
             if not channel.list_point:
                 raise ValueError(
                     "No stimulation point provided for channel {}. "
                     "Please either provide an amplitude and pulse width for a biphasic stimulation."
                     "Or specify specific stimulation points.".format(channel._no_channel)
-                )
+                    )
             channel_index = channel._no_channel - 1
             ml_update.enable_channel[channel_index] = True
             ml_update.channel_config[channel_index].period = channel._period
@@ -473,9 +473,7 @@ class RehastimP24(RehastimGeneric):
             self._get_last_ack()
         self.stimulation_started = True
 
-    def update_stimulation(
-        self, upd_list_channels: list, stimulation_duration: int | float = None, safety: bool = True
-    ):
+    def update_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
         """
         Update the ml stimulation on the device with new channel configurations.
 
@@ -485,13 +483,11 @@ class RehastimP24(RehastimGeneric):
             Channels to stimulate.
         stimulation_duration : int | float
             Duration of the updated stimulation in seconds.
-        safety : bool
-            Set to True if you want to check the pulse symmetry. False otherwise.
         """
 
-        self.start_stimulation(upd_list_channels, stimulation_duration, safety)
+        self.start_stimulation(upd_list_channels, stimulation_duration,self._safety)
 
-    def stop_stimulation(self):
+    def end_stimulation(self):
         """
         Stop the mid level stimulation.
         """

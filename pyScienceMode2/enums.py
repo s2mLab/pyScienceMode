@@ -121,3 +121,30 @@ class RehastimP24Commands(Enum):
     Smpt_Cmd_Sl_Set_Bluetooth_Ack = (169,)
     Smpt_Cmd_Sl_Set_Device_Id = (170,)
     Smpt_Cmd_Sl_Set_Device_Id_Ack = (171,)
+
+
+class HighVoltage(Enum):
+    Voltage_Default = 0
+    Voltage_Off = 1
+    High_Voltage_30V = 2
+    High_Voltage_60V = 3
+    High_Voltage_90V = 4
+    High_Voltage_120V = 5
+    High_Voltage_150V = 6
+
+
+class ErrorCode(Enum):
+    NoError = (0, None)
+    TransferError = (1, "Transfer error.")
+    ParameterError = (2, "Parameter error.")
+    ProtocolError = (3, "Protocol error.")
+    TimeoutError = (5, "Timeout error.")
+    CurrentLevelNotInitialized = (7, "Current level not initialized. Close the current level or initialize it.")
+    ElectrodeError = (10, "Electrode error.")
+    InvalidCommandError = (11, "Invalid command error.")
+
+    def __new__(cls, value, message):
+        member = object.__new__(cls)
+        member._value_ = value
+        member.message = message
+        return member

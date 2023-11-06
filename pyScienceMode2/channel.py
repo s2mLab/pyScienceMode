@@ -97,7 +97,7 @@ class Channel:
             f"{self._enable_low_frequency=}"
         )
 
-    def is_pulse_symmetric(self, safety=True):
+    def is_pulse_symmetric(self):
         """
         Checks if the pulse is symmetric by ensuring the positive area is equal to the negative area.
 
@@ -111,8 +111,6 @@ class Channel:
         bool:
             True if the pulse is symmetric or if the safety check is disabled, otherwise False.
         """
-        if not safety:
-            return True
 
         positive_area = 0
         negative_area = 0

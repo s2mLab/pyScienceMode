@@ -40,7 +40,7 @@ channel_3 = Channel(
 )
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastim is connected
+stimulator = St(port="COM4", show_log=True)  # Enter the port on which the rehastim is connected
 
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
@@ -53,7 +53,7 @@ In this level you can get several information about the device.
 """
 
 # stimulator.get_battery_status()
-# stimulator.get_stim_status()
+print(stimulator.get_stim_status())
 # stimulator.get_main_status()
 # stimulator.get_all()
 # stimulator.reset()
@@ -74,11 +74,13 @@ point2 = Point(500, -20)
 point3 = Point(500, 10)
 point4 = Point(500, -10)
 
+bla = 45
 # Add the points you want to use to the list
 list_stimulation_points.append(point1)
 list_stimulation_points.append(point2)
 list_stimulation_points.append(point3)
 list_stimulation_points.append(point4)
+# list_stimulation_points.append(bla)
 
 """
 Start the ll stimulation with the list of points provided. 
@@ -138,7 +140,7 @@ If you set the safety flag to False, it will not  check if the stimulation point
 for a muscle loading and unloading phase. 
 """
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=False)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=True)
 
 # You can modify some parameters during the stimulation.
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.
@@ -152,17 +154,18 @@ point1.set_amplitude(10)
 point2.set_amplitude(-10)
 point5 = channel_1.add_point(500, 15)
 point6 = channel_1.add_point(500, -15)
+point7 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.
 """
-stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5, safety=False)
+stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5)
 
 """
 Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.
 To restart a stimulation you have to initialize the level again
 """
-stimulator.stop_stimulation()
+stimulator.end_stimulation()
 
 """
 Close the port and disconnect the Pc and the RehastimP24.

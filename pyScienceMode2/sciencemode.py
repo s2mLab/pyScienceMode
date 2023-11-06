@@ -6,7 +6,7 @@ See ScienceMode2 - Description and protocol for more information.
 import serial
 import time
 import threading
-from pyScienceMode2.utils import *
+from pyScienceMode2.utils import packet_construction, signed_int
 from pyScienceMode2.acks import (
     motomed_error_ack,
     rehastim_error,
@@ -126,8 +126,11 @@ class RehastimGeneric:
         self.__watchdog_thread_started = False
         self.command_send = []  # Command sent to the rehastim
         self.ack_received = []  # Command received by the rehastim
+
+        from pyScienceMode2 import Rehastim2Commands,RehastimP24Commands
         self.Rehastim2Commands = Rehastim2Commands
         self.RehastimP24Commands = RehastimP24Commands
+
         self.error_occured = (
             False  # If the stimulation is not working and error occured flag set to true, raise an error
         )
@@ -270,6 +273,7 @@ class RehastimGeneric:
         """
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
+        from pyScienceMode2 import Rehastim2Commands
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == "Rehastim2":
             tic = time.time()
@@ -389,7 +393,6 @@ class RehastimGeneric:
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
         while 1 and self.reha_connected:
-            print("2")
             if time.time() - self.time_last_cmd > 0.8:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
             time.sleep(0.8)
