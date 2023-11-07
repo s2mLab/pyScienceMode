@@ -67,7 +67,7 @@ class RehastimGeneric:
             COM port of the Rehastim.
         show_log: bool | str
             If True, all logs of the communication will be printed.
-            If "Partial", only specific logs will be printed.
+            If "Status", only specific logs will be printed.
             If False, no logs will be printed.
         with_motomed : bool
             If the motomed is connected to the Rehastim, put this flag to True.
@@ -165,18 +165,18 @@ class RehastimGeneric:
             packet_number = sciencemode.lib.smpt_packet_number_generator_next(self.device)
             return packet_number
 
-    def log(self, partial_msg: str, full_msg: str = None):
+    def log(self, status_msg: str, full_msg: str = None):
         """
         Log messages based on the show_log level.
 
         Parameters:
-        - partial_msg: The message to show when show_log is "Partial" or True.
+        - status_msg: The message to show when show_log is "Status" or True.
         - full_msg: The additional message to show when show_log is True.
         """
         if self.show_log is True and full_msg:
             print(full_msg)
-        if self.show_log is True or self.show_log == "Partial":
-            print(partial_msg)
+        if self.show_log is True or self.show_log == "Status":
+            print(status_msg)
 
     def _get_current_data(self):
         """

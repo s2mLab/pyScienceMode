@@ -14,7 +14,7 @@ list_channels = []
 # list which contains the points you want to use
 list_stimulation_points = []
 
-# Create an object channel
+# Create an object channel for mid-level stimulation
 channel_1 = Channel(
     no_channel=1, name="Biceps", amplitude=40.1, pulse_width=500, frequency=30, device_type="RehastimP24"
 )
@@ -24,14 +24,14 @@ channel_2 = Channel(
     amplitude=40,
     pulse_width=500,
     name="Triceps",
-    frequency=35,
-    ramp=5,
+    frequency=35, #TODO flag max freq 1000HZ
+    ramp=16,
     device_type="RehastimP24",
 )
 channel_3 = Channel(
     mode="Triplet",
     no_channel=3,
-    amplitude=40,
+    amplitude=20,
     pulse_width=500,
     name="Triceps",
     frequency=15,
@@ -40,12 +40,12 @@ channel_3 = Channel(
 )
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastimP24 is connected
+stimulator = St(port="COM4", show_log="Status")  # Enter the port on which the rehastimP24 is connected
 
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
 list_channels.append(channel_2)
-# list_channels.append(channel_3)
+list_channels.append(channel_3)
 
 """
 General level commands. 
@@ -79,7 +79,7 @@ list_stimulation_points.append(point4)
 
 
 """
-Start the ll stimulation with the list of points provided. 
+Start the low level stimulation with the list of points provided. 
 It is possible to update the parameters of the point by giving a new list of points.
 If you set the safety flag to False, it will not check if the stimulation points  provided are symmetrical
 for a muscle loading and unloading phase. 
@@ -138,7 +138,7 @@ If you set the safety flag to False, it will not  check if the stimulation point
 for a muscle loading and unloading phase. 
 """
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=False)
+stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=3.5, safety=True)
 
 # You can modify some parameters during the stimulation.
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.
@@ -150,9 +150,9 @@ channel_2.set_frequency(10)
 # You can also create new points during the stimulation.
 point1.set_amplitude(10)
 point2.set_amplitude(-10)
-point5 = channel_1.add_point(500, 15)
-point6 = channel_1.add_point(500, -15)
-point7 = channel_1.add_point(500, -15)
+
+# point6 = channel_1.add_point(500, -15)
+# point7 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.

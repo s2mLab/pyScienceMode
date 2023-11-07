@@ -30,11 +30,11 @@ class RehastimP24(RehastimGeneric):
             Port of the computer connected to the Rehastim.
         show_log: bool | str
             If True, all logs of the communication will be printed.
-            If "Partial", only basic logs will be printed.
+            If "Status", only basic logs will be printed.
             If False, no logs will be printed.
         """
-        if show_log not in [True, False, "Partial"]:
-            raise ValueError("show_log must be True, False, or 'Partial'.")
+        if show_log not in [True, False, "Status"]:
+            raise ValueError("show_log must be True, False, or 'Status'.")
 
         self.list_channels = None
         self.electrode_number = 0
@@ -294,14 +294,11 @@ class RehastimP24(RehastimGeneric):
         from pyScienceMode2 import Point
 
         self.ll_init()
-        self._current_no_channel = no_channel
-        self._current_stim_sequence = stim_sequence
-        self._current_pulse_interval = pulse_interval
-        self.log("Low level stimulation started")
 
-        positive_area = 0
-        negative_area = 0
-
+        if not isinstance(stim_sequence, int):
+            raise TypeError("Please provide a int type for stim_sequence")
+        if not isinstance(pulse_interval, int|float):
+            raise TypeError("Please provide a int or float type for pulse_interval")
         if not isinstance(points, list):
             raise TypeError("points must be a list.")
         if not points:
@@ -311,6 +308,16 @@ class RehastimP24(RehastimGeneric):
                 raise TypeError(
                     f"Item at index {index} is not a Point instance, got {type(point).__name__} type instead."
                 )
+        if not 10 < pulse_interval < 2000:
+            raise ValueError(f"pulse_interval min = 10ms, max = 2000ms, value given {pulse_interval}ms. ")
+
+        self._current_no_channel = no_channel
+        self._current_stim_sequence = stim_sequence
+        self._current_pulse_interval = pulse_interval
+        self.log("Low level stimulation started")
+
+        positive_area = 0
+        negative_area = 0
 
         channel, connector = self._channel_number_to_channel_connector(no_channel)
         ll_config = sciencemode.ffi.new("Smpt_ll_channel_config*")
@@ -331,7 +338,9 @@ class RehastimP24(RehastimGeneric):
                 else:
                     negative_area -= point.amplitude * point.pulse_width
             if abs(positive_area - negative_area) > 1e-6:
-                raise ValueError("The points are not symmetric based on amplitude.")
+                raise ValueError("The points are not symmetric based on amplitude.\n"
+                                 "Polarization and depolarization must have the same area.\n"
+                                 "Or set safety=False in stim_start_one_channel_stimulation.")
 
         for _ in range(stim_sequence):
             ll_config.packet_number = self.get_next_packet_number()
@@ -435,6 +444,8 @@ class RehastimP24(RehastimGeneric):
         """
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
+        elif not isinstance(stimulation_duration,int|float) :
+            raise TypeError("Please provide a int or float type for stimulation duration")
 
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
@@ -449,8 +460,9 @@ class RehastimP24(RehastimGeneric):
         for channel in upd_list_channels:
             if safety and not channel.is_pulse_symmetric():
                 raise ValueError(
-                    f"Pulse for channel {channel._no_channel} is not symmetric. "
-                    f"Please put the same positive and negative current."
+                    f"Pulse for channel {channel._no_channel} is not symmetric.\n"
+                    f"Polarization and depolarization must have the same area.\n"
+                    f"Or set safety=False in start_stimulation."
                 )
             #  Check if points are provided for each channel stimulated
             if not channel.list_point:

@@ -212,7 +212,7 @@ class Channel:
         """
         if self.device_type != "Rehastim2" and self.device_type != "RehastimP24":
             raise ValueError(
-                "Error : Device type must be Rehastim2 or RehastimP24. Device type given : %s" % self.device_type
+                "Error : Device type must be either Rehastim2 or RehastimP24. Device type given : %s" % self.device_type
             )
         return self.device_type
 
