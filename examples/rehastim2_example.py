@@ -1,17 +1,22 @@
 # Import Stimulator class
 from pyScienceMode2 import Rehastim2 as St
+
+# Import Channel class
 from pyScienceMode2 import Channel as Ch
 from time import sleep
 
-# Import Channel class
-
-
-# Create a list of channels
+#  Create a list of channels
 list_channels = []
 
 # Create all channels possible
 channel_1 = Ch(
-    mode="Single", no_channel=2, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps",device_type="Rehastim2"
+    mode="Single",
+    no_channel=2,
+    amplitude=50,
+    pulse_width=100,
+    enable_low_frequency=False,
+    name="Biceps",
+    device_type="Rehastim2",
 )
 
 channel_2 = Ch(device_type="Rehastim2")

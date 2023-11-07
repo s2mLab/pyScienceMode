@@ -1,4 +1,3 @@
-
 import time
 from pyScienceMode2.utils import check_unique_channel, calc_electrode_number, generic_error_check
 from pyScienceMode2 import RehastimGeneric
@@ -66,7 +65,10 @@ class RehastimP24(RehastimGeneric):
         packet_number = self.get_next_packet_number()
         sciencemode.lib.smpt_send_get_extended_version(self.device, packet_number)
         if self.show_log is True:
-            print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Extended_Version).name)
+            print(
+                "Command sent to rehastim:",
+                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Extended_Version).name,
+            )
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
         fw_hash = f"fw_hash :{extended_version_ack.fw_hash}"
@@ -107,6 +109,7 @@ class RehastimP24(RehastimGeneric):
             Current voltage level.
         """
         from pyScienceMode2.enums import HighVoltage
+
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
         packet_number = self.get_next_packet_number()
         sciencemode.lib.smpt_send_get_stim_status(self.device, packet_number)
@@ -137,7 +140,9 @@ class RehastimP24(RehastimGeneric):
         sciencemode.lib.smpt_send_get_battery_status(self.device, packet_number)
 
         if self.show_log is True:
-            print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Battery_Status).name)
+            print(
+                "Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Battery_Status).name
+            )
 
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_battery_status_ack(self.device, battery_status_ack)
@@ -235,7 +240,7 @@ class RehastimP24(RehastimGeneric):
         """
         Initialize the lower level of the device. The low-level is used for defining a custom shaped pulse.
         Each stimulation pulse needs to triggered from the computer.
-        You can only stimulate one channel. This is useful for the execution of stimulation pulses with a high frequency.
+        You can only stimulate one channel. This is useful for the execution of stimulation pulses with a high frequency
         """
         ll_init = sciencemode.ffi.new("Smpt_ll_init*")
         ll_init.high_voltage_level = (
@@ -265,12 +270,11 @@ class RehastimP24(RehastimGeneric):
     def stim_start_one_channel_stimulation(
         self,
         no_channel: int,
-        points=list,
-        stim_sequence: int = 1,
-        pulse_interval: int | float = 50,
+        points: list,
+        stim_sequence: int,
+        pulse_interval: int | float,
         safety: bool = True,
     ):
-
         """
         Starts the low level mode stimulation.
 
@@ -288,11 +292,13 @@ class RehastimP24(RehastimGeneric):
             Set to True if you want to check the pulse symmetry. False otherwise.
         """
         from pyScienceMode2 import Point
+
         self.ll_init()
         self._current_no_channel = no_channel
         self._current_stim_sequence = stim_sequence
         self._current_pulse_interval = pulse_interval
         self.log("Low level stimulation started")
+
         positive_area = 0
         negative_area = 0
 
@@ -300,8 +306,11 @@ class RehastimP24(RehastimGeneric):
             raise TypeError("points must be a list.")
         if not points:
             raise ValueError("Please provide at least one point for stimulation.")
-        if not all(isinstance(point, Point) for point in points):
-            raise TypeError("All items in the points list must be instances of the Point class.")
+        for index, point in enumerate(points):
+            if not isinstance(point, Point):
+                raise TypeError(
+                    f"Item at index {index} is not a Point instance, got {type(point).__name__} type instead."
+                )
 
         channel, connector = self._channel_number_to_channel_connector(no_channel)
         ll_config = sciencemode.ffi.new("Smpt_ll_channel_config*")
@@ -328,7 +337,10 @@ class RehastimP24(RehastimGeneric):
             ll_config.packet_number = self.get_next_packet_number()
             sciencemode.lib.smpt_send_ll_channel_config(self.device, ll_config)
             if self.show_log is True:
-                print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Channel_Config).name)
+                print(
+                    "Command sent to rehastim:",
+                    self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Channel_Config).name,
+                )
             time.sleep(pulse_interval / 1000)
             self._get_last_ack()
             self.check_ll_channel_config_ack()
@@ -446,7 +458,7 @@ class RehastimP24(RehastimGeneric):
                     "No stimulation point provided for channel {}. "
                     "Please either provide an amplitude and pulse width for a biphasic stimulation."
                     "Or specify specific stimulation points.".format(channel._no_channel)
-                    )
+                )
             channel_index = channel._no_channel - 1
             ml_update.enable_channel[channel_index] = True
             ml_update.channel_config[channel_index].period = channel._period
@@ -487,7 +499,7 @@ class RehastimP24(RehastimGeneric):
             Duration of the updated stimulation in seconds.
         """
 
-        self.start_stimulation(upd_list_channels, stimulation_duration,self._safety)
+        self.start_stimulation(upd_list_channels, stimulation_duration, self._safety)
 
     def end_stimulation(self):
         """

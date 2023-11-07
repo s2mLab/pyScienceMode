@@ -136,6 +136,7 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
         Packet constructed which will be sent.
     """
     from pyScienceMode2 import Rehastim2Commands
+
     start_byte = 0xF0
     stop_byte = 0x0F
     stuffing_byte = 0x81
@@ -208,6 +209,7 @@ def _stuff_byte(byte: int) -> int:
 
 def generic_error_check(ack_object):
     from pyScienceMode2.enums import ErrorCode
+
     # if ack_object.result in error_map and error_map[ack_object.result] is not None:
     #     raise ValueError(error_map[ack_object.result])
     error_code = ErrorCode(ack_object.result)

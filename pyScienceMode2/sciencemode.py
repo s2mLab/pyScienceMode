@@ -3,9 +3,12 @@ Class to control the RehaMove 2 device from the ScienceMode 2 protocol.
 See ScienceMode2 - Description and protocol for more information.
 """
 
+import threading
 import serial
 import time
-import threading
+
+import numpy as np
+
 from pyScienceMode2.utils import packet_construction, signed_int
 from pyScienceMode2.acks import (
     motomed_error_ack,
@@ -16,7 +19,6 @@ from pyScienceMode2.acks import (
     start_stimulation_ack,
 )
 from sciencemode_p24 import sciencemode
-import numpy as np
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
@@ -45,6 +47,7 @@ class RehastimGeneric:
     STUFFING_BYTE : list
         Stuffed byte of protocol.
     """
+
     BAUD_RATE = 460800
     VERSION = 0x01
     START_BYTE = 0xF0
@@ -126,7 +129,8 @@ class RehastimGeneric:
         self.command_send = []  # Command sent to the rehastim
         self.ack_received = []  # Command received by the rehastim
 
-        from pyScienceMode2 import Rehastim2Commands,RehastimP24Commands
+        from pyScienceMode2 import Rehastim2Commands, RehastimP24Commands
+
         self.Rehastim2Commands = Rehastim2Commands
         self.RehastimP24Commands = RehastimP24Commands
 
@@ -187,7 +191,10 @@ class RehastimGeneric:
             if not ret:
                 print("Failed to get current data.")
             if self.show_log is True:
-                print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name)
+                print(
+                    "Command sent to rehastim:",
+                    self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name,
+                )
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
@@ -272,6 +279,7 @@ class RehastimGeneric:
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
         from pyScienceMode2 import Rehastim2Commands
+
         print("thread started")
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == "Rehastim2":

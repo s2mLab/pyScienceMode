@@ -1,5 +1,3 @@
-import time
-
 from pyScienceMode2 import Channel, Point
 from pyScienceMode2 import RehastimP24 as St
 
@@ -42,7 +40,7 @@ channel_3 = Channel(
 )
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastim is connected
+stimulator = St(port="COM4", show_log="Partial")  # Enter the port on which the rehastimP24 is connected
 
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
@@ -87,7 +85,9 @@ If you set the safety flag to False, it will not check if the stimulation points
 for a muscle loading and unloading phase. 
 """
 
-stimulator.stim_start_one_channel_stimulation(no_channel=1, points=list_stimulation_points, stim_sequence=500, pulse_interval=10)
+stimulator.stim_start_one_channel_stimulation(
+    no_channel=1, points=list_stimulation_points, stim_sequence=500, pulse_interval=10
+)
 
 # You can update the configuration of the point during the stimulation.
 point1.set_amplitude(30)

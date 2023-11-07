@@ -4,9 +4,24 @@ See ScienceMode2 - Description and protocol for more information.
 """
 from typing import Tuple
 import time
-from pyScienceMode2.acks import stop_stimulation_ack,start_stimulation_ack,init_stimulation_ack,get_mode_ack,rehastim_error
+from pyScienceMode2.acks import (
+    stop_stimulation_ack,
+    start_stimulation_ack,
+    init_stimulation_ack,
+    get_mode_ack,
+    rehastim_error,
+)
 from pyScienceMode2 import channel
-from pyScienceMode2.utils import signed_int, check_stimulation_interval, check_inter_pulse_interval, check_low_frequency_factor, check_unique_channel, check_list_channel_order,calc_electrode_number,packet_construction
+from pyScienceMode2.utils import (
+    signed_int,
+    check_stimulation_interval,
+    check_inter_pulse_interval,
+    check_low_frequency_factor,
+    check_unique_channel,
+    check_list_channel_order,
+    calc_electrode_number,
+    packet_construction,
+)
 from pyScienceMode2 import RehastimGeneric
 from pyScienceMode2 import _Motomed
 
@@ -56,7 +71,7 @@ class Rehastim2(RehastimGeneric):
 
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
         self.stimulation_active = True
-        self._start_thread_catch_ack() # Start the thread which catches rehastim and motomed data
+        self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -368,5 +383,3 @@ class Rehastim2(RehastimGeneric):
             Angle of the Motomed.
         """
         return self.get_torque()
-
-

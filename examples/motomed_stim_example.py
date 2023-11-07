@@ -5,6 +5,7 @@ from pyScienceMode2 import Channel as Ch
 
 def init_rehastim():
     # Create a list of channels
+
     list_channels = []
 
     # Create all channels possible

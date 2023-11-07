@@ -388,7 +388,7 @@ class Channel:
         self.check_value_param()
         self.generate_pulse()
 
-    def set_device_type(self,device_type : str):
+    def set_device_type(self, device_type: str):
         """
         Set the device (Rehastim2 or RehastimP24) for a channel
 
