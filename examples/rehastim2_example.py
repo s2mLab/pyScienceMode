@@ -11,51 +11,32 @@ list_channels = []
 # Create all channels possible
 channel_1 = Ch(
     mode="Single",
-    no_channel=2,
+    no_channel=1,
     amplitude=50,
     pulse_width=100,
-    enable_low_frequency=False,
+    enable_low_frequency=True,
     name="Biceps",
-    device_type="Rehastim2",
-)
-channel_2 = Ch(
-    mode="Single",
-    no_channel=3,
-    amplitude=50,
-    pulse_width=100,
-    enable_low_frequency=False,
-    name="Biceps",
-    device_type="Rehastim2",
+    device_type="Rehastim2"
 )
 
+channel_2 = Ch(device_type="Rehastim2")
+channel_2.set_mode("Single")
+channel_2.set_no_channel(2)
+channel_2.set_amplitude(20)
+channel_2.set_pulse_width(100)
+channel_2.set_name("Triceps")
+channel_2.set_device_type("Rehastim2")
 
-# channel_2 = Ch(device_type="Rehastim2") #TODO channel 2
-# channel_2.set_mode("Single")
-# channel_2.set_no_channel(1)
-# channel_2.set_amplitude(20)
-# channel_2.set_pulse_width(100)
-# channel_2.set_name("Triceps")
-# channel_2.set_device_type("Rehastim2")
-
-channel_3 = Ch(device_type="Rehastim2")
-channel_3.set_mode("Single")
-channel_3.set_no_channel(4)
-channel_3.set_amplitude(20)
-channel_3.set_pulse_width(100)
-channel_3.set_name("Triceps")
-# channel_3.set_device_type("Rehastim2")
-
-channel_3 = Ch("Doublet", 4, 50, 100, device_type="Rehastim2")
-# channel_4 = Ch("Single", 4, 50, 100, device_type="Rehastim2")
-# channel_5 = Ch("Triplet", 5, 50, 100, device_type="Rehastim2")
-# channel_6 = Ch("Single", 6, 50, 100, True, device_type="Rehastim2")
-# channel_7 = Ch("Single", 7, 50, 100, device_type="Rehastim2")
-# channel_8 = Ch("Single", 8, 50, 100, device_type="Rehastim2")
+channel_3 = Ch("Doublet", 3, 50, 100, device_type="Rehastim2")
+channel_4 = Ch("Single", 4, 50, 100, device_type="Rehastim2")
+channel_5 = Ch("Triplet", 5, 50, 100, device_type="Rehastim2")
+channel_6 = Ch("Single", 6, 50, 100, True, device_type="Rehastim2")
+channel_7 = Ch("Single", 7, 50, 100, device_type="Rehastim2")
+channel_8 = Ch("Single", 8, 50, 100, device_type="Rehastim2")
 
 # Choose which channel will be used
 list_channels.append(channel_1)
-list_channels.append(channel_2)
-list_channels.append(channel_3)
+# list_channels.append(channel_3)
 # list_channels.append(channel_5)
 # list_channels.append(channel_6)
 # list_channels.append(channel_7)
@@ -63,7 +44,7 @@ list_channels.append(channel_3)
 
 # Create our object Stimulator
 stimulator = St(
-    port="COM3",  # Enter the port on which the stimulator is connected
+    port="/dev/ttyUSB0",  # Enter the port on which the stimulator is connected
     show_log=True,
 )
 

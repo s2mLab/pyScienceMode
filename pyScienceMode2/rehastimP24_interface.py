@@ -308,8 +308,8 @@ class RehastimP24(RehastimGeneric):
                 raise TypeError(
                     f"Item at index {index} is not a Point instance, got {type(point).__name__} type instead."
                 )
-        if not 10 < pulse_interval < 2000:
-            raise ValueError(f"pulse_interval min = 10ms, max = 2000ms, value given {pulse_interval}ms. ")
+        # if not 10 < pulse_interval < 2000:
+        #     raise ValueError(f"pulse_interval min = 10ms, max = 2000ms, value given {pulse_interval}ms. ")
 
         self._current_no_channel = no_channel
         self._current_stim_sequence = stim_sequence
@@ -534,10 +534,10 @@ class RehastimP24(RehastimGeneric):
         """
 
         sciencemode.lib.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
-
         num_channels = len(self.list_channels)
         for j in range(num_channels):
             channel_state = self.ml_get_current_data_ack.channel_data.channel_state[j]
+            print("channel_state : ", channel_state)
             if channel_state != sciencemode.lib.Smpt_Ml_Channel_State_Ok:
                 if channel_state == sciencemode.lib.Smpt_Ml_Channel_State_Electrode_Error:
                     error_message = f"Electrode error on channel {j+1}"

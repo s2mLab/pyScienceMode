@@ -279,7 +279,6 @@ class RehastimGeneric:
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
         from pyScienceMode2 import Rehastim2Commands
-
         print("thread started")
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == "Rehastim2":
@@ -375,16 +374,16 @@ class RehastimGeneric:
         else:
             angle = 255 * signed_int(packet[7:8]) + packet[8]
         if packet[10 + count] == 129:
-            speed = signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
+            speed = signed_int(packet[10 + count + 1: 10 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
-            speed = signed_int(packet[10 + count : 11 + count])
+            speed = signed_int(packet[10 + count: 11 + count])
 
         if packet[12 + count] == 129:
-            torque = signed_int(packet[12 + count + 1 : 12 + count + 2]) ^ self.STUFFING_KEY
+            torque = signed_int(packet[12 + count + 1: 12 + count + 2]) ^ self.STUFFING_KEY
             count += 1
         else:
-            torque = signed_int(packet[12 + count : 13 + count])
+            torque = signed_int(packet[12 + count: 13 + count])
 
         actual_values = np.array([angle, speed, torque])[:, np.newaxis]
         if self.motomed_values is None:
