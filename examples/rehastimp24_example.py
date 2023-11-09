@@ -15,37 +15,46 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel for mid-level stimulation
-channel_1 = Channel(
-    no_channel=2, name="Biceps", amplitude=150, pulse_width=100, frequency=200, device_type="RehastimP24"
-)
+channel_1 = Channel(no_channel=1, name="Biceps", amplitude=15, pulse_width=100, frequency=20, device_type="RehastimP24")
 channel_2 = Channel(
     mode="Single",
+    no_channel=2,
+    amplitude=20,
+    pulse_width=500,
+    name="Triceps",
+    frequency=50,
+    ramp=16,
+    device_type="RehastimP24",
+)
+channel_3 = Channel(
+    mode="Doublet",
+    no_channel=3,
+    amplitude=20,
+    pulse_width=500,
+    name="Triceps",
+    frequency=55,
+    ramp=5,
+    device_type="RehastimP24",
+)
+channel_4 = Channel(
+    mode="Triplet",
     no_channel=4,
     amplitude=20,
     pulse_width=500,
     name="Triceps",
-    frequency=66.67,
-    ramp=16,
+    frequency=15,
+    ramp=1,
     device_type="RehastimP24",
 )
-# channel_3 = Channel(
-#     mode="Triplet",
-#     no_channel=3,
-#     amplitude=20,
-#     pulse_width=500,
-#     name="Triceps",
-#     frequency=15,
-#     ramp=15,
-#     device_type="RehastimP24",
-# )
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log=True)  # Enter the port on which the rehastimP24 is connected
+stimulator = St(port="COM4", show_log=False)  # Enter the port on which the rehastimP24 is connected
 
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
 list_channels.append(channel_2)
-# list_channels.append(channel_3)
+list_channels.append(channel_3)
+list_channels.append(channel_4)
 
 """
 General level commands. 
@@ -53,10 +62,15 @@ In this level you can get several information about the device.
 """
 
 # stimulator.get_battery_status()
-# print(stimulator.get_stim_status())
+print(stimulator.get_stim_status())
 # stimulator.get_main_status()
 # stimulator.get_all()
 # stimulator.reset()
+
+"""
+Mid level commands. 
+In this level you can define a stimulation pattern. You can stimulate several channels at the same time
+"""
 
 """
 Initialize the channels list given. Use it before starting the stimulation or after stopping it.
@@ -72,8 +86,8 @@ Otherwise, you can use the default biphasic shape pulse mode="Single" or "Double
 
 point1 = channel_1.add_point(100, 20)
 point2 = channel_1.add_point(100, -20)
-# point3 = channel_1.add_point(100, 20)
-# point4 = channel_1.add_point(100, -20)
+point3 = channel_1.add_point(100, 20)
+point4 = channel_1.add_point(100, -20)
 
 # point5 = channel_2.add_point(100, 15)
 # point6 = channel_2.add_point(100, -15)
@@ -85,20 +99,20 @@ for a muscle loading and unloading phase.
 """
 
 stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=5, safety=True)
-channel_1.set_frequency(10)
+
 # You can modify some parameters during the stimulation.
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.
-# channel_2.set_amplitude(15)
-# channel_2.set_pulse_width(500)
-# channel_2.set_frequency(10)
+channel_2.set_amplitude(15)
+channel_2.set_pulse_width(500)
+channel_2.set_frequency(10)
 
 # If you have created your own shape pulse, you can modify the amplitude and the pulse width of the points.
 # You can also create new points during the stimulation.
 point1.set_amplitude(10)
 point2.set_amplitude(-10)
 
-# point6 = channel_1.add_point(500, 15)
-# point7 = channel_1.add_point(500, -15)
+point5 = channel_1.add_point(500, 15)
+point6 = channel_1.add_point(500, -15)
 
 """
 Restart the stimulation with the new point configuration for 5s.
@@ -138,33 +152,28 @@ It is possible to update the parameters of the point by giving a new list of poi
 If you set the safety flag to False, it will not check if the stimulation points  provided are symmetrical
 for a muscle loading and unloading phase. 
 """
-#For exemple if you
+
 stimulator.stim_start_one_channel_stimulation(
     no_channel=1, points=list_stimulation_points, stim_sequence=500, pulse_interval=10
 )
 
 # You can update the configuration of the point during the stimulation.
-point1.set_amplitude(30)
-point1.set_pulse_width(350)
-point2.set_amplitude(-30)
-point2.set_pulse_width(350)
-# point3.set_amplitude(20)
-# point3.set_pulse_width(350)
-# point4.set_amplitude(-20)
-# point4.set_pulse_width(350)
+point11.set_amplitude(30)
+point11.set_pulse_width(350)
+point22.set_amplitude(-30)
+point22.set_pulse_width(350)
+# point33.set_amplitude(20)
+# point33.set_pulse_width(350)
+# point44.set_amplitude(-20)
+# point44.set_pulse_width(350)
 
 # Restart the stimulation with the new point configuration.
 stimulator.update_stim_one_channel(upd_list_point=list_stimulation_points)
 
 """
-Stop the ll stimulation and leave the low level but it does not disconnect the Pc and the RehastimP24.
+Stop the stimulation and leave the low level but it does not disconnect the Pc and the RehastimP24.
 """
-stimulator.ll_stop()
-
-"""
-Mid level commands. 
-In this level you can define a stimulation pattern. You can stimulate several channels at the same time
-"""
+stimulator.end_stim_one_channel()
 
 """
 Close the port and disconnect the Pc and the RehastimP24.

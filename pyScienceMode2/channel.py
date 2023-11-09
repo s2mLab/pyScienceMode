@@ -230,7 +230,9 @@ class Channel:
 
         if self.device_type == "RehastimP24":
             if self._period < 0.5 or self._period > 16383:
-                raise ValueError("Error : Frequency min = 0.6, max = 2000. Frequency given : %s Hz" % (1000/self._period))
+                raise ValueError(
+                    "Error : Frequency min = 0.6, max = 2000. Frequency given : %s Hz" % (1000 / self._period)
+                )
             if self._no_channel < 1 or self._no_channel > 8:
                 raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
             if self._amplitude < 0 or self._amplitude > 150:

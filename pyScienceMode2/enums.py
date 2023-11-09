@@ -139,8 +139,11 @@ class ErrorCode(Enum):
     ParameterError = (2, "Parameter error.")
     ProtocolError = (3, "Protocol error.")
     TimeoutError = (5, "Timeout error.")
-    CurrentLevelNotInitialized = (7, "Current level not initialized. Close the current level or initialize it.\n"
-                                     "Can be solved by disconnecting and reconnecting the device.")
+    CurrentLevelNotInitialized = (
+        7,
+        "Current level not initialized. Close the current level or initialize it.\n"
+        "Can be solved by disconnecting and reconnecting the device.",
+    )
     ElectrodeError = (10, "Electrode error.")
     InvalidCommandError = (11, "Invalid command error.")
 
@@ -149,3 +152,10 @@ class ErrorCode(Enum):
         member._value_ = value
         member.message = message
         return member
+
+
+class StimStatus(Enum):
+    Uninitialized = 0
+    Low_Level_Initialized = 1
+    Mid_Level_Initialized = 2
+    Mid_Level_Running = 3

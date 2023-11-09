@@ -16,7 +16,7 @@ channel_1 = Ch(
     pulse_width=100,
     enable_low_frequency=True,
     name="Biceps",
-    device_type="Rehastim2"
+    device_type="Rehastim2",
 )
 
 channel_2 = Ch(device_type="Rehastim2")

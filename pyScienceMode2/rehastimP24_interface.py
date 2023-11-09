@@ -1,5 +1,10 @@
 import time
-from pyScienceMode2.utils import check_unique_channel, calc_electrode_number, generic_error_check
+from pyScienceMode2.utils import (
+    check_unique_channel,
+    calc_electrode_number,
+    generic_error_check,
+    check_list_channel_order,
+)
 from pyScienceMode2 import RehastimGeneric
 from sciencemode_p24 import sciencemode
 
@@ -8,17 +13,6 @@ class RehastimP24(RehastimGeneric):
     """
     Class used for the communication with RehastimP24.
     """
-
-    ERROR_MAP = {
-        0: None,
-        1: "Transfer error.",
-        2: "Parameter error.",
-        3: "Protocol error.",
-        5: "Timeout error.",
-        7: "Current level not initialized. Close the current level or initialize it.",
-        10: "Electrode error.",
-        11: "Invalid command error.",
-    }
 
     def __init__(self, port: str, show_log: bool | str = False):
         """
@@ -108,7 +102,7 @@ class RehastimP24(RehastimGeneric):
         voltage_level : str
             Current voltage level.
         """
-        from pyScienceMode2.enums import HighVoltage
+        from pyScienceMode2.enums import HighVoltage, StimStatus
 
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
         packet_number = self.get_next_packet_number()
@@ -119,7 +113,7 @@ class RehastimP24(RehastimGeneric):
 
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_stim_status_ack(self.device, stim_status_ack)
-        stim_status = f"stim status : {stim_status_ack.stim_status}"
+        stim_status = f"stim status : {StimStatus(stim_status_ack.stim_status).name}"
         voltage_level = f"voltage level : {HighVoltage(stim_status_ack.high_voltage_level).name}"
         return stim_status, voltage_level
 
@@ -297,7 +291,7 @@ class RehastimP24(RehastimGeneric):
 
         if not isinstance(stim_sequence, int):
             raise TypeError("Please provide a int type for stim_sequence")
-        if not isinstance(pulse_interval, int|float):
+        if not isinstance(pulse_interval, int | float):
             raise TypeError("Please provide a int or float type for pulse_interval")
         if not isinstance(points, list):
             raise TypeError("points must be a list.")
@@ -308,8 +302,8 @@ class RehastimP24(RehastimGeneric):
                 raise TypeError(
                     f"Item at index {index} is not a Point instance, got {type(point).__name__} type instead."
                 )
-        # if not 10 < pulse_interval < 2000:
-        #     raise ValueError(f"pulse_interval min = 10ms, max = 2000ms, value given {pulse_interval}ms. ")
+        if not 0.5 < pulse_interval < 16383:
+            raise ValueError(f"pulse_interval min = 0.5ms, max = 16383ms, value given {pulse_interval}ms. ")
 
         self._current_no_channel = no_channel
         self._current_stim_sequence = stim_sequence
@@ -338,9 +332,11 @@ class RehastimP24(RehastimGeneric):
                 else:
                     negative_area -= point.amplitude * point.pulse_width
             if abs(positive_area - negative_area) > 1e-6:
-                raise ValueError("The points are not symmetric based on amplitude.\n"
-                                 "Polarization and depolarization must have the same area.\n"
-                                 "Or set safety=False in stim_start_one_channel_stimulation.")
+                raise ValueError(
+                    "The points are not symmetric based on amplitude.\n"
+                    "Polarization and depolarization must have the same area.\n"
+                    "Or set safety=False in stim_start_one_channel_stimulation."
+                )
 
         for _ in range(stim_sequence):
             ll_config.packet_number = self.get_next_packet_number()
@@ -387,7 +383,7 @@ class RehastimP24(RehastimGeneric):
             pulse_interval = self._current_pulse_interval
         self.stim_start_one_channel_stimulation(no_channel, upd_list_point, stim_sequence, pulse_interval)
 
-    def ll_stop(self):
+    def end_stim_one_channel(self):
         """
         Stop the device lower level.
         """
@@ -444,13 +440,15 @@ class RehastimP24(RehastimGeneric):
         """
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
-        elif not isinstance(stimulation_duration,int|float) :
+        elif not isinstance(stimulation_duration, int | float):
             raise TypeError("Please provide a int or float type for stimulation duration")
 
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
                 raise RuntimeError("Error update: all channels have not been initialised")
+
+        check_list_channel_order(upd_list_channels)
 
         self.list_channels = upd_list_channels
         self._safety = safety
@@ -464,6 +462,7 @@ class RehastimP24(RehastimGeneric):
                     f"Polarization and depolarization must have the same area.\n"
                     f"Or set safety=False in start_stimulation."
                 )
+
             #  Check if points are provided for each channel stimulated
             if not channel.list_point:
                 raise ValueError(
@@ -492,11 +491,11 @@ class RehastimP24(RehastimGeneric):
         total_time = 0
         while total_time < stimulation_duration:
             self._get_current_data()
+            self._get_last_ack()
             self.check_stimulation_errors()
             sleep_time = min(1, stimulation_duration - total_time)
             time.sleep(sleep_time)
             total_time += sleep_time
-            self._get_last_ack()
         self.stimulation_started = True
 
     def update_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
@@ -533,11 +532,11 @@ class RehastimP24(RehastimGeneric):
         Check if there is an error during the mid level stimulation.
         """
 
+        # self.ml_get_current_data_ack.packet_number = self.get_next_packet_number()
         sciencemode.lib.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
         num_channels = len(self.list_channels)
-        for j in range(num_channels):
+        for j in range(num_channels + 1):
             channel_state = self.ml_get_current_data_ack.channel_data.channel_state[j]
-            print("channel_state : ", channel_state)
             if channel_state != sciencemode.lib.Smpt_Ml_Channel_State_Ok:
                 if channel_state == sciencemode.lib.Smpt_Ml_Channel_State_Electrode_Error:
                     error_message = f"Electrode error on channel {j+1}"
