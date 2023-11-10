@@ -261,7 +261,7 @@ class RehastimP24(RehastimGeneric):
             raise RuntimeError("Low level initialization failed.")
         generic_error_check(self.ll_init_ack)
 
-    def stim_start_one_channel_stimulation(
+    def start_stim_one_channel_stimulation(
         self,
         no_channel: int,
         points: list,
@@ -335,7 +335,7 @@ class RehastimP24(RehastimGeneric):
                 raise ValueError(
                     "The points are not symmetric based on amplitude.\n"
                     "Polarization and depolarization must have the same area.\n"
-                    "Or set safety=False in stim_start_one_channel_stimulation."
+                    "Or set safety=False in start_stim_one_channel_stimulation."
                 )
 
         for _ in range(stim_sequence):
@@ -381,7 +381,7 @@ class RehastimP24(RehastimGeneric):
             no_channel = self._current_no_channel
         if pulse_interval is None:
             pulse_interval = self._current_pulse_interval
-        self.stim_start_one_channel_stimulation(no_channel, upd_list_point, stim_sequence, pulse_interval)
+        self.start_stim_one_channel_stimulation(no_channel, upd_list_point, stim_sequence, pulse_interval)
 
     def end_stim_one_channel(self):
         """
@@ -532,21 +532,22 @@ class RehastimP24(RehastimGeneric):
         Check if there is an error during the mid level stimulation.
         """
 
-        # self.ml_get_current_data_ack.packet_number = self.get_next_packet_number()
         sciencemode.lib.smpt_get_ml_get_current_data_ack(self.device, self.ml_get_current_data_ack)
-        num_channels = len(self.list_channels)
-        for j in range(num_channels + 1):
-            channel_state = self.ml_get_current_data_ack.channel_data.channel_state[j]
+        for channel in self.list_channels:
+            channel_number = channel._no_channel
+            channel_state_index = channel_number - 1
+
+            channel_state = self.ml_get_current_data_ack.channel_data.channel_state[channel_state_index]
             if channel_state != sciencemode.lib.Smpt_Ml_Channel_State_Ok:
                 if channel_state == sciencemode.lib.Smpt_Ml_Channel_State_Electrode_Error:
-                    error_message = f"Electrode error on channel {j+1}"
+                    error_message = f"Electrode error on channel {channel_number}"
                 elif channel_state == sciencemode.lib.Smpt_Ml_Channel_State_Timeout_Error:
-                    error_message = f"Timeout error on channel {j+1}"
+                    error_message = f"Timeout error on channel {channel_number}"
                 elif channel_state == sciencemode.lib.Smpt_Ml_Channel_State_Low_Current_Error:
-                    error_message = f"Low current error on channel {j+1}"
+                    error_message = f"Low current error on channel {channel_number}"
                 elif channel_state == sciencemode.lib.Smpt_Ml_Channel_State_Last_Item:
-                    error_message = f"Last item error on channel {j+1}"
+                    error_message = f"Last item error on channel {channel_number}"
                 else:
-                    error_message = f"Unknown error on channel {j+1}"
-
+                    error_message = f"Unknown error on channel {channel_number}"
                 raise RuntimeError(error_message)
+
