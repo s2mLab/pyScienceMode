@@ -1,22 +1,16 @@
 """
 Class used to construct a channel for each different electrode.
 """
-from sciencemode_p24 import sciencemode
+from pyScienceMode2.enums import Modes
+from .enums import Device
 
 
 class Channel:
     """
     Class representing a channel.
-
-    Class Attributes
-    ----------------
-    MODE: dict
-        Contain the different names of the different modes
     """
 
-    MODE = {"Single": 0, "Doublet": 1, "Triplet": 2, None: 3}
     MAX_POINTS = 16
-    CHANNEL_MAPPING = {1: "Smpt_Channel_Red", 2: "Smpt_Channel_Blue", 3: "Smpt_Channel_Black", 4: "Smpt_Channel_White"}
 
     def __init__(
         self,
@@ -36,7 +30,7 @@ class Channel:
 
         Parameters
         ----------
-        mode: MODE
+        mode: Modes
             Indicate which mode is used. Single, Doublet, Triplet or None.
                 If single, the channel will send a single biphasic pulse.
                 If doublet, the channel will send a doublet biphasic pulse.
@@ -56,10 +50,9 @@ class Channel:
         device_type: str
             Device type used. Either Rehastim2 or RehastimP24
         frequency: float
-            Channel frequency. [0.5, 1000] Hz
+            Channel frequency. [0.5, 2000] Hz
         """
         self.device_type = device_type  # Check if the device is Rehastim2 or RehastimP24
-        self._mode = self.MODE[mode]
         self._no_channel = no_channel
         self._amplitude = amplitude
         self._pulse_width = pulse_width
@@ -68,8 +61,26 @@ class Channel:
         self._period = 1000.0 / frequency  # Frequency (Hz) of the channel
         self.list_point = []  # List of points for the channel
         self._ramp = ramp
-        self.check_device_type()
+        # self.check_device_type()
         self.check_value_param()
+        if mode is not None:
+            try:
+                self._mode = Modes[mode.upper()].value
+            except KeyError:
+                valid_modes = ", ".join([m.name for m in Modes])
+                raise ValueError(f"Choose a correct mode among {valid_modes.lower()}")
+        else:
+            self._mode = Modes.NONE.value
+
+        if device_type is not None:
+            device_type_standard_case = device_type.lower().capitalize()
+            try:
+                self.device_type = Device[device_type_standard_case].value
+            except KeyError:
+                valid_devices = ", ".join([d.value for d in Device])
+                raise ValueError(f"device_type must be one of the following: {valid_devices}")
+        else:
+            raise ValueError("A device_type must be provided.")
 
         if self.device_type == "Rehastim2" and ramp:
             raise RuntimeError("Ramp is not supported for Rehastim2")
@@ -79,9 +90,6 @@ class Channel:
             raise RuntimeError("Frequency can not be set for individual channel for the Rehastim2")
 
         if self.device_type == "RehastimP24":
-            smpt_channel_constant = self.CHANNEL_MAPPING.get(no_channel, "Smpt_Channel_Undefined")
-            self._smpt_channel = getattr(sciencemode, smpt_channel_constant, sciencemode.lib.Smpt_Channel_Undefined)
-
             self.generate_pulse()
 
     def __str__(self) -> str:
@@ -97,14 +105,9 @@ class Channel:
             f"{self._enable_low_frequency=}"
         )
 
-    def is_pulse_symmetric(self):
+    def is_pulse_symmetric(self) -> bool:
         """
         Checks if the pulse is symmetric by ensuring the positive area is equal to the negative area.
-
-        Parameters
-        ----------
-        safety: bool
-            Whether to perform the symmetry check or not.
 
         Returns
         -------
@@ -123,7 +126,7 @@ class Channel:
 
         return abs(positive_area - negative_area) < 1e-6
 
-    def create_biphasic_pulse(self, amplitude: int | float, pulse_width: int):
+    def create_single_biphasic_pulse(self, amplitude: int | float, pulse_width: int):
         """
         Create a single biphasic pulse for the channel.
 
@@ -132,7 +135,7 @@ class Channel:
         amplitude: int | float
             Current to send to the channel. [0,150] mA
         pulse_width: int
-            Stimulation width. [0,4093] μs
+            Stimulation width. [0,4095] μs
 
         """
         self.list_point.clear()
@@ -151,7 +154,7 @@ class Channel:
         amplitude: int | float
             Current to send in the channel. [0,150] mA
         pulse_width: int
-            Stimulation width. [0,4093] μs
+            Stimulation width. [0,4095] μs
         """
         self.list_point.clear()
 
@@ -180,7 +183,7 @@ class Channel:
         amplitude: int | float
             Current to send in the channel. [0,150] mA
         pulse_width: int
-            Stimulation width. [0,4093] μs
+            Stimulation width. [0,4095] μs
         """
         # First doublet pulse
         self.list_point.clear()
@@ -189,6 +192,7 @@ class Channel:
 
         self.list_point.append(positive_pulse)
         self.list_point.append(negative_pulse)
+
         # Inter-pulse interval (IPI) = 5 ms. Can be adjusted if needed.
         self.list_point.append(Point(0, 0))
         self.list_point.append(Point(4000, 0))
@@ -231,7 +235,7 @@ class Channel:
         if self.device_type == "RehastimP24":
             if self._period < 0.5 or self._period > 16383:
                 raise ValueError(
-                    "Error : Frequency min = 0.6, max = 2000. Frequency given : %s Hz" % (1000 / self._period)
+                    "Error : Frequency min = 0.5, max = 2000. Frequency given : %s Hz" % (1000 / self._period)
                 )
             if self._no_channel < 1 or self._no_channel > 8:
                 raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
@@ -242,7 +246,7 @@ class Channel:
             if self._ramp < 0 or self._ramp > 16:
                 raise ValueError("Error : Ramp min = 0, max = 16. Ramp given : %s" % self._ramp)
 
-    def set_mode(self, mode: MODE):
+    def set_mode(self, mode: Modes):
         """
         Set mode.
 
@@ -251,9 +255,15 @@ class Channel:
         mode: MODE
             Indicate which mode is used.
         """
-        self._mode = mode
+        if isinstance(mode, Modes):
+            self._mode = mode
+        elif isinstance(mode, str):
+            try:
+                self._mode = Modes[mode.upper()]
+            except KeyError:
+                raise ValueError(f"{mode} is not a valid mode")
 
-    def get_mode(self) -> MODE:
+    def get_mode(self) -> Modes:
         """
         Returns mode.
         """
@@ -400,7 +410,12 @@ class Channel:
             Device type used for the stimulation
 
         """
-        self.device_type = device_type
+        try:
+            normalized_device_type = device_type.lower().capitalize()
+            self.device_type = Device[normalized_device_type].value
+        except KeyError:
+            valid_devices = ", ".join([d.value for d in Device])
+            raise ValueError(f"device_type must be one of the following: {valid_devices}")
         self.check_device_type()
 
     def get_device_type(self):
@@ -416,7 +431,7 @@ class Channel:
         Parameters
         ----------
         pulse_width: int
-            Width of the stimulation. [0,4093] μs
+            Width of the stimulation. [0,4095] μs
         amplitude: int | float
             Current to send in the channel. [-150,150] mA
 
@@ -436,11 +451,11 @@ class Channel:
         Generate a pulse for a channel. The pulse is generated according to the mode and the parameters given.
         """
         if self.device_type == "RehastimP24":
-            if self._mode == Channel.MODE["Single"]:  # Create a biphasic pulse for the channel
-                self.create_biphasic_pulse(self._amplitude, self._pulse_width)
-            elif self._mode == Channel.MODE["Doublet"]:  # Create a biphasic doublet pulse for the channel
+            if self._mode == Modes.SINGLE.value:
+                self.create_single_biphasic_pulse(self._amplitude, self._pulse_width)
+            if self._mode == Modes.DOUBLET.value:
                 self.create_doublet(self._amplitude, self._pulse_width)
-            elif self._mode == Channel.MODE["Triplet"]:  # Create a biphasic triplet pulse for the channel
+            if self._mode == Modes.TRIPLET.value:
                 self.create_triplet(self._amplitude, self._pulse_width)
 
 

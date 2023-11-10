@@ -123,6 +123,14 @@ class RehastimP24Commands(Enum):
     Smpt_Cmd_Sl_Set_Device_Id_Ack = (171,)
 
 
+class Modes(Enum):
+    SINGLE = 0
+    DOUBLET = 1
+    TRIPLET = 2
+    NONE = 3
+    # MODE = {"Single": 0, "Doublet": 1, "Triplet": 2, None: 3}
+
+
 class HighVoltage(Enum):
     Voltage_Default = 0
     Voltage_Off = 1
@@ -159,3 +167,10 @@ class StimStatus(Enum):
     Low_Level_Initialized = 1
     Mid_Level_Initialized = 2
     Mid_Level_Running = 3
+
+
+class Device(Enum):
+    Rehastim2 = "Rehastim2"
+    RehastimP24 = "RehastimP24"
+
+

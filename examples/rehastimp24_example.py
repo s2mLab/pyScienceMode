@@ -18,7 +18,7 @@ list_stimulation_points = []
 channel_1 = Channel(no_channel=1, name="Biceps", amplitude=15, pulse_width=100, frequency=20, device_type="RehastimP24")
 channel_2 = Channel(
     mode="Doublet",
-    no_channel=5,
+    no_channel=2,
     amplitude=20,
     pulse_width=500,
     name="Triceps",
@@ -28,7 +28,7 @@ channel_2 = Channel(
 )
 channel_3 = Channel(
     mode="Doublet",
-    no_channel=3,
+    no_channel=4,
     amplitude=20,
     pulse_width=500,
     name="Triceps",
