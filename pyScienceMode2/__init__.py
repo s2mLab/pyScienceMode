@@ -9,3 +9,4 @@ from .channel import Point
 from .enums import Rehastim2Commands
 from .enums import RehastimP24Commands
 from .enums import Modes
+from .enums import Device

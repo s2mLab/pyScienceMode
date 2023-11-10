@@ -128,7 +128,6 @@ class Modes(Enum):
     DOUBLET = 1
     TRIPLET = 2
     NONE = 3
-    # MODE = {"Single": 0, "Doublet": 1, "Triplet": 2, None: 3}
 
 
 class HighVoltage(Enum):
@@ -171,6 +170,4 @@ class StimStatus(Enum):
 
 class Device(Enum):
     Rehastim2 = "Rehastim2"
-    RehastimP24 = "RehastimP24"
-
-
+    Rehastimp24 = "RehastimP24"

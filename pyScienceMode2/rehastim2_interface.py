@@ -24,6 +24,7 @@ from pyScienceMode2.utils import (
 )
 from pyScienceMode2 import RehastimGeneric
 from pyScienceMode2 import _Motomed
+from pyScienceMode2.enums import Device
 
 
 class Rehastim2(RehastimGeneric):
@@ -57,7 +58,7 @@ class Rehastim2(RehastimGeneric):
         self.muscle = []
         self.given_channels = []
         self.stimulation_started = None
-        self.device_type = "Rehastim2"
+        self.device_type = Device.Rehastim2.value
 
         super().__init__(port, show_log, with_motomed, device_type=self.device_type)
 

@@ -1,8 +1,7 @@
 """
 Class used to construct a channel for each different electrode.
 """
-from pyScienceMode2.enums import Modes
-from .enums import Device
+from .enums import Device, Modes
 
 
 class Channel:
@@ -52,7 +51,7 @@ class Channel:
         frequency: float
             Channel frequency. [0.5, 2000] Hz
         """
-        self.device_type = device_type  # Check if the device is Rehastim2 or RehastimP24
+        self.device_type = device_type
         self._no_channel = no_channel
         self._amplitude = amplitude
         self._pulse_width = pulse_width
@@ -61,7 +60,6 @@ class Channel:
         self._period = 1000.0 / frequency  # Frequency (Hz) of the channel
         self.list_point = []  # List of points for the channel
         self._ramp = ramp
-        # self.check_device_type()
         self.check_value_param()
         if mode is not None:
             try:
@@ -77,19 +75,19 @@ class Channel:
             try:
                 self.device_type = Device[device_type_standard_case].value
             except KeyError:
-                valid_devices = ", ".join([d.value for d in Device])
+                valid_devices = ", ".join([d.name for d in Device])
                 raise ValueError(f"device_type must be one of the following: {valid_devices}")
         else:
             raise ValueError("A device_type must be provided.")
 
-        if self.device_type == "Rehastim2" and ramp:
+        if self.device_type == Device.Rehastim2.value and ramp:
             raise RuntimeError("Ramp is not supported for Rehastim2")
-        if self.device_type == "Rehastim2" and frequency != 50.0:
+        if self.device_type == Device.Rehastim2.value and frequency != 50.0:
             # If the user enters a frequency for a Rehastim2 channel, raise an error.
             # the frequency must still have a default value (50 in this case), otherwise division by 0.
             raise RuntimeError("Frequency can not be set for individual channel for the Rehastim2")
 
-        if self.device_type == "RehastimP24":
+        if self.device_type == Device.Rehastimp24.value:
             self.generate_pulse()
 
     def __str__(self) -> str:
@@ -214,17 +212,23 @@ class Channel:
         """
         Check if  device type is correct. Raise an error otherwise.
         """
-        if self.device_type != "Rehastim2" and self.device_type != "RehastimP24":
+        if self.device_type:
+            device_type_standard_case = self.device_type.lower().capitalize()
+        else:
+            raise ValueError("A device_type must be provided.")
+        if device_type_standard_case not in [d.name for d in Device]:
+            valid_devices = ", ".join([d.name for d in Device])
             raise ValueError(
-                "Error : Device type must be either Rehastim2 or RehastimP24. Device type given : %s" % self.device_type
+                f"Error: Device type must be one of the following: {valid_devices}. "
+                f"Device type given: {self.device_type}"
             )
-        return self.device_type
+        self.device_type = device_type_standard_case
 
     def check_value_param(self):
         """
         Checks if the values given are in limits.
         """
-        if self.device_type == "Rehastim2":
+        if self.device_type == Device.Rehastim2.value:
             if self._amplitude < 0 or self._amplitude > 130:
                 raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
             if self._no_channel < 1 or self._no_channel > 8:
@@ -232,7 +236,7 @@ class Channel:
             if self._pulse_width < 0 or self._pulse_width > 500:
                 raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
 
-        if self.device_type == "RehastimP24":
+        if self.device_type == Device.Rehastimp24.value:
             if self._period < 0.5 or self._period > 16383:
                 raise ValueError(
                     "Error : Frequency min = 0.5, max = 2000. Frequency given : %s Hz" % (1000 / self._period)
@@ -246,24 +250,24 @@ class Channel:
             if self._ramp < 0 or self._ramp > 16:
                 raise ValueError("Error : Ramp min = 0, max = 16. Ramp given : %s" % self._ramp)
 
-    def set_mode(self, mode: Modes):
+    def set_mode(self, mode: str):
         """
         Set mode.
 
         Parameters
         ----------
-        mode: MODE
+        mode: str
             Indicate which mode is used.
         """
-        if isinstance(mode, Modes):
-            self._mode = mode
-        elif isinstance(mode, str):
+
+        if isinstance(mode, str):
             try:
-                self._mode = Modes[mode.upper()]
+                self._mode = Modes[mode.upper()].value
             except KeyError:
                 raise ValueError(f"{mode} is not a valid mode")
+        self.generate_pulse()
 
-    def get_mode(self) -> Modes:
+    def get_mode(self):
         """
         Returns mode.
         """
@@ -336,6 +340,7 @@ class Channel:
             Muscle name corresponding to the channel.
         """
         self._name = name
+        self.generate_pulse()
 
     def get_name(self) -> str:
         """
@@ -450,7 +455,7 @@ class Channel:
         """
         Generate a pulse for a channel. The pulse is generated according to the mode and the parameters given.
         """
-        if self.device_type == "RehastimP24":
+        if self.device_type == Device.Rehastimp24.value:
             if self._mode == Modes.SINGLE.value:
                 self.create_single_biphasic_pulse(self._amplitude, self._pulse_width)
             if self._mode == Modes.DOUBLET.value:

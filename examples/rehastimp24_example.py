@@ -17,18 +17,18 @@ list_stimulation_points = []
 # Create an object channel for mid-level stimulation
 channel_1 = Channel(no_channel=1, name="Biceps", amplitude=15, pulse_width=100, frequency=20, device_type="RehastimP24")
 channel_2 = Channel(
-    mode="Doublet",
+    mode="Single",
     no_channel=2,
     amplitude=20,
     pulse_width=500,
-    name="Triceps",
+    name="Calf",
     frequency=50,
     ramp=16,
-    device_type="RehastimP24",
+    device_type="rehastimp24",
 )
 channel_3 = Channel(
     mode="Doublet",
-    no_channel=4,
+    no_channel=3,
     amplitude=20,
     pulse_width=500,
     name="Triceps",
@@ -41,7 +41,7 @@ channel_4 = Channel(
     no_channel=4,
     amplitude=20,
     pulse_width=500,
-    name="Triceps",
+    name="Quadriceps",
     frequency=15,
     ramp=1,
     device_type="RehastimP24",
@@ -49,12 +49,11 @@ channel_4 = Channel(
 
 # Create an object stimulator
 stimulator = St(port="COM4", show_log="Status")  # Enter the port on which the rehastimP24 is connected
-
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
 list_channels.append(channel_2)
-# list_channels.append(channel_3)
-# list_channels.append(channel_4)
+list_channels.append(channel_3)
+list_channels.append(channel_4)
 
 """
 General level commands. 
@@ -105,6 +104,7 @@ stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_durati
 channel_2.set_amplitude(15)
 channel_2.set_pulse_width(500)
 channel_2.set_frequency(10)
+channel_2.set_mode("triplet")
 
 # If you have created your own shape pulse, you can modify the amplitude and the pulse width of the points.
 # You can also create new points during the stimulation.

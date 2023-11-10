@@ -7,6 +7,7 @@ from pyScienceMode2.utils import (
 )
 from pyScienceMode2 import RehastimGeneric
 from sciencemode_p24 import sciencemode
+from pyScienceMode2.enums import Device, HighVoltage, StimStatus
 
 
 class RehastimP24(RehastimGeneric):
@@ -37,7 +38,7 @@ class RehastimP24(RehastimGeneric):
         self._current_no_channel = None
         self._current_stim_sequence = None
         self._current_pulse_interval = None
-        self.device_type = "RehastimP24"
+        self.device_type = Device.Rehastimp24.value
         self._safety = True
 
         super().__init__(port, device_type=self.device_type, show_log=self.show_log)
@@ -102,7 +103,6 @@ class RehastimP24(RehastimGeneric):
         voltage_level : str
             Current voltage level.
         """
-        from pyScienceMode2.enums import HighVoltage, StimStatus
 
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
         packet_number = self.get_next_packet_number()
@@ -550,4 +550,3 @@ class RehastimP24(RehastimGeneric):
                 else:
                     error_message = f"Unknown error on channel {channel_number}"
                 raise RuntimeError(error_message)
-
