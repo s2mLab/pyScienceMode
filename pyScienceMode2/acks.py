@@ -1,4 +1,4 @@
-from pyScienceMode2.utils import signed_int
+from .utils import signed_int
 
 # Errors messages
 

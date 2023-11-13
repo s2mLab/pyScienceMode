@@ -1,32 +1,38 @@
 # Import Stimulator class
-from pyScienceMode2.rehastim_interface import Stimulator as St
+from pyScienceMode2 import Rehastim2 as St
+from pyScienceMode2 import Modes, Device
 
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
-
 from time import sleep
 
-# Create a list of channels
+#  Create a list of channels
 list_channels = []
 
 # Create all channels possible
-channel_1 = Ch.Channel(
-    mode="Single", no_channel=1, amplitude=50, pulse_width=100, enable_low_frequency=False, name="Biceps"
+channel_1 = Ch(
+    mode=Modes.SINGLE,
+    no_channel=1,
+    amplitude=50,
+    pulse_width=100,
+    enable_low_frequency=True,
+    name="Biceps",
+    device_type=Device.Rehastim2,
 )
 
-channel_2 = Ch.Channel()
-channel_2.set_mode("Single")
+channel_2 = Ch(device_type=Device.Rehastim2)
+channel_2.set_mode(Modes.SINGLE)
 channel_2.set_no_channel(2)
-channel_2.set_amplitude(2)
+channel_2.set_amplitude(20)
 channel_2.set_pulse_width(100)
 channel_2.set_name("Triceps")
 
-channel_3 = Ch.Channel("Doublet", 3, 50, 100)
-channel_4 = Ch.Channel("Single", 4, 50, 100)
-channel_5 = Ch.Channel("Triplet", 5, 50, 100)
-channel_6 = Ch.Channel("Single", 6, 50, 100, True)
-channel_7 = Ch.Channel("Single", 7, 50, 100)
-channel_8 = Ch.Channel("Single", 8, 50, 100)
+channel_3 = Ch(Modes.DOUBLET, 3, 50, 100, device_type=Device.Rehastim2)
+channel_4 = Ch(Modes.SINGLE, 4, 50, 100, device_type=Device.Rehastim2)
+channel_5 = Ch(Modes.TRIPLET, 5, 50, 100, device_type=Device.Rehastim2)
+channel_6 = Ch(Modes.SINGLE, 6, 50, 100, True, device_type=Device.Rehastim2)
+channel_7 = Ch(Modes.SINGLE, 7, 50, 100, device_type=Device.Rehastim2)
+channel_8 = Ch(Modes.SINGLE, 8, 50, 100, device_type=Device.Rehastim2)
 
 # Choose which channel will be used
 list_channels.append(channel_1)
@@ -72,9 +78,9 @@ stimulator.start_stimulation(upd_list_channels=list_channels)
 sleep(5)
 
 """
-Stop the stimulation. But does not disconnect the Pc and the Rehastim.
+Stop the stimulation. But does not disconnect the Pc and the Rehastim2.
 """
-stimulator.stop_stimulation()
+stimulator.pause_stimulation()
 
 """
 Restart a stimulation with the same parameter for 2 seconds.
@@ -91,12 +97,15 @@ stimulator.start_stimulation(stimulation_duration=2)
 To disconnect the computer and the Rehastim, use the disconnect method.
 """
 
-stimulator.disconnect()
+# stimulator.disconnect()
 """
 After a disconnection, init_channel must be called.  
 """
 stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
+
 stimulator.start_stimulation(2, list_channels)
+
+stimulator.end_stimulation()
 
 # Disconnect before closing port
 stimulator.disconnect()

@@ -4,31 +4,41 @@ See ScienceMode2 - Description and protocol for more information.
 """
 from typing import Tuple
 import time
-from pyScienceMode2.acks import *
-from pyScienceMode2 import Channel
-from pyScienceMode2.utils import *
-from pyScienceMode2.sciencemode import RehastimGeneric
-from pyScienceMode2.motomed_interface import _Motomed
+from .acks import (
+    stop_stimulation_ack,
+    start_stimulation_ack,
+    init_stimulation_ack,
+    get_mode_ack,
+    rehastim_error,
+)
+from .utils import (
+    signed_int,
+    check_stimulation_interval,
+    check_inter_pulse_interval,
+    check_low_frequency_factor,
+    check_unique_channel,
+    check_list_channel_order,
+    calc_electrode_number,
+    packet_construction,
+)
+from .sciencemode import RehastimGeneric
+from .motomed_interface import _Motomed
+from .enums import Device
 
 
-class Stimulator(RehastimGeneric):
+class Rehastim2(RehastimGeneric):
     """
-    Class used for the communication with Rehastim.
+    Class used for the communication with Rehastim2.
     """
 
-    def __init__(
-        self,
-        port: str,
-        show_log: bool = False,
-        with_motomed: bool = False,
-    ):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False):
         """
         Creates an object stimulator.
 
         Parameters
         ----------
         port : str
-            Port of the computer connected to the Rehastim.
+            Port of the computer connected to the Rehastim2.
         show_log: bool
             If True, the log of the communication will be printed.
         with_motomed: bool
@@ -47,18 +57,21 @@ class Stimulator(RehastimGeneric):
         self.muscle = []
         self.given_channels = []
         self.stimulation_started = None
+        self.device_type = Device.Rehastim2.value
 
-        super().__init__(port, show_log, with_motomed)
+        super().__init__(port, show_log, with_motomed, device_type=self.device_type)
 
         if with_motomed:
             self.motomed = _Motomed(self)
 
-        # Connect to rehastim
+        # Connect to Rehastim2
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
 
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
+        self.stimulation_active = True
+        self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -66,7 +79,7 @@ class Stimulator(RehastimGeneric):
 
         Parameters
         ----------
-        list_channels: list[Channel]
+        list_channels: list[channel]
             Contain the channels and their parameters.
         """
         self.amplitude = []
@@ -126,17 +139,17 @@ class Stimulator(RehastimGeneric):
         """
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
-        elif packet[6] == self.Type["GetStimulationModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["GetStimulationModeAck"].value:
             return get_mode_ack(packet)
-        elif packet[6] == self.Type["InitChannelListModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["InitChannelListModeAck"].value:
             return init_stimulation_ack(packet)
-        elif packet[6] == self.Type["StopChannelListModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["StopChannelListModeAck"].value:
             return stop_stimulation_ack(packet)
-        elif packet[6] == self.Type["StartChannelListModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["StartChannelListModeAck"].value:
             return start_stimulation_ack(packet)
-        elif packet[6] == self.Type["StimulationError"].value:
+        elif packet[6] == self.Rehastim2Commands["StimulationError"].value:
             return rehastim_error(signed_int(packet[7:8]))
-        elif packet[6] == self.Type["ActualValues"].value:
+        elif packet[6] == self.Rehastim2Commands["ActualValues"].value:
             raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
         else:
             raise RuntimeError(f"Error packet : not understood {packet[6]}")
@@ -264,8 +277,8 @@ class Stimulator(RehastimGeneric):
         list_channels: list[Channel]
             List containing the channels and their parameters.
         """
-        if self.stimulation_started:
-            self._stop_channel_list()
+        if self.stimulation_active:
+            self.end_stimulation()
 
         check_stimulation_interval(stimulation_interval)
         check_unique_channel(list_channels)
@@ -295,7 +308,7 @@ class Stimulator(RehastimGeneric):
         ----------
         stimulation_duration: float
             Time of the stimulation after the update.
-        upd_list_channels: list[Channel]
+        upd_list_channels: list[channel]
             List of the channels that will be updated
         """
 
@@ -311,15 +324,15 @@ class Stimulator(RehastimGeneric):
         time_start_stim = time.time()
 
         self._get_last_ack()
-        self.stimulation_started = True
+        self.stimulation_active = True
 
         if stimulation_duration is not None:
             if stimulation_duration < time.time() - time_start_stim:
                 raise RuntimeError("Asked stimulation duration too short")
             time.sleep(stimulation_duration - (time.time() - time_start_stim))
-            self.stop_stimulation()
+            self.pause_stimulation()
 
-    def stop_stimulation(self):
+    def pause_stimulation(self):
         """
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
@@ -330,14 +343,13 @@ class Stimulator(RehastimGeneric):
         self._get_last_ack()
         self.amplitude = tmp_amp
 
-    def _stop_channel_list(self):
+    def end_stimulation(self):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
         self._send_packet("StopChannelListMode")
         self._get_last_ack()
         self.packet_count = 0
-        self.stimulation_started = False
 
     def get_motomed_angle(self) -> float:
         """
