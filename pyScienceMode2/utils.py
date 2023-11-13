@@ -1,4 +1,5 @@
 import crccheck
+from .enums import ErrorCode, Rehastim2Commands
 
 
 def signed_int(packet: bytes) -> int:
@@ -135,7 +136,6 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
     packet_construct: bytes
         Packet constructed which will be sent.
     """
-    from pyScienceMode2 import Rehastim2Commands
 
     start_byte = 0xF0
     stop_byte = 0x0F
@@ -208,8 +208,6 @@ def _stuff_byte(byte: int) -> int:
 
 
 def generic_error_check(ack_object):
-    from pyScienceMode2.enums import ErrorCode
-
     error_code = ErrorCode(ack_object.result)
     if error_code.message:
         raise ValueError(error_code.message)

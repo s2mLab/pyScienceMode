@@ -4,15 +4,14 @@ See ScienceMode2 - Description and protocol for more information.
 """
 from typing import Tuple
 import time
-from pyScienceMode2.acks import (
+from .acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
     init_stimulation_ack,
     get_mode_ack,
     rehastim_error,
 )
-from pyScienceMode2 import channel
-from pyScienceMode2.utils import (
+from .utils import (
     signed_int,
     check_stimulation_interval,
     check_inter_pulse_interval,
@@ -22,9 +21,9 @@ from pyScienceMode2.utils import (
     calc_electrode_number,
     packet_construction,
 )
-from pyScienceMode2 import RehastimGeneric
-from pyScienceMode2 import _Motomed
-from pyScienceMode2.enums import Device
+from .sciencemode import RehastimGeneric
+from .motomed_interface import _Motomed
+from .enums import Device
 
 
 class Rehastim2(RehastimGeneric):

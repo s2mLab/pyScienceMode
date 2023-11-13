@@ -4,9 +4,5 @@ from . import utils
 from .rehastim2_interface import Rehastim2
 from .rehastimP24_interface import RehastimP24
 from . import acks
-from .channel import Channel
-from .channel import Point
-from .enums import Rehastim2Commands
-from .enums import RehastimP24Commands
-from .enums import Modes
-from .enums import Device
+from .channel import Channel, Point
+from .enums import Rehastim2Commands, RehastimP24Commands, Modes, Device

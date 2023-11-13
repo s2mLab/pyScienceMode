@@ -9,8 +9,8 @@ import time
 
 import numpy as np
 
-from pyScienceMode2.utils import packet_construction, signed_int
-from pyScienceMode2.acks import (
+from .utils import packet_construction, signed_int
+from .acks import (
     motomed_error_ack,
     rehastim_error,
     init_stimulation_ack,
@@ -18,9 +18,9 @@ from pyScienceMode2.acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
 )
-from sciencemode_p24 import sciencemode
-from pyScienceMode2.enums import Device
+from .enums import Rehastim2Commands, RehastimP24Commands, Device
 
+from sciencemode_p24 import sciencemode
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
@@ -49,7 +49,7 @@ class RehastimGeneric:
     STUFFING_BYTE : list
         Stuffed byte of protocol.
     """
-
+    #  Constant for the Rehastim2
     BAUD_RATE = 460800
     VERSION = 0x01
     START_BYTE = 0xF0
@@ -59,7 +59,7 @@ class RehastimGeneric:
     MAX_PACKET_BYTES = 69
     STUFFED_BYTES = [240, 15, 129, 85, 10]
 
-    def __init__(self, port: str, show_log: bool | str = False, with_motomed: bool = False, device_type: str = None):
+    def __init__(self, port: str, show_log: bool | str = False, with_motomed: bool = False, device_type: str | Device = None):
         """
         Init the class.
 
@@ -73,7 +73,7 @@ class RehastimGeneric:
             If False, no logs will be printed.
         with_motomed : bool
             If the motomed is connected to the Rehastim, put this flag to True.
-        device_type : str
+        device_type : str | Device
             Device type. Can be either "Rehastim2" or "RehastimP24".
         """
         self.device_type = device_type
@@ -131,8 +131,6 @@ class RehastimGeneric:
         self.command_send = []  # Command sent to the rehastim2
         self.ack_received = []  # Command received by the rehastim2
 
-        from pyScienceMode2 import Rehastim2Commands, RehastimP24Commands
-
         self.Rehastim2Commands = Rehastim2Commands
         self.RehastimP24Commands = RehastimP24Commands
 
@@ -146,7 +144,7 @@ class RehastimGeneric:
 
     def check_serial_port(self):
         """
-        Verify if the serial port is available and functional.
+        Verify if the serial port is available and functional. Used for the RehastimP24
         """
         ret = sciencemode.lib.smpt_check_serial_port(self.com)
         if self.show_log:
@@ -155,7 +153,7 @@ class RehastimGeneric:
 
     def open_serial_port(self):
         """
-        Try to open the serial port.
+        Try to open the serial port.Used for the RehastimP24
         """
         ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
         if self.show_log:
@@ -163,6 +161,9 @@ class RehastimGeneric:
         return ret
 
     def get_next_packet_number(self):
+        """
+        Get the next packet to send another command. Used for the RehastimP24
+        """
         if hasattr(self, "device") and self.device is not None:
             packet_number = sciencemode.lib.smpt_packet_number_generator_next(self.device)
             return packet_number
@@ -280,7 +281,6 @@ class RehastimGeneric:
         """
         Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
         """
-        from pyScienceMode2 import Rehastim2Commands
 
         print("thread started")
         time_to_sleep = 0.005
@@ -401,6 +401,7 @@ class RehastimGeneric:
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
         while 1 and self.reha_connected:
+            print(2)
             if time.time() - self.time_last_cmd > 0.8:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
             time.sleep(0.8)
@@ -508,7 +509,6 @@ class RehastimGeneric:
         self._stop_watchdog()
         if self.reha_connected:
             self._stop_thread_catch_ack()
-        self.is_motomed_connected = False
         self.stimulation_active = False
 
     def _stop_thread_catch_ack(self):

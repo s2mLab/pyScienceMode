@@ -1,13 +1,14 @@
 import time
-from pyScienceMode2.utils import (
+from .utils import (
     check_unique_channel,
     calc_electrode_number,
     generic_error_check,
     check_list_channel_order,
 )
-from pyScienceMode2 import RehastimGeneric
+from .sciencemode import RehastimGeneric
 from sciencemode_p24 import sciencemode
-from pyScienceMode2.enums import Device, HighVoltage, StimStatus
+from .enums import Device, HighVoltage, StimStatus
+from .channel import Point
 
 
 class RehastimP24(RehastimGeneric):
@@ -285,10 +286,8 @@ class RehastimP24(RehastimGeneric):
         safety : bool
             Set to True if you want to check the pulse symmetry. False otherwise.
         """
-        from pyScienceMode2 import Point
 
         self.ll_init()
-
         if not isinstance(stim_sequence, int):
             raise TypeError("Please provide a int type for stim_sequence")
         if not isinstance(pulse_interval, int | float):

@@ -1,4 +1,4 @@
-from pyScienceMode2 import Channel, Point
+from pyScienceMode2 import Channel, Point, Device, Modes
 from pyScienceMode2 import RehastimP24 as St
 
 """
@@ -15,36 +15,36 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel for mid-level stimulation
-channel_1 = Channel(no_channel=1, name="Biceps", amplitude=15, pulse_width=100, frequency=20, device_type="RehastimP24")
+channel_1 = Channel(no_channel=1, name="Biceps", amplitude=50, pulse_width=100, frequency=20, device_type=Device.Rehastimp24)
 channel_2 = Channel(
-    mode="Single",
+    mode=Modes.SINGLE,
     no_channel=2,
-    amplitude=20,
+    amplitude=15,
     pulse_width=500,
     name="Calf",
     frequency=50,
     ramp=16,
-    device_type="rehastimp24",
+    device_type=Device.Rehastimp24,
 )
 channel_3 = Channel(
-    mode="Doublet",
+    mode=Modes.DOUBLET,
     no_channel=3,
     amplitude=20,
-    pulse_width=500,
+    pulse_width=350,
     name="Triceps",
-    frequency=55,
+    frequency=25,
     ramp=5,
-    device_type="RehastimP24",
+    device_type=Device.Rehastimp24,
 )
 channel_4 = Channel(
-    mode="Triplet",
+    mode=Modes.TRIPLET,
     no_channel=4,
-    amplitude=20,
+    amplitude=40,
     pulse_width=500,
     name="Quadriceps",
     frequency=15,
     ramp=1,
-    device_type="RehastimP24",
+    device_type=Device.Rehastimp24,
 )
 
 # Create an object stimulator
@@ -104,7 +104,7 @@ stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_durati
 channel_2.set_amplitude(15)
 channel_2.set_pulse_width(500)
 channel_2.set_frequency(10)
-channel_2.set_mode("triplet")
+channel_2.set_mode(Modes.TRIPLET)
 
 # If you have created your own shape pulse, you can modify the amplitude and the pulse width of the points.
 # You can also create new points during the stimulation.
