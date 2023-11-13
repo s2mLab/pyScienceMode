@@ -258,7 +258,7 @@ class Channel:
                 raise ValueError(f"{mode} is not a valid mode")
         elif isinstance(mode, Modes):
             self._mode = mode.value
-        else :
+        else:
             raise ValueError("mode must be a string or a Modes enum instance")
 
         self.generate_pulse()
@@ -376,8 +376,8 @@ class Channel:
             self._period = 1000.0 / frequency
 
             self.generate_pulse()
-        else :
-            raise ValueError ("Frequency can not be set for individual channel for the Rehastim2")
+        else:
+            raise ValueError("Frequency can not be set for individual channel for the Rehastim2")
 
     def get_frequency(self) -> int | float:
         """
@@ -424,7 +424,7 @@ class Channel:
             except KeyError:
                 valid_devices = ", ".join([d.value for d in Device])
                 raise ValueError(f"device_type must be one of the following: {valid_devices}")
-        elif isinstance(device_type,Device):
+        elif isinstance(device_type, Device):
             self.device_type = device_type.value
         else:
             raise TypeError("device_type must be a int or Device type ")

@@ -1,5 +1,6 @@
 # Import Stimulator class
 from pyScienceMode2 import Rehastim2 as St
+from pyScienceMode2 import Modes, Device
 
 # Import Channel class
 from pyScienceMode2 import Channel as Ch
@@ -10,29 +11,28 @@ list_channels = []
 
 # Create all channels possible
 channel_1 = Ch(
-    mode="Single",
+    mode=Modes.SINGLE,
     no_channel=1,
     amplitude=50,
     pulse_width=100,
     enable_low_frequency=True,
     name="Biceps",
-    device_type="Rehastim2",
+    device_type=Device.Rehastim2,
 )
 
-channel_2 = Ch(device_type="Rehastim2")
-channel_2.set_mode("Single")
+channel_2 = Ch(device_type=Device.Rehastim2)
+channel_2.set_mode(Modes.SINGLE)
 channel_2.set_no_channel(2)
 channel_2.set_amplitude(20)
 channel_2.set_pulse_width(100)
 channel_2.set_name("Triceps")
-channel_2.set_device_type("Rehastim2")
 
-channel_3 = Ch("Doublet", 3, 50, 100, device_type="Rehastim2")
-channel_4 = Ch("Single", 4, 50, 100, device_type="Rehastim2")
-channel_5 = Ch("Triplet", 5, 50, 100, device_type="Rehastim2")
-channel_6 = Ch("Single", 6, 50, 100, True, device_type="Rehastim2")
-channel_7 = Ch("Single", 7, 50, 100, device_type="Rehastim2")
-channel_8 = Ch("Single", 8, 50, 100, device_type="Rehastim2")
+channel_3 = Ch(Modes.DOUBLET, 3, 50, 100, device_type=Device.Rehastim2)
+channel_4 = Ch(Modes.SINGLE, 4, 50, 100, device_type=Device.Rehastim2)
+channel_5 = Ch(Modes.TRIPLET, 5, 50, 100, device_type=Device.Rehastim2)
+channel_6 = Ch(Modes.SINGLE, 6, 50, 100, True, device_type=Device.Rehastim2)
+channel_7 = Ch(Modes.SINGLE, 7, 50, 100, device_type=Device.Rehastim2)
+channel_8 = Ch(Modes.SINGLE, 8, 50, 100, device_type=Device.Rehastim2)
 
 # Choose which channel will be used
 list_channels.append(channel_1)

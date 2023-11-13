@@ -49,6 +49,7 @@ class RehastimGeneric:
     STUFFING_BYTE : list
         Stuffed byte of protocol.
     """
+
     #  Constant for the Rehastim2
     BAUD_RATE = 460800
     VERSION = 0x01
@@ -59,7 +60,9 @@ class RehastimGeneric:
     MAX_PACKET_BYTES = 69
     STUFFED_BYTES = [240, 15, 129, 85, 10]
 
-    def __init__(self, port: str, show_log: bool | str = False, with_motomed: bool = False, device_type: str | Device = None):
+    def __init__(
+        self, port: str, show_log: bool | str = False, with_motomed: bool = False, device_type: str | Device = None
+    ):
         """
         Init the class.
 
@@ -279,7 +282,8 @@ class RehastimGeneric:
 
     def _thread_catch_ack(self):
         """
-        Compare the command sent and received by the rehastim and retrieve the data sent by the motomed if motomed flag is true.
+        Compare the command sent and received by the rehastim
+        And retrieve the data sent by the motomed if motomed flag is true.
         """
 
         print("thread started")
@@ -401,7 +405,6 @@ class RehastimGeneric:
         Send a watchdog if the last command send by the pc was more than 500ms ago and if the rehastim is connected.
         """
         while 1 and self.reha_connected:
-            print(2)
             if time.time() - self.time_last_cmd > 0.8:
                 self.send_generic_packet("Watchdog", packet=self._packet_watchdog())
             time.sleep(0.8)
