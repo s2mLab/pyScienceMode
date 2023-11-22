@@ -1,5 +1,5 @@
 import crccheck
-from pyScienceMode2.enums import Type
+from .enums import ErrorCode, Rehastim2Commands
 
 # This code provides utility functions for working with the Rehastim device, including packet construction and data validation.
 # It also includes functions to convert and check various parameters used in Rehastim communication.
@@ -161,12 +161,13 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
     packet_construct: bytes
         Packet constructed which will be sent.
     """
+
     start_byte = 0xF0
     stop_byte = 0x0F
     stuffing_byte = 0x81
 
     packet = [start_byte]
-    packet_command = Type[packet_type].value
+    packet_command = Rehastim2Commands[packet_type].value
     packet_payload = [packet_count, packet_command]
     packet_payload = _stuff_packet_byte(packet_payload)
     if packet_data is not None:
@@ -229,3 +230,9 @@ def _stuff_byte(byte: int) -> int:
     stuffing_key = 0x55
 
     return (byte & ~stuffing_key) | (~byte & stuffing_key)
+
+
+def generic_error_check(ack_object):
+    error_code = ErrorCode(ack_object.result)
+    if error_code.message:
+        raise ValueError(error_code.message)

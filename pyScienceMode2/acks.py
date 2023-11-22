@@ -1,4 +1,4 @@
-from pyScienceMode2.utils import signed_int
+from .utils import signed_int
 
 # Errors messages
 
@@ -392,6 +392,6 @@ def stop_stimulation_ack(packet: bytes) -> str:
     Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
     """
     if packet[7] == 0:
-        return " Stimulation stopped"
+        return "Stimulation stopped"
     else:
         return stimulation_error(signed_int(packet[7:8]))

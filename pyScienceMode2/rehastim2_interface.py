@@ -4,66 +4,45 @@ See ScienceMode2 - Description and protocol for more information.
 """
 from typing import Tuple
 import time
-from pyScienceMode2.acks import *
-from pyScienceMode2 import Channel
-from pyScienceMode2.utils import *
-from pyScienceMode2.sciencemode import RehastimGeneric
-from pyScienceMode2.motomed_interface import _Motomed
+from .acks import (
+    stop_stimulation_ack,
+    start_stimulation_ack,
+    init_stimulation_ack,
+    get_mode_ack,
+    rehastim_error,
+)
+from .utils import (
+    signed_int,
+    check_stimulation_interval,
+    check_inter_pulse_interval,
+    check_low_frequency_factor,
+    check_unique_channel,
+    check_list_channel_order,
+    calc_electrode_number,
+    packet_construction,
+)
+from .sciencemode import RehastimGeneric
+from .motomed_interface import _Motomed
+from .enums import Device
 
 
-class Stimulator(RehastimGeneric):
+class Rehastim2(RehastimGeneric):
     """
-    Class used for the communication with Rehastim.
-
-    Attributes
-    ----------
-    list_channels: list[Channel]
-        List containing the channels and their parameters.
-    stimulation_interval: int
-        Period of the main stimulation. [8,1025] ms.
-    inter_pulse_interval: int
-        Inter pulse interval. [2, 255] ms.
-    low_frequency_factor: int
-        Low frequency factor. [0, 255].
-    electrode_number: int
-        Number of electrodes.
-    electrode_number_low_frequency: int
-        Number of electrodes for low frequency.
-    amplitude: list[int]
-        Amplitude of the stimulation.
-    pulse_width: list[int]
-        Pulse width of the stimulation.
-    mode: list[int]
-        Mode of the stimulation.
-    muscle: list[int]
-        Muscle of the stimulation.
-    given_channels: list[int]
-        List of the channels that have been given.
-    stimulation_started: bool
-        True if the stimulation has been started.
+    Class used for the communication with Rehastim2.
     """
 
-    def __init__(
-        self,
-        port: str,
-        show_log: bool = False,
-        with_motomed: bool = False,
-        fast_mode: bool = False,
-    ):
+    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False):
         """
         Creates an object stimulator.
 
         Parameters
         ----------
         port : str
-            Port of the computer connected to the Rehastim.
+            Port of the computer connected to the Rehastim2.
         show_log: bool
             If True, the log of the communication will be printed.
         with_motomed: bool
             If the motomed is connected to the Rehastim, put this flag to True.
-        fast_mode: bool
-            If True, no visual response from the Rehastim, this means that there is no confirmation that the Rehastim
-            is stimulating
         """
         self.list_channels = None
         self.stimulation_interval = None
@@ -78,17 +57,21 @@ class Stimulator(RehastimGeneric):
         self.muscle = []
         self.given_channels = []
         self.stimulation_started = None
-        super().__init__(port, show_log, with_motomed)
+        self.device_type = Device.Rehastim2.value
+
+        super().__init__(port, show_log, with_motomed, device_type=self.device_type)
+
         if with_motomed:
             self.motomed = _Motomed(self)
-        self.fast_mode = fast_mode
-        if fast_mode and with_motomed:
-            raise RuntimeError("Fast mode while using the MOTOmed is not yet implemented ")
-        # Connect to rehastim
+
+        # Connect to Rehastim2
         packet = None
         while packet is None:
             packet = self._get_last_ack(init=True)
+
         self.send_generic_packet("InitAck", packet=self._init_ack(packet[5]))
+        self.stimulation_active = True
+        self._start_thread_catch_ack()  # Start the thread which catches rehastim and motomed data
 
     def set_stimulation_signal(self, list_channels: list):
         """
@@ -96,7 +79,7 @@ class Stimulator(RehastimGeneric):
 
         Parameters
         ----------
-        list_channels: list[Channel]
+        list_channels: list[channel]
             Contain the channels and their parameters.
         """
         self.amplitude = []
@@ -156,17 +139,17 @@ class Stimulator(RehastimGeneric):
         """
         if packet == "InitAck" or packet[6] == 1:
             return "InitAck"
-        elif packet[6] == self.Type["GetStimulationModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["GetStimulationModeAck"].value:
             return get_mode_ack(packet)
-        elif packet[6] == self.Type["InitChannelListModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["InitChannelListModeAck"].value:
             return init_stimulation_ack(packet)
-        elif packet[6] == self.Type["StopChannelListModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["StopChannelListModeAck"].value:
             return stop_stimulation_ack(packet)
-        elif packet[6] == self.Type["StartChannelListModeAck"].value:
+        elif packet[6] == self.Rehastim2Commands["StartChannelListModeAck"].value:
             return start_stimulation_ack(packet)
-        elif packet[6] == self.Type["StimulationError"].value:
+        elif packet[6] == self.Rehastim2Commands["StimulationError"].value:
             return rehastim_error(signed_int(packet[7:8]))
-        elif packet[6] == self.Type["ActualValues"].value:
+        elif packet[6] == self.Rehastim2Commands["ActualValues"].value:
             raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
         else:
             raise RuntimeError(f"Error packet : not understood {packet[6]}")
@@ -174,11 +157,6 @@ class Stimulator(RehastimGeneric):
     def _packet_init_stimulation(self) -> bytes:
         """
         Returns the packet for the InitChannelMode.
-
-        Returns
-        -------
-        packet: bytes
-            Packet for the InitChannelMode.
         """
         coded_inter_pulse_interval = int((self.inter_pulse_interval - 1.5) * 2)
         msb, lsb = self._msb_lsb_main_stim()
@@ -199,11 +177,6 @@ class Stimulator(RehastimGeneric):
     def _packet_start_stimulation(self) -> bytes:
         """
         Returns the packet for the StartChannelListMode.
-
-        Returns
-        -------
-        packet: bytes
-            Packet for the StartChannelListMode.
         """
         data_stimulation = []
         for i in range(len(self.amplitude)):
@@ -299,19 +272,13 @@ class Stimulator(RehastimGeneric):
         Can update stimulation interval if one is given.
         Can update list_channels if one is iven.
 
-        Parameters
-        ----------
-        inter_pulse_interval: int
-            Inter pulse interval. [2, 255] ms.
-        low_frequency_factor: int
-            Low frequency factor. [0, 255].
         stimulation_interval: int
             Period of the main stimulation. [8,1025] ms.
         list_channels: list[Channel]
             List containing the channels and their parameters.
         """
-        if self.stimulation_started:
-            self._stop_stimulation()
+        if self.stimulation_active:
+            self.end_stimulation()
 
         check_stimulation_interval(stimulation_interval)
         check_unique_channel(list_channels)
@@ -330,9 +297,7 @@ class Stimulator(RehastimGeneric):
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet("InitChannelListMode")
-        init_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if init_channel_list_mode_ack != "Stimulation initialized":
-            raise RuntimeError("Error channel initialisation : " + str(init_channel_list_mode_ack))
+        self._get_last_ack()
 
     def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
         """
@@ -343,9 +308,10 @@ class Stimulator(RehastimGeneric):
         ----------
         stimulation_duration: float
             Time of the stimulation after the update.
-        upd_list_channels: list[Channel]
+        upd_list_channels: list[channel]
             List of the channels that will be updated
         """
+
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
 
@@ -357,54 +323,33 @@ class Stimulator(RehastimGeneric):
         self._send_packet("StartChannelListMode")
         time_start_stim = time.time()
 
-        if self.fast_mode is False:
-            start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-            if start_channel_list_mode_ack != "Stimulation started":
-                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
-            self.stimulation_started = True
-        else:
-            self.stimulation_started = True
+        self._get_last_ack()
+        self.stimulation_active = True
 
         if stimulation_duration is not None:
             if stimulation_duration < time.time() - time_start_stim:
                 raise RuntimeError("Asked stimulation duration too short")
             time.sleep(stimulation_duration - (time.time() - time_start_stim))
-            self.stop_stimulation()
+            self.pause_stimulation()
 
-    def stop_stimulation(self):
+    def pause_stimulation(self):
         """
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
-
-        Parameters
-        ----------
-        stimulation_duration: float
-            Time of the stimulation after the update.
-        upd_list_channels: list[Channel]
-            List of the channels that will be updated
         """
+        tmp_amp = self.amplitude
         self.amplitude = [0] * len(self.list_channels)
         self._send_packet("StartChannelListMode")
+        self._get_last_ack()
+        self.amplitude = tmp_amp
 
-        if self.fast_mode is False:
-            start_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-            if start_channel_list_mode_ack != "Stimulation started":
-                raise RuntimeError("Error : StartChannelListMode " + str(start_channel_list_mode_ack))
-            self.stimulation_started = True
-        else:
-            self.stimulation_started = True
-
-    def _stop_stimulation(self):
+    def end_stimulation(self):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
         self._send_packet("StopChannelListMode")
-        stop_channel_list_mode_ack = self._calling_ack(self._get_last_ack())
-        if stop_channel_list_mode_ack != " Stimulation stopped":
-            raise RuntimeError("Error : StopChannelListMode" + stop_channel_list_mode_ack)
-        else:
-            self.packet_count = 0
-            self.stimulation_started = False
+        self._get_last_ack()
+        self.packet_count = 0
 
     def get_motomed_angle(self) -> float:
         """
