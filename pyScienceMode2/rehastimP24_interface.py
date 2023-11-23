@@ -6,7 +6,7 @@ from .utils import (
     check_list_channel_order,
 )
 from .sciencemode import RehastimGeneric
-from sciencemode_p24 import sciencemode
+from sciencemode import sciencemode
 from .enums import Device, HighVoltage, StimStatus
 from .channel import Point
 
