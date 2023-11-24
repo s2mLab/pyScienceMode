@@ -28,54 +28,6 @@ import numpy as np
 class _Motomed:
     """
     Class to control the motomed
-
-    Attributes
-    ----------
-    rehastim_interface: Stimulator
-    Stim interface object.
-    show_log: bool
-         If True, print the log of the communication.
-
-    Methods
-    -------
-    _send_packet(cmd: str) -> (None, str)
-        Calls the methode that construct the packet according to the command.
-    get_motomed_mode() -> str
-        Get the mode of the motomed.
-    init_phase_training(arm_training: bool = True)
-        Initialize the phase training.
-    start_phase(*) -> None
-        Start the phase training.
-    _pause_phase_training() -> None
-        Pause the phase training.
-    _stop_phase_training() -> None
-        Stop the phase training.
-    _continue_phase_training() -> None
-        Continue the phase training.
-    start_basic_training(arm_training: bool = True) -> None
-        Start the basic training.
-    _stop_basic_training() -> None
-        Stop the basic training.
-    _pause_basic_training() -> None
-        Pause the basic training.
-    _continue_basic_training() -> None
-        Continue the basic training.
-    set_direction(go_forward: bool = True) -> None
-        Set the direction of the training.
-    set_speed(passive_speed: int) -> None
-        Set the speed of the training.
-    set_gear(gear: int) -> None
-        Set the gear of the training.
-    _calling_ack(packet: bytes) -> str
-        Check for motomed response and return it.
-    get_angle() -> float
-        Get the actual angle of the motomed (left side).
-    get_speed() -> float
-        Get the actual speed of the motomed.
-    get_torque() -> float
-        Get the actual torque of the motomed.
-    get_phase_result() -> float
-        Get the actual torque of the motomed.
     """
 
     def __init__(self, rehastim_interface, show_log: bool = False):
