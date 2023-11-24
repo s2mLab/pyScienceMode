@@ -99,6 +99,7 @@ class RehastimGeneric:
             self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
             self.ll_channel_config_ack = sciencemode.ffi.new("Smpt_ll_channel_config_ack*")
             self.ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
+            self.ml_update = sciencemode.ffi.new("Smpt_ml_update*")
 
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")
@@ -188,8 +189,8 @@ class RehastimGeneric:
         """
         Retrieve current data from the rehastimP24 mid level stimulation.
         """
+        ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
         if self.device_type == Device.Rehastimp24.value:
-            ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
             ml_get_current_data.data_selection = sciencemode.lib.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
 
@@ -497,15 +498,11 @@ class RehastimGeneric:
             while len(packet_tmp) != 0:
                 next_stop_byte = packet_tmp.index(self.STOP_BYTE)
                 while next_stop_byte < 8:
-                    """
                     try:
-                        next_stop_byte += packet_tmp[next_stop_byte + 1:].index(self.STOP_BYTE) + 1
+                        next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
                     except:
                         packet_list = []
                         break
-                    """
-                    next_stop_byte += packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
-
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
                 packet_tmp = packet_tmp[next_stop_byte + 1 :]
             return packet_list

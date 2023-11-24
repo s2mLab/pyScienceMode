@@ -8,7 +8,7 @@ from .utils import (
 from .sciencemode import RehastimGeneric
 from sciencemode import sciencemode
 from .enums import Device, HighVoltage, StimStatus
-from .channel import Point
+from .channel import Point, Channel
 
 
 class RehastimP24(RehastimGeneric):
@@ -39,6 +39,7 @@ class RehastimP24(RehastimGeneric):
         self._current_no_channel = None
         self._current_stim_sequence = None
         self._current_pulse_interval = None
+        self._current_stim_duration = None
         self.device_type = Device.Rehastimp24.value
         self._safety = True
 
@@ -408,7 +409,17 @@ class RehastimP24(RehastimGeneric):
         """
         if self.stimulation_started:
             self.end_stimulation()
-        self.list_channels = list_channels
+
+        for index, channel in enumerate(list_channels):
+            if not isinstance(channel, Channel):
+                raise TypeError(
+                    f"Item at index {index} is not a Channel instance, got {type(channel).__name__} type instead."
+                    )
+        if not list_channels:
+            raise ValueError("Please provide at least one channel for stimulation.")
+        else:
+            self.list_channels = list_channels
+
         check_unique_channel(list_channels)
         self.electrode_number = calc_electrode_number(self.list_channels)
 
@@ -437,6 +448,7 @@ class RehastimP24(RehastimGeneric):
         safety : bool
             Set to True if you want to check the pulse symmetry. False otherwise.
         """
+
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
         elif not isinstance(stimulation_duration, int | float):
@@ -451,8 +463,8 @@ class RehastimP24(RehastimGeneric):
 
         self.list_channels = upd_list_channels
         self._safety = safety
-        ml_update = sciencemode.ffi.new("Smpt_ml_update*")
-        ml_update.packet_number = self.get_next_packet_number()
+        self._current_stim_duration = stimulation_duration
+        self.ml_update.packet_number = self.get_next_packet_number()
 
         for channel in upd_list_channels:
             if safety and not channel.is_pulse_symmetric():
@@ -461,7 +473,6 @@ class RehastimP24(RehastimGeneric):
                     f"Polarization and depolarization must have the same area.\n"
                     f"Or set safety=False in start_stimulation."
                 )
-
             #  Check if points are provided for each channel stimulated
             if not channel.list_point:
                 raise ValueError(
@@ -469,33 +480,58 @@ class RehastimP24(RehastimGeneric):
                     "Please either provide an amplitude and pulse width for a biphasic stimulation."
                     "Or specify specific stimulation points.".format(channel._no_channel)
                 )
-            channel_index = channel._no_channel - 1
-            ml_update.enable_channel[channel_index] = True
-            ml_update.channel_config[channel_index].period = channel._period
-            ml_update.channel_config[channel_index].ramp = channel._ramp
-            ml_update.channel_config[channel_index].number_of_points = len(channel.list_point)
-            for j, point in enumerate(channel.list_point):
-                ml_update.channel_config[channel_index].points[j].time = point.pulse_width
-                ml_update.channel_config[channel_index].points[j].current = point.amplitude
+        self._send_stimulation_update()
 
-        if not sciencemode.lib.smpt_send_ml_update(self.device, ml_update):
-            raise RuntimeError("Failed to start stimulation")
+        start_time = time.time()
+        while (time.time() - start_time) < stimulation_duration:
+            self._get_current_data()
+            self._get_last_ack()
+            self.check_stimulation_errors()
+            time.sleep(0.1)
+
+        self.pause_stimulation()
+        self.stimulation_started = True
+
+    def pause_stimulation(self):
+        """
+        Pause the mid-level stimulation on the RehaStimP24 device by setting all points to zero amplitude.
+        """
+        if self.list_channels is None:
+            raise RuntimeError("No channels initialized for pausing stimulation.")
+
+        original_points = {}
+        for channel in self.list_channels:
+            original_points[channel._no_channel] = [Point(point.pulse_width, point.amplitude) for point in
+                                                    channel.list_point]
+            for point in channel.list_point:
+                point.amplitude = 0
+
+        self._send_stimulation_update()
+        for channel in self.list_channels:
+            channel.list_point = original_points[channel._no_channel]
+
+    def _send_stimulation_update(self):
+        """
+        Send the current stimulation configuration to the device.
+        """
+
+        for channel in self.list_channels:
+            channel_index = channel._no_channel - 1
+            self.ml_update.enable_channel[channel_index] = True
+            self.ml_update.channel_config[channel_index].period = channel._period
+            self. ml_update.channel_config[channel_index].ramp = channel._ramp
+            self.ml_update.channel_config[channel_index].number_of_points = len(channel.list_point)
+            for j, point in enumerate(channel.list_point):
+                self.ml_update.channel_config[channel_index].points[j].time = point.pulse_width
+                self.ml_update.channel_config[channel_index].points[j].current = point.amplitude
+
+        if not sciencemode.lib.smpt_send_ml_update(self.device, self.ml_update):
+            raise RuntimeError("Failed to send stimulation update")
         self.log(
             "Stimulation started",
             "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Update).name),
         )
         self._get_last_ack()
-
-        # This code is used to set the stimulation duration
-        total_time = 0
-        while total_time < stimulation_duration:
-            self._get_current_data()
-            self._get_last_ack()
-            self.check_stimulation_errors()
-            sleep_time = min(1, stimulation_duration - total_time)
-            time.sleep(sleep_time)
-            total_time += sleep_time
-        self.stimulation_started = True
 
     def update_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None):
         """
@@ -508,8 +544,10 @@ class RehastimP24(RehastimGeneric):
         stimulation_duration : int | float
             Duration of the updated stimulation in seconds.
         """
+        if stimulation_duration is not None:
+            self._current_stim_duration = stimulation_duration
 
-        self.start_stimulation(upd_list_channels, stimulation_duration, self._safety)
+        self.start_stimulation(upd_list_channels, self._current_stim_duration, self._safety)
 
     def end_stimulation(self):
         """

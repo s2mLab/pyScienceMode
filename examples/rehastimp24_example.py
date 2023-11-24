@@ -156,18 +156,17 @@ for a muscle loading and unloading phase.
 """
 
 stimulator.start_stim_one_channel_stimulation(
-    no_channel=1, points=list_stimulation_points, stim_sequence=500, pulse_interval=10
-)
+    no_channel=1, points=list_stimulation_points, stim_sequence=30, pulse_interval=10)
 
 # You can update the configuration of the point during the stimulation.
 point11.set_amplitude(30)
 point11.set_pulse_width(350)
 point22.set_amplitude(-30)
 point22.set_pulse_width(350)
-# point33.set_amplitude(20)
-# point33.set_pulse_width(350)
-# point44.set_amplitude(-20)
-# point44.set_pulse_width(350)
+point33.set_amplitude(20)
+point33.set_pulse_width(350)
+point44.set_amplitude(-20)
+point44.set_pulse_width(350)
 
 # Restart the stimulation with the new point configuration.
 stimulator.update_stim_one_channel(upd_list_point=list_stimulation_points)
