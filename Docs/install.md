@@ -1,42 +1,42 @@
-# How to install
-pyScienceMode2 can be installed from anaconda, pip or from the sources.
-## Installing from anaconda
-You can install pyScienceMode2 from anaconda by running the following command :
+# pyScienceMode Installation
+`pyScienceMode` is a Python interface to control the Rehastim2 and the RehastimP24. 
+
+## How to install
+To install the program run the following command in the main directory 
+
 ```bash
-conda install -c conda-forge pyScienceMode2
+python setup.py install
 ```
-## Installing from pip
-You can install pyScienceMode2 from pip by running the following command :
+To use the `RehastimP24` you need to install the [sciencemode library](.\sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl)
+
+
+You will need to create a new conda environment with Python 3.10 (important).
+Then, navigate to the folder where the file `sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl` is located 
+and run the following command :
 ```bash
-pip install pyScienceMode2
+pip install sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl
 ```
-pyqtgraph, biorbd and bioviz will not be installed in the same time as they are not available on pip or optional.
-So you can install pyqtgraph running the following command :
+Now you can use the sciencemode library for the RehastimP24.
+
+## Dependencies
+There are some dependencies. You can install them by running the following command :
+
+- [crccheck](https://pypi.org/project/crccheck/), [colorama](https://pypi.org/project/colorama/), [pyserial](https://pypi.org/project/pyserial/) and [typing](https://pypi.org/project/typing/)
 ```bash
-pip install pyqtgraph
+pip install crccheck colorama pyserial typing
 ```
-And you can install biorbd and bioviz running the following command :
+- [numpy](https://anaconda.org/conda-forge/numpy)
 ```bash
-conda install -c conda-forge bioviz
+conda install -c conda-forge numpy
 ```
 
-## Installing from the sources
-If installing from the sources, you will need to install the following dependencies from conda (in that particular order):
-- [Python](https://www.python.org/)
-- [matplotlib](https://matplotlib.org/)
-- [numpy](https://numpy.org/)
-- [scipy](https://scipy.org/)
-- [setuptools](https://pypi.org/project/setuptools/)
-- [biorbd](https://github.com/pyomeca/biorbd) (optional: for musculoskeletal models)
-- [pyqtgraph](https://www.pyqtgraph.org/) (optional: for real-time plotting)
-- [pyopengl](https://www.opengl.org/) (optional: for real-time 3D plotting)
-- [bioviz](https://github.com/pyomeca/bioviz) (optional: for skeletal models visualization)
+## How to contribute
+You are welcome to contribute to this project by following the steps describes in the 
+[how to contribute](contributing.rst) page.
 
-Also, to stream data from Nexus (Vicon) or Trigno Community SDK, you will need to install the following dependencies:
-- [pytrigno](https://github.com/aceglia/pytrigno) (optional: for Trigno Community SDK)
-- [vicon_dssdk](https://www.vicon.com/software/datastream-sdk/) (optional: for Nexus SDK)
+## License
+pyScienceMode is distributed under the MIT licence. For more information, please consult the [LICENSE](./LICENSE) file in our repository.
 
-After you can install the package by running the following command in the root folder of the package:
-```bash
-pip install .
-```
+## How to cite
+If you use pyScienceMode, we would be grateful if you could cite the follow github repository : https://github.com/s2mLab/pyScienceMode
+

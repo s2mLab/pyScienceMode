@@ -1,26 +1,18 @@
-pyScienceMode2 package
+pyScienceMode package
 ======================
 
 Submodules
 ----------
 
-pyScienceMode2.Channel module
+pyScienceMode.channel module
 -----------------------------
 
-.. automodule:: pyScienceMode2.Channel
+.. automodule:: pyScienceMode2.channel
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode2.Test\_Rehastim module
-------------------------------------
-
-.. automodule:: pyScienceMode2.Test_Rehastim
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pyScienceMode2.acks module
+pyScienceMode.acks module
 --------------------------
 
 .. automodule:: pyScienceMode2.acks
@@ -28,7 +20,7 @@ pyScienceMode2.acks module
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode2.enums module
+pyScienceMode.enums module
 ---------------------------
 
 .. automodule:: pyScienceMode2.enums
@@ -36,7 +28,7 @@ pyScienceMode2.enums module
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode2.motomed\_interface module
+pyScienceMode.motomed_interface module
 ----------------------------------------
 
 .. automodule:: pyScienceMode2.motomed_interface
@@ -44,15 +36,23 @@ pyScienceMode2.motomed\_interface module
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode2.rehastim\_interface module
+pyScienceMode.rehastim2_interface module
 -----------------------------------------
 
-.. automodule:: pyScienceMode2.rehastim_interface
+.. automodule:: pyScienceMode2.rehastim2_interface
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode2.sciencemode module
+pyScienceMode.rehastimP24_interface module
+-------------------------------------------
+
+.. automodule:: pyScienceMode2.rehastimP24_interface
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyScienceMode.sciencemode module
 ---------------------------------
 
 .. automodule:: pyScienceMode2.sciencemode
@@ -60,7 +60,7 @@ pyScienceMode2.sciencemode module
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode2.utils module
+pyScienceMode.utils module
 ---------------------------
 
 .. automodule:: pyScienceMode2.utils

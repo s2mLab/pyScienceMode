@@ -29,13 +29,13 @@ How to Contribute
 Convention of coding
 ====================
 
-`pyScienceMode2` tries to follow as much as possible the PEP recommendations (https://www.python.org/dev/peps/).
+`pyScienceMode` tries to follow as much as possible the PEP recommendations (https://www.python.org/dev/peps/).
 Unless you have good reasons to disregard them, your pull-request is required to follow these recommendations.
 
 All variable names that could be plural should be written as such.
 
 Black is used to enforce the code spacing.
-`pyScienceMode2` is linted with the 120-character max per line's option.
+`pyScienceMode` is linted with the 120-character max per line's option.
 This means that your pull-request tests on GitHub will appear to fail if black fails.
 The easiest way to make sure black is happy is to locally run this command:
 ```

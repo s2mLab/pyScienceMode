@@ -14,6 +14,7 @@ Welcome to pyScienceMode2's documentation!
    modules
    install
    example
+   main_differences
    contributing
    cite
 
