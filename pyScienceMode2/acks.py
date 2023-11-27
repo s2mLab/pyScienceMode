@@ -76,6 +76,7 @@ def stimulation_error(error_code: int) -> str:
 
 # Acks Motomed
 
+
 def get_motomed_mode_ack(packet: (list, str)) -> str:
     """
     Parameters

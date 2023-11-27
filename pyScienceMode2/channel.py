@@ -12,16 +12,16 @@ class Channel:
     MAX_POINTS = 16
 
     def __init__(
-            self,
-            mode: str | Modes = None,
-            no_channel: int = 1,
-            amplitude: int | float = 0,
-            pulse_width: int = 0,
-            enable_low_frequency: bool = False,
-            name: str = None,
-            device_type: str | Device = None,
-            frequency: float = 50.0,
-            ramp: int = 0,
+        self,
+        mode: str | Modes = None,
+        no_channel: int = 1,
+        amplitude: int | float = 0,
+        pulse_width: int = 0,
+        enable_low_frequency: bool = False,
+        name: str = None,
+        device_type: str | Device = None,
+        frequency: float = 50.0,
+        ramp: int = 0,
     ):
         """
         Create an object Channel.

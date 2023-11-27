@@ -414,7 +414,7 @@ class RehastimP24(RehastimGeneric):
             if not isinstance(channel, Channel):
                 raise TypeError(
                     f"Item at index {index} is not a Channel instance, got {type(channel).__name__} type instead."
-                    )
+                )
         if not list_channels:
             raise ValueError("Please provide at least one channel for stimulation.")
         else:
@@ -501,8 +501,9 @@ class RehastimP24(RehastimGeneric):
 
         original_points = {}
         for channel in self.list_channels:
-            original_points[channel._no_channel] = [Point(point.pulse_width, point.amplitude) for point in
-                                                    channel.list_point]
+            original_points[channel._no_channel] = [
+                Point(point.pulse_width, point.amplitude) for point in channel.list_point
+            ]
             for point in channel.list_point:
                 point.amplitude = 0
 
@@ -519,7 +520,7 @@ class RehastimP24(RehastimGeneric):
             channel_index = channel._no_channel - 1
             self.ml_update.enable_channel[channel_index] = True
             self.ml_update.channel_config[channel_index].period = channel._period
-            self. ml_update.channel_config[channel_index].ramp = channel._ramp
+            self.ml_update.channel_config[channel_index].ramp = channel._ramp
             self.ml_update.channel_config[channel_index].number_of_points = len(channel.list_point)
             for j, point in enumerate(channel.list_point):
                 self.ml_update.channel_config[channel_index].points[j].time = point.pulse_width
