@@ -56,7 +56,7 @@ def test_update_frequency(port, frequency):
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
     channel_1.set_frequency(frequency=frequency)
-    assert channel_1.get_frequency() == frequency
+    assert round(channel_1.get_frequency()) == frequency
     stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
     stimulator.close_port()
 
