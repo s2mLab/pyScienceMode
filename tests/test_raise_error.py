@@ -2,13 +2,10 @@
 Test for file IO.
 """
 
-from typing import Callable
-import numpy as np
 import pytest
 from pyScienceMode2 import RehastimP24 as Stp24
 from pyScienceMode2 import Rehastim2 as St2
 from pyScienceMode2 import Channel, Point, Device, Modes
-from time import sleep
 
 
 
@@ -38,7 +35,7 @@ def test_electrode_error_p24(instant,port):
             while 1:
                 stimulator.start_stimulation(upd_list_channels=list_channels,stimulation_duration=20, safety=True)
 
-    elif instant == "begining" :
+    elif instant == "begining":
         with pytest.raises(
                 RuntimeError,
                 match=f"Electrode error on channel {channel_number}"
