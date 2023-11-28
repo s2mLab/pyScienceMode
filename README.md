@@ -1,6 +1,6 @@
 # pyScienceMode
 `pyScienceMode` is a Python interface to control the Rehastim2 and the RehastimP24. 
-
+Please have a look to the documentation for more information about [pyScienceMode]
 ## How to install
 To install the program run the following command in the main directory 
 

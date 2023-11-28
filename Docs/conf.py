@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = "pyScienceMode2"
+project = "pyScienceMode"
 copyright = "2023, Ceglia"
 author = "Ceglia"
 
