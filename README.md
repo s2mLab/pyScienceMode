@@ -1,6 +1,6 @@
 # pyScienceMode
 `pyScienceMode` is a Python interface to control the Rehastim2 and the RehastimP24. 
-Please have a look to the documentation for more information about [pyScienceMode]
+Please have a look to the documentation for more information about [pyScienceMode
 ## How to install
 To install the program run the following command in the main directory 
 
@@ -52,7 +52,7 @@ A set of example is provided in the `examples` folder to show how to control the
 
 ## How to contribute
 You are welcome to contribute to this project by following the steps describes in the 
-[how to contribute](Docs/contributing.rst) page.
+[how to contribute](temp_doc/contributing.rst) page.
 
 ## License
 pyScienceMode is distributed under the MIT licence. For more information, please consult the [LICENSE](./LICENSE) file in our repository.
