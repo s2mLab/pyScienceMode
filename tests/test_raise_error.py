@@ -10,8 +10,11 @@ from pyScienceMode2 import Channel, Point, Device, Modes
 
 
 
-# brancher le channel 1 à un boitier de stim ou sur la peau, puis lancer le test. Pendant le test, retirer l'électrode
-#modifier le port au besoin
+# You will need to connect channel 1 to a stim box or to the skin, then start the test.
+# If instant is "while" : Remove the electrode during the test to see the error message.
+# If instant is "begining" : Remove the electrode before the test to see the error message.
+# You can change the port if you want to test on another stimulator.
+
 @pytest.mark.parametrize("instant", ["while","begining"])
 @pytest.mark.parametrize("port", ["COM4"])
 def test_electrode_error_p24(instant,port):
