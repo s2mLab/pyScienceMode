@@ -52,7 +52,7 @@ A set of example is provided in the `examples` folder to show how to control the
 
 ## How to contribute
 You are welcome to contribute to this project by following the steps describes in the 
-[how to contribute](temp_doc/contributing.rst) page.
+[how to contribute](docs/contributing.rst) page.
 
 ## License
 pyScienceMode is distributed under the MIT licence. For more information, please consult the [LICENSE](./LICENSE) file in our repository.
