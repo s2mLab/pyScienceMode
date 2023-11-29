@@ -1,3 +1,7 @@
+==================================================
+Main differences between Rehastim2 and RehastimP24
+==================================================
+
 .. list-table::
    :widths: 33 33 33
    :header-rows: 1
