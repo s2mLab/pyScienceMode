@@ -34,8 +34,6 @@ conda install -c conda-forge numpy
 You are welcome to contribute to this project by following the steps describes in the 
 [how to contribute](contributing.rst) page.
 
-## License
-pyScienceMode is distributed under the MIT licence. For more information, please consult the [LICENSE](./LICENSE) file in our repository.
 
 ## How to cite
 If you use pyScienceMode, we would be grateful if you could cite the follow github repository : https://github.com/s2mLab/pyScienceMode
