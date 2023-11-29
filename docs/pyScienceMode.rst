@@ -7,7 +7,7 @@ Submodules
 pyScienceMode.channel module
 -----------------------------
 
-.. automodule:: pyScienceMode2.channel
+.. automodule:: pyScienceMode.channel
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ pyScienceMode.channel module
 pyScienceMode.acks module
 --------------------------
 
-.. automodule:: pyScienceMode2.acks
+.. automodule:: pyScienceMode.acks
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ pyScienceMode.acks module
 pyScienceMode.enums module
 ---------------------------
 
-.. automodule:: pyScienceMode2.enums
+.. automodule:: pyScienceMode.enums
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ pyScienceMode.enums module
 pyScienceMode.motomed_interface module
 ----------------------------------------
 
-.. automodule:: pyScienceMode2.motomed_interface
+.. automodule:: pyScienceMode.motomed_interface
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,7 +39,7 @@ pyScienceMode.motomed_interface module
 pyScienceMode.rehastim2_interface module
 -----------------------------------------
 
-.. automodule:: pyScienceMode2.rehastim2_interface
+.. automodule:: pyScienceMode.rehastim2_interface
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,7 +47,7 @@ pyScienceMode.rehastim2_interface module
 pyScienceMode.rehastimP24_interface module
 -------------------------------------------
 
-.. automodule:: pyScienceMode2.rehastimP24_interface
+.. automodule:: pyScienceMode.rehastimP24_interface
    :members:
    :undoc-members:
    :show-inheritance:
@@ -55,7 +55,7 @@ pyScienceMode.rehastimP24_interface module
 pyScienceMode.sciencemode module
 ---------------------------------
 
-.. automodule:: pyScienceMode2.sciencemode
+.. automodule:: pyScienceMode.sciencemode
    :members:
    :undoc-members:
    :show-inheritance:
@@ -63,7 +63,7 @@ pyScienceMode.sciencemode module
 pyScienceMode.utils module
 ---------------------------
 
-.. automodule:: pyScienceMode2.utils
+.. automodule:: pyScienceMode.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -71,7 +71,7 @@ pyScienceMode.utils module
 Module contents
 ---------------
 
-.. automodule:: pyScienceMode2
+.. automodule:: pyScienceMode
    :members:
    :undoc-members:
    :show-inheritance:

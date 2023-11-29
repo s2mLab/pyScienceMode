@@ -2,8 +2,8 @@
 Here is an example of how to use the RehastimP24 device.
 
 ```
-from pyScienceMode2 import Channel, Point, Device, Modes
-from pyScienceMode2 import RehastimP24 as St
+from pyScienceMode import Channel, Point, Device, Modes
+from pyScienceMode import RehastimP24 as St
 
 """
 This example shows how to use the RehastimP24 device.

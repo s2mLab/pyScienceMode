@@ -1,9 +1,9 @@
 # Import Stimulator class
-from pyScienceMode2 import Rehastim2 as St
-from pyScienceMode2 import Modes, Device
+from pyScienceMode import Rehastim2 as St
+from pyScienceMode import Modes, Device
 
 # Import Channel class
-from pyScienceMode2 import Channel as Ch
+from pyScienceMode import Channel as Ch
 from time import sleep
 
 #  Create a list of channels
