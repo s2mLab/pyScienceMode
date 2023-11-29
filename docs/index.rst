@@ -11,7 +11,6 @@ Welcome to pyScienceMode's documentation!
    :caption: Contents:
 
    about
-   modules
    install
    example
    main_differences
@@ -21,6 +20,5 @@ Welcome to pyScienceMode's documentation!
 Indices and tables
 ==================
 
-* :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
