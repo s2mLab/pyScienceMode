@@ -38,6 +38,7 @@ Black is used to enforce the code spacing.
 `pyScienceMode` is linted with the 120-character max per line's option.
 This means that your pull-request tests on GitHub will appear to fail if black fails.
 The easiest way to make sure black is happy is to locally run this command:
+
 ```
 black . -l120 --exclude "external/*"
 ```
