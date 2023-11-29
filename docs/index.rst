@@ -13,7 +13,7 @@ Welcome to pyScienceMode's documentation!
    about
    install
    examples
-   main_differences
+   Main_differences
    contributing
    cite
 
