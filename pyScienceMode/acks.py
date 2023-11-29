@@ -5,12 +5,12 @@ from .utils import signed_int
 
 def motomed_error_values(error_code: int):
     """
-    Handles the errors of the Motomed
+    Handles the Motomed errors
 
     Parameters
     ----------
     error_code: int
-        Error code of the Motomed
+        Motomed code error
 
     Returns
     -------
@@ -34,12 +34,12 @@ def motomed_error_values(error_code: int):
 
 def rehastim_error(error_code: int) -> str:
     """
-    Handles the errors of the Rehastim
+    Handles the Rehastim2 errors
 
     Parameters
     ----------
     error_code: int
-        Error code of the Rehastim
+        Rehastim2 code error
 
     Returns
     -------
@@ -58,7 +58,7 @@ def stimulation_error(error_code: int) -> str:
     Parameters
     ----------
     error_code: int
-        Error code of the Rehastim
+        Rehastim2 code error
 
     Returns
     -------

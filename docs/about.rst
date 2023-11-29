@@ -2,7 +2,7 @@
 About
 ======
 
-pyScienceMode is a python module to control the Rehastim2 and RehastimP24 devices from Hasomed.
+pyScienceMode is a python interface to control the Rehastim2 and RehastimP24 devices from Hasomed.
 These devices are used for functional electrical stimulation (FES).
 They can be used to stimulate muscles or nerves to restore lost function after a stroke or spinal cord injury.
 Both devices can control up to 8 channels and can be used with a variety of electrodes.

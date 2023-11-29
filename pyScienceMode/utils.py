@@ -1,8 +1,10 @@
 import crccheck
 from .enums import ErrorCode, Rehastim2Commands
 
-# This code provides utility functions for working with the Rehastim device, including packet construction and data validation.
-# It also includes functions to convert and check various parameters used in Rehastim communication.
+"""
+This code provides utility functions for working with the Rehastim device, including packet construction and data 
+validation. It also includes functions to convert and check various parameters used in Rehastim communication.
+"""
 
 
 def signed_int(packet: bytes) -> int:
