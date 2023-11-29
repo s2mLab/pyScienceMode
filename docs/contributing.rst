@@ -39,7 +39,8 @@ Black is used to enforce the code spacing.
 This means that your pull-request tests on GitHub will appear to fail if black fails.
 The easiest way to make sure black is happy is to locally run this command:
 
-```
-black . -l120 --exclude "external/*"
-```
+.. code-block:: bash
+
+    black . -l120 --exclude "external/*"
+
 If you need to install black, you can do it via conda using the conda-forge channel.
