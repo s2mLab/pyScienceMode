@@ -16,7 +16,7 @@ Welcome to pyScienceMode's documentation!
    main_differences
    contributing
    cite
-
+   modules
 Indices and tables
 ==================
 

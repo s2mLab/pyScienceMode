@@ -71,7 +71,7 @@ pyScienceMode.utils module
 Module contents
 ---------------
 
-.. automodule:: pyScienceMode
+.. automodule:: pyScienceMode2
    :members:
    :undoc-members:
    :show-inheritance:
