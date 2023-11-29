@@ -3,4 +3,4 @@ myst_parser
 crccheck
 numpy
 serial
-sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl
+sciencemode_cffi-1.0.0-cp310-cp310-win_amd64
