@@ -1,6 +1,6 @@
 import pytest
-from pyScienceMode2 import RehastimP24 as Stp24
-from pyScienceMode2 import Channel, Device, Modes
+from pyScienceMode import RehastimP24 as Stp24
+from pyScienceMode import Channel, Device, Modes
 
 
 # Connect the Rehastimp24 device to the computer. Then connect channel 1 to a stim box or to the skin, and start the

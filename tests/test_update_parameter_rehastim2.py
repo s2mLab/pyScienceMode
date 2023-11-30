@@ -1,6 +1,6 @@
 import pytest
-from pyScienceMode2 import Rehastim2 as St2
-from pyScienceMode2 import Channel, Device, Modes
+from pyScienceMode import Rehastim2 as St2
+from pyScienceMode import Channel, Device, Modes
 
 
 # Connect the Rehastim2 device to the computer. Then connect channel 2 to a stim box or to the skin, and start the test.
