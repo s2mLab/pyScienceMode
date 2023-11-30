@@ -306,12 +306,12 @@ def stop_basic_training_ack(packet: bytes) -> str:
         return motomed_error_values(signed_int(packet[7:8]))
 
 
-def motomed_error_ack(packet: bytes) -> str:
+def motomed_error_ack(packet: int) -> str:
     """
     This function processes a packet received from the Motomed and returns a string corresponding to the error code
     Parameters
     ----------
-    packet: bytes
+    packet: int
         Packet received from the Motomed
 
     Returns

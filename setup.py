@@ -8,5 +8,5 @@ setup(
     license="",
     author="S2M Lab",
     author_email="kevin.co@umontreal.ca",
-    description="Control the Rehastim2 and RehastimP24 devices.",
+    description="Python interface to control the Rehastim2 and RehastimP24 devices.",
 )
