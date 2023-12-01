@@ -281,9 +281,17 @@ class Rehastim2(RehastimGeneric):
             self.end_stimulation()
 
         check_stimulation_interval(stimulation_interval)
+        for index, channel in enumerate(list_channels):
+            if not isinstance(channel, Channel):
+                raise TypeError(
+                    f"Item at index {index} is not a Channel instance, got {type(channel).__name__} type instead."
+                    )
+        if not list_channels:
+            raise ValueError("Please provide at least one channel for stimulation.")
+        else:
+            self.list_channels = list_channels
         check_unique_channel(list_channels)
         self.stimulation_interval = stimulation_interval
-        self.list_channels = list_channels
 
         self.inter_pulse_interval = inter_pulse_interval
         check_inter_pulse_interval(inter_pulse_interval)

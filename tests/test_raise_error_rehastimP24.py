@@ -4,7 +4,6 @@ Test for file IO.
 
 import pytest
 from pyScienceMode import RehastimP24 as Stp24
-from pyScienceMode import Rehastim2 as St2
 from pyScienceMode import Channel, Point, Device, Modes
 
 
@@ -43,14 +42,13 @@ def test_electrode_error_p24(instant, port):
                 match=f"Electrode error on channel {channel_number}"
         ):
             stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
-    # sleep(1)
     stimulator.close_port()
 
 
 @pytest.mark.parametrize("port", ["COM4"])
 def test_port_access_error(port):
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    Do not connect the stimulator to the computer and start the test.
     """
     stimulator = Stp24(port=port, show_log="Status")
     with pytest.raises(
@@ -68,13 +66,12 @@ def test_port_access_error(port):
 
 def test_no_stimulation_points_error():
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    Test if no stimulation points are provided, raise an error.
     """
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
     channel_number = 1
-    channel_1 = Channel(no_channel=channel_number, amplitude=20, frequency=10,
-                        device_type=Device.Rehastimp24)
+    channel_1 = Channel(no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24)
 
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
@@ -90,13 +87,12 @@ def test_no_stimulation_points_error():
 
 def test_symmetric_error():
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    Start a stimulation pattern with an asymmetric pulse and with safety = True.
     """
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
     channel_number = 1
-    channel_1 = Channel(no_channel=channel_number, amplitude=20, frequency=10,
-                        device_type=Device.Rehastimp24)
+    channel_1 = Channel(no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24)
 
     list_channels.append(channel_1)
     channel_1.add_point(20, 350)
@@ -113,7 +109,7 @@ def test_symmetric_error():
 
 def test_no_stimulation_duration_error():
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    Test if no stimulation duration is provided in start_stimulation.
     """
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
@@ -133,7 +129,10 @@ def test_no_stimulation_duration_error():
         stimulator.close_port()
 
 
-def test_channel_list_empty() :
+def test_channel_list_empty():
+    """
+    Test if no channel is provided in the init_stimulation.
+    """
 
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
@@ -145,7 +144,10 @@ def test_channel_list_empty() :
         stimulator.close_port()
 
 
-def test_not_channel_instance_error() :
+def test_no_channel_instance_error():
+    """
+    Test if the channel list contains a non channel instance.
+    """
 
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = [1]
@@ -158,3 +160,43 @@ def test_not_channel_instance_error() :
         stimulator.init_stimulation(list_channels=list_channels)
         stimulator.close_port()
 
+
+def test_point_list_empty():
+    """
+    Test if no point is provided for the low level stimulation
+    """
+
+    stimulator = Stp24(port="COM4", show_log="Status")
+    list_points = []
+    channel_number = 1
+    stimulator.start_stim_one_channel_stimulation(no_channel=channel_number, points=list_points,
+                                                  stim_sequence=1,
+                                                  pulse_interval=10)
+
+    with pytest.raises(
+            ValueError,
+            match="The points are not symmetric based on amplitude.\n"
+                  "Polarization and depolarization must have the same area.\n"
+                  "Or set safety=False in start_stim_one_channel_stimulation."
+    ):
+        stimulator.end_stim_one_channel()
+        stimulator.close_port()
+
+
+def no_point_instane_error():
+    """
+    Test if the point list contains a non point instance.
+    """
+
+    stimulator = Stp24(port="COM4", show_log="Status")
+    list_points = [1]
+    index = 0
+    with pytest.raises(
+            TypeError,
+            match=f"Item at index {index} is not a Point instance, got {type(list_points[index]).__name__} "
+                  f"type instead."
+    ):
+        stimulator.start_stim_one_channel_stimulation(no_channel=1, points=list_points,
+                                                      stim_sequence=1,
+                                                      pulse_interval=10)
+        stimulator.close_port()
