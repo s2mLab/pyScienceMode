@@ -1,6 +1,3 @@
-"""
-Test for file IO.
-"""
 
 import pytest
 from pyScienceMode import RehastimP24 as Stp24
@@ -48,23 +45,24 @@ def test_port_access_error(port):
     """
     Do not connect the stimulator to the computer and start the test.
     """
-    stimulator = Stp24(port=port, show_log="Status")
     with pytest.raises(
             RuntimeError,
             match=f"Failed to access port {port}."
     ):
-        stimulator.close_port()
-    stimulator = Stp24(port=port, show_log="Status")
+        stimulator = Stp24(port=port, show_log="Status")
+    stimulator.close_port()
     with pytest.raises(
             RuntimeError,
             match=f"Unable to open port {port}."
     ):
-        stimulator.close_port()
+        stimulator = Stp24(port=port, show_log="Status")
+    stimulator.close_port()
 
 
 def test_no_stimulation_points_error():
     """
     Test if no stimulation points are provided, raise an error.
+    Connect the electrode to a stim box or to the skin and start the test.
     """
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
@@ -73,19 +71,20 @@ def test_no_stimulation_points_error():
 
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5, safety=True)
     with pytest.raises(
             ValueError,
             match="No stimulation point provided for channel {}. "
                   "Please either provide an amplitude and pulse width for a biphasic stimulation."
                   "Or specify specific stimulation points.".format(channel_1._no_channel)
     ):
-        stimulator.close_port()
+        stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5, safety=True)
+    stimulator.close_port()
 
 
 def test_symmetric_error():
     """
     Start a stimulation pattern with an asymmetric pulse and with safety = True.
+    Connect the electrode to a stim box or to the skin and start the test.
     """
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
@@ -95,19 +94,20 @@ def test_symmetric_error():
     list_channels.append(channel_1)
     channel_1.add_point(20, 350)
     stimulator.init_stimulation(list_channels=list_channels)
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5, safety=True)
     with pytest.raises(
             ValueError,
             match=f"Pulse for channel {channel_1._no_channel} is not symmetric.\n"
                   f"Polarization and depolarization must have the same area.\n"
                   f"Or set safety=False in start_stimulation."
     ):
-        stimulator.close_port()
+        stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5, safety=True)
+    stimulator.close_port()
 
 
 def test_no_stimulation_duration_error():
     """
     Test if no stimulation duration is provided in start_stimulation.
+    Connect the electrode to a stim box or to the skin and start the test.
     """
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
@@ -119,27 +119,28 @@ def test_no_stimulation_duration_error():
 
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
-    stimulator.start_stimulation(upd_list_channels=list_channels, safety=True)
     with pytest.raises(
             ValueError,
             match="Please indicate the stimulation duration"
     ):
-        stimulator.close_port()
+        stimulator.start_stimulation(upd_list_channels=list_channels, safety=True)
+    stimulator.close_port()
 
 
 def test_channel_list_empty():
     """
     Test if no channel is provided in the init_stimulation.
+    Connect the electrode to a stim box or to the skin and start the test.
     """
 
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
-    stimulator.init_stimulation(list_channels=list_channels)
     with pytest.raises(
             ValueError,
             match="Please provide at least one channel for stimulation."
     ):
-        stimulator.close_port()
+        stimulator.init_stimulation(list_channels=list_channels)
+    stimulator.close_port()
 
 
 def test_no_channel_instance_error():
@@ -156,20 +157,18 @@ def test_no_channel_instance_error():
                   f"type instead."
     ):
         stimulator.init_stimulation(list_channels=list_channels)
-        stimulator.close_port()
+    stimulator.close_port()
 
 
 def test_point_list_empty():
     """
-    Test if no point is provided for the low level stimulation
+    Test if no point is provided for the low level stimulation.
+    Connect the electrode to a stim box or to the skin and start the test.
     """
 
     stimulator = Stp24(port="COM4", show_log="Status")
     list_points = []
     channel_number = 1
-    stimulator.start_stim_one_channel_stimulation(no_channel=channel_number, points=list_points,
-                                                  stim_sequence=1,
-                                                  pulse_interval=10)
 
     with pytest.raises(
             ValueError,
@@ -177,13 +176,17 @@ def test_point_list_empty():
                   "Polarization and depolarization must have the same area.\n"
                   "Or set safety=False in start_stim_one_channel_stimulation."
     ):
-        stimulator.end_stim_one_channel()
-        stimulator.close_port()
+        stimulator.start_stim_one_channel_stimulation(no_channel=channel_number, points=list_points,
+                                                      stim_sequence=1,
+                                                      pulse_interval=10)
+    stimulator.end_stim_one_channel()
+    stimulator.close_port()
 
 
 def no_point_instane_error():
     """
     Test if the point list contains a non point instance.
+    Connect the electrode to a stim box or to the skin and start the test.
     """
 
     stimulator = Stp24(port="COM4", show_log="Status")
@@ -197,4 +200,4 @@ def no_point_instane_error():
         stimulator.start_stim_one_channel_stimulation(no_channel=1, points=list_points,
                                                       stim_sequence=1,
                                                       pulse_interval=10)
-        stimulator.close_port()
+    stimulator.close_port()

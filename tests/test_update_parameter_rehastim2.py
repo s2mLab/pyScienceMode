@@ -3,13 +3,16 @@ from pyScienceMode import Rehastim2 as St2
 from pyScienceMode import Channel, Device, Modes
 
 
-# Connect the Rehastim2 device to the computer. Then connect channel 2 to a stim box or to the skin, and start the test.
-
+# Connect the Rehastim2 device to the computer.
+# You will need to connect channel 2 (or the no_channel you want between 1 and 8 to a stim box or to the skin,
 
 @pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("amplitude", [10, 20, 30])
 def test_update_amplitude(port, amplitude):
-    
+    """
+    You will need to connect channel 2 to a stim box or to the skin, then start the test.
+    The stimulation will be updated with a new amplitude.
+    """
     stimulator = St2(port=port, show_log=False)
     list_channels = []
     channel_number = 2
@@ -28,6 +31,10 @@ def test_update_amplitude(port, amplitude):
 @pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("pulse_width", [100, 350, 500])
 def test_update_pulse_width(port, pulse_width):
+    """
+    You will need to connect channel 2 to a stim box or to the skin, then start the test.
+    The stimulation will be updated with a new pusle width.
+    """
     stimulator = St2(port=port, show_log=False)
     list_channels = []
     channel_number = 2
@@ -46,6 +53,10 @@ def test_update_pulse_width(port, pulse_width):
 @pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("frequency", [10, 30, 50])
 def test_update_frequency(port, frequency):
+    """
+    You will need to connect channel 2 to a stim box or to the skin, then start the test.
+    The stimulation will be updated with a new frequency
+    """
     stimulator = St2(port=port, show_log=False)
     list_channels = []
     channel_number = 2
@@ -63,6 +74,10 @@ def test_update_frequency(port, frequency):
 @pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("mode", [Modes.SINGLE, Modes.DOUBLET, Modes.TRIPLET])
 def test_update_mode(port, mode):
+    """
+    You will need to connect channel 2 to a stim box or to the skin, then start the test.
+    The stimulation will be updated with a new mode
+    """
     stimulator = St2(port=port, show_log=False)
     list_channels = []
     channel_number = 2
