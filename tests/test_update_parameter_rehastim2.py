@@ -9,6 +9,7 @@ from pyScienceMode import Channel, Device, Modes
 @pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("amplitude", [10, 20, 30])
 def test_update_amplitude(port, amplitude):
+    
     stimulator = St2(port=port, show_log=False)
     list_channels = []
     channel_number = 2

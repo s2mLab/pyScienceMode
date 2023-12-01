@@ -3,15 +3,12 @@ from pyScienceMode import Rehastim2 as St2
 from pyScienceMode import Channel, Point, Device, Modes
 
 
-# You will need to connect channel 1 to a stim box or to the skin, then start the test.
-# If instant is "while" : Remove the electrode during the test to see the error message.
-# If instant is "begining" : Remove the electrode before the test to see the error message.
-# You can change the port if you want to test on another stimulator.
-
 @pytest.mark.parametrize("port", ["COM3"])
 def test_electrode_error(port):
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    Test if the electrode is not connected to the stimulator. You will need to connect the channel 1 to a stim box
+    or directly to the skin. Then start the test and remove the electrode.
+    You can chang the port if you want to test another stimulator
     """
 
     stimulator = Stp2(port=port, show_log=True)
@@ -33,9 +30,9 @@ def test_electrode_error(port):
 
 
 @pytest.mark.parametrize("port", ["COM3"])
-def test_stimulation_duration_too_short(port) :
+def test_stimulation_duration_too_short(port):
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    Connect the electrode to the stimulator and start the test with a very short stimulation duration.
     """
 
     stimulator = Stp2(port="COM3", show_log=True)
@@ -66,7 +63,7 @@ def test_channel_list_empty(port):
             ValueError,
             match="Please provide at least one channel for stimulation."
     ):
-        stimulator.init_channel(list_channels=list_channels,stimulation_interval=30)
+        stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
 
 
 @pytest.mark.parametrize("port", ["COM3"])

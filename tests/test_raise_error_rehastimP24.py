@@ -7,16 +7,14 @@ from pyScienceMode import RehastimP24 as Stp24
 from pyScienceMode import Channel, Point, Device, Modes
 
 
-# You will need to connect channel 1 to a stim box or to the skin, then start the test.
-# If instant is "while" : Remove the electrode during the test to see the error message.
-# If instant is "begining" : Remove the electrode before the test to see the error message.
-# You can change the port if you want to test on another stimulator.
-
 @pytest.mark.parametrize("instant", ["while", "begining"])
 @pytest.mark.parametrize("port", ["COM4"])
 def test_electrode_error_p24(instant, port):
     """
-    Prepare and solve and animate a reaching task ocp #TODO change the docstring
+    You will need to connect channel 1 to a stim box or to the skin, then start the test.
+    If instant is "while" : Remove the electrode during the test to see the error message.
+    If instant is "begining" : Remove the electrode before the test to see the error message.
+    You can change the port if you want to test on another stimulator.
     """
 
     stimulator = Stp24(port=port, show_log="Status")
