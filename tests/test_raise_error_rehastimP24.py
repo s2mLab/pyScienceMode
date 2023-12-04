@@ -4,6 +4,7 @@ from pyScienceMode import RehastimP24 as Stp24
 from pyScienceMode import Channel, Point, Device, Modes
 
 
+
 @pytest.mark.parametrize("instant", ["while", "begining"])
 @pytest.mark.parametrize("port", ["COM4"])
 def test_electrode_error_p24(instant, port):
@@ -45,6 +46,7 @@ def test_port_access_error(port):
     """
     Do not connect the stimulator to the computer and start the test.
     """
+    stimulator = Stp24(port=port, show_log="Status")
     with pytest.raises(
             RuntimeError,
             match=f"Failed to access port {port}."
@@ -92,7 +94,7 @@ def test_symmetric_error():
     channel_1 = Channel(no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24)
 
     list_channels.append(channel_1)
-    channel_1.add_point(20, 350)
+    channel_1.add_point(350, 20)
     stimulator.init_stimulation(list_channels=list_channels)
     with pytest.raises(
             ValueError,
@@ -172,9 +174,7 @@ def test_point_list_empty():
 
     with pytest.raises(
             ValueError,
-            match="The points are not symmetric based on amplitude.\n"
-                  "Polarization and depolarization must have the same area.\n"
-                  "Or set safety=False in start_stim_one_channel_stimulation."
+            match="Please provide at least one point for stimulation."
     ):
         stimulator.start_stim_one_channel_stimulation(no_channel=channel_number, points=list_points,
                                                       stim_sequence=1,
@@ -183,7 +183,7 @@ def test_point_list_empty():
     stimulator.close_port()
 
 
-def no_point_instane_error():
+def test_no_point_instane_error():
     """
     Test if the point list contains a non point instance.
     Connect the electrode to a stim box or to the skin and start the test.
