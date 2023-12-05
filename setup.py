@@ -1,12 +1,12 @@
 from setuptools import setup
 
 setup(
-    name="pyScienceMode2",
+    name="pyScienceMode",
     version="1.1",
-    packages=["pyScienceMode2"],
-    url="https://github.com/ArseneBA/pyScienceMode2.git",
+    packages=["pyScienceMode"],
+    url="https://github.com/s2mLab/pyScienceMode.git",
     license="",
-    author="ArseneBA",
-    author_email="arsene.baert@etu.emse.fr",
-    description="Control the Rehastim2",
+    author="S2M Lab",
+    author_email="kevin.co@umontreal.ca",
+    description="Python interface to control the Rehastim2 and RehastimP24 devices.",
 )

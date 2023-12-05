@@ -1,8 +1,12 @@
+# RehastimP24 example
+Here is an example of how to use the RehastimP24 device.
+
+```
 from pyScienceMode import Channel, Point, Device, Modes
 from pyScienceMode import RehastimP24 as St
 
 """
-This example shows how to use the RehastimP24 device. 
+This example shows how to use the RehastimP24 device.
 There are several commands divided into three levels (general, low and mid).
 You can't call commands from different levels, you must first close the current level
 to be able to use commands from another one.
@@ -58,7 +62,7 @@ list_channels.append(channel_3)
 list_channels.append(channel_4)
 
 """
-General level commands. 
+General level commands.
 In this level you can get several information about the device.
 """
 
@@ -69,7 +73,7 @@ print(stimulator.get_stim_status())
 # stimulator.reset()
 
 """
-Mid level commands. 
+Mid level commands.
 In this level you can define a stimulation pattern. You can stimulate several channels at the same time
 """
 
@@ -96,7 +100,7 @@ point4 = channel_1.add_point(100, -20)
 """
 Start the stimulation with the list of channels provided for 5s.
 If you set the safety flag to False, it will not  check if the stimulation points provided are symmetrical
-for a muscle loading and unloading phase. 
+for a muscle loading and unloading phase.
 """
 
 stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=5, safety=True)
@@ -149,15 +153,14 @@ list_stimulation_points.append(point44)
 
 
 """
-Start the low level stimulation with the list of points provided. 
+Start the low level stimulation with the list of points provided.
 It is possible to update the parameters of the point by giving a new list of points.
 If you set the safety flag to False, it will not check if the stimulation points  provided are symmetrical
-for a muscle loading and unloading phase. 
+for a muscle loading and unloading phase.
 """
 
 stimulator.start_stim_one_channel_stimulation(
-    no_channel=1, points=list_stimulation_points, stim_sequence=30, pulse_interval=10
-)
+    no_channel=1, points=list_stimulation_points, stim_sequence=30, pulse_interval=10)
 
 # You can update the configuration of the point during the stimulation.
 point11.set_amplitude(30)
@@ -181,3 +184,4 @@ stimulator.end_stim_one_channel()
 Close the port and disconnect the Pc and the RehastimP24.
 """
 stimulator.close_port()
+```

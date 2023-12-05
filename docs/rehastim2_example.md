@@ -1,3 +1,7 @@
+# Rehastim2 example
+Here is an example of how to use the Rehastim2 class.
+
+```
 # Import Stimulator class
 from pyScienceMode import Rehastim2 as St
 from pyScienceMode import Modes, Device
@@ -58,7 +62,7 @@ stimulator.init_channel(stimulation_interval=200, list_channels=list_channels, l
 Start the stimulation.
 It is possible to :
 - Give a time after which the stimulation will be stopped but not disconnected.
-- Update the parameters of the channel by giving a new list of channels. The channel given must have been 
+- Update the parameters of the channel by giving a new list of channels. The channel given must have been
   initialised first.
 """
 stimulator.start_stimulation()
@@ -99,7 +103,7 @@ To disconnect the computer and the Rehastim, use the disconnect method.
 
 # stimulator.disconnect()
 """
-After a disconnection, init_channel must be called.  
+After a disconnection, init_channel must be called.
 """
 stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
 
@@ -114,3 +118,4 @@ stimulator.disconnect()
 close_port method closes the serial port.
 """
 stimulator.close_port()
+```

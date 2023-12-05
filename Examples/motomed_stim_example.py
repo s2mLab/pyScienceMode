@@ -1,7 +1,7 @@
 import time
-from pyScienceMode2 import Rehastim2 as St
-from pyScienceMode2 import Channel as Ch
-from pyScienceMode2 import Modes, Device
+from pyScienceMode import Rehastim2 as St
+from pyScienceMode import Channel as Ch
+from pyScienceMode import Modes, Device
 
 
 def init_rehastim():

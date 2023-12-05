@@ -20,7 +20,7 @@ from .acks import (
 )
 from .enums import Rehastim2Commands, RehastimP24Commands, Device
 
-from sciencemode_p24 import sciencemode
+from sciencemode import sciencemode
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
@@ -99,6 +99,7 @@ class RehastimGeneric:
             self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
             self.ll_channel_config_ack = sciencemode.ffi.new("Smpt_ll_channel_config_ack*")
             self.ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
+            self.ml_update = sciencemode.ffi.new("Smpt_ml_update*")
 
             if not self.check_serial_port():
                 raise RuntimeError(f"Failed to access port {self.port_name}.")
@@ -188,8 +189,8 @@ class RehastimGeneric:
         """
         Retrieve current data from the rehastimP24 mid level stimulation.
         """
+        ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
         if self.device_type == Device.Rehastimp24.value:
-            ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
             ml_get_current_data.data_selection = sciencemode.lib.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
 
@@ -212,7 +213,8 @@ class RehastimGeneric:
             If True, get the last ack of the init packet. If False, get the last ack of the normal packet.
         Returns
         -------
-        bytes
+        last_ack : bytes
+            Last ack received.
         """
         if self.error_occured:
             raise RuntimeError("Stimulation error")
@@ -693,6 +695,7 @@ class RehastimGeneric:
 
         Returns
         -------
+        last_result : float
             The torque of the motomed.
         """
         self.is_phase_result.wait()

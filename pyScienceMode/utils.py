@@ -1,6 +1,11 @@
 import crccheck
 from .enums import ErrorCode, Rehastim2Commands
 
+"""
+This code provides utility functions for working with the Rehastim device, including packet construction and data 
+validation. It also includes functions to convert and check various parameters used in Rehastim communication.
+"""
+
 
 def signed_int(packet: bytes) -> int:
     """
@@ -21,6 +26,12 @@ def signed_int(packet: bytes) -> int:
 def check_stimulation_interval(stimulation_interval: int = None):
     """
     Checks if the stimulation interval is within limits.
+
+    Parameters
+    ----------
+    stimulation_interval: int
+        Stimulation interval to check. If out of limits, raise a ValueError.
+
     """
     if stimulation_interval:
         if stimulation_interval < 8 or stimulation_interval > 1025:
@@ -30,6 +41,12 @@ def check_stimulation_interval(stimulation_interval: int = None):
 def check_inter_pulse_interval(inter_pulse_interval: int = None):
     """
     Checks if the "inter pulse interval" is within limits.
+
+    Parameters
+    ----------
+    inter_pulse_interval: int, optional
+        Inter pulse interval to check. If out of limits, raise a ValueError.
+
     """
     if inter_pulse_interval:
         if inter_pulse_interval < 2 or inter_pulse_interval > 129:
@@ -39,6 +56,11 @@ def check_inter_pulse_interval(inter_pulse_interval: int = None):
 def check_low_frequency_factor(low_frequency_factor: int = None):
     """
     Checks if the low frequency factor is within limits.
+
+    Parameters
+    ----------
+    low_frequency_factor: int, optional
+        Low frequency factor to check. If out of limits, raise a ValueError.
     """
     if low_frequency_factor:
         if low_frequency_factor < 0 or low_frequency_factor > 7:
@@ -47,11 +69,11 @@ def check_low_frequency_factor(low_frequency_factor: int = None):
 
 def check_unique_channel(list_channels: list = None) -> bool:
     """
-    Checks if there is not 2 times the same channel in the ist given.
+    Checks if there is not 2 times the same channel in the list given.
 
     Parameters
     ----------
-    list_channels: list[Channel]
+    list_channels: list[Channel], optional
         Contains a list of channel.
 
     Returns
@@ -76,6 +98,11 @@ def check_unique_channel(list_channels: list = None) -> bool:
 def check_list_channel_order(list_channels):
     """
     Checks if the channels in the list_channels given are ordered.
+
+    Parameters
+    ----------
+    list_channels: list[Channel]
+        Contains the channels. Raises a RuntimeError if not ordered.
     """
     number_previous_channel = 0
     for i in range(len(list_channels)):
