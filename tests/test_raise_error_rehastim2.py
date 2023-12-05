@@ -11,7 +11,7 @@ def test_electrode_error(port):
     You can chang the port if you want to test another stimulator
     """
 
-    stimulator = Stp2(port=port, show_log=True)
+    stimulator = St2(port=port, show_log=True)
     list_channels = []
     channel_number = 2
     ack = "Electrode error"
@@ -35,7 +35,7 @@ def test_stimulation_duration_too_short(port):
     Connect the electrode to the stimulator and start the test with a very short stimulation duration.
     """
 
-    stimulator = Stp2(port="COM3", show_log=True)
+    stimulator = St2(port="COM3", show_log=True)
     list_channels = []
     channel_number = 2
     channel_1 = Channel(mode=Modes.SINGLE,
@@ -72,7 +72,7 @@ def test_no_channel_instance_error(port):
     Test if the channel list contains a non channel instance.
     """
 
-    stimulator = Stp2(port=port, show_log=True)
+    stimulator = St2(port=port, show_log=True)
     list_channels = [1]
     index = 0
     with pytest.raises(
