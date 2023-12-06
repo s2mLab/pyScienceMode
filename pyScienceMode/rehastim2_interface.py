@@ -24,6 +24,7 @@ from .utils import (
 from .sciencemode import RehastimGeneric
 from .motomed_interface import _Motomed
 from .enums import Device
+from .channel import Channel
 
 
 class Rehastim2(RehastimGeneric):

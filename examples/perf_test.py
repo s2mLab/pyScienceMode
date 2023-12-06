@@ -9,7 +9,7 @@ import numpy as np
 
 """
 This file is used to test the performance of both devices (RehastimP24 and Rehastim2).
-The tests are done with Vicon Nexus  and the biosiglive library.
+The tests are done with Vicon Nexus and the biosiglive library.
 """
 
 

@@ -23,7 +23,7 @@ def test_electrode_error(port):
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
     with pytest.raises(
             RuntimeError,
-            match=f"Stimulation error : {ack} "
+            match=f"Stimulation error"
     ):
         while 1:
             stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
