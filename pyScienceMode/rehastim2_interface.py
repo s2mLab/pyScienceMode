@@ -286,7 +286,7 @@ class Rehastim2(RehastimGeneric):
             if not isinstance(channel, Channel):
                 raise TypeError(
                     f"Item at index {index} is not a Channel instance, got {type(channel).__name__} type instead."
-                    )
+                )
         if not list_channels:
             raise ValueError("Please provide at least one channel for stimulation.")
         else:

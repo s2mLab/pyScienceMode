@@ -1,6 +1,9 @@
 import pytest
 from pyScienceMode import Rehastim2 as St2
-from pyScienceMode import Channel, Point, Device, Modes
+from pyScienceMode import Channel, Device, Modes
+
+# Connect the Rehastimp24 device to the computer.
+# Then you can run the whole file (except for the test_electrode_error) or just one test.
 
 
 @pytest.mark.parametrize("port", ["COM3"])
@@ -14,17 +17,12 @@ def test_electrode_error(port):
     stimulator = St2(port=port, show_log=True)
     list_channels = []
     channel_number = 2
-    ack = "Electrode error"
-    channel_1 = Channel(mode=Modes.SINGLE,
-                        no_channel=channel_number, amplitude=10, pulse_width=300,
-                        device_type=Device.Rehastim2
-                        )
+    channel_1 = Channel(
+        mode=Modes.SINGLE, no_channel=channel_number, amplitude=10, pulse_width=300, device_type=Device.Rehastim2
+    )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
-    with pytest.raises(
-            RuntimeError,
-            match=f"Stimulation error"
-    ):
+    with pytest.raises(RuntimeError, match=f"Stimulation error"):
         while 1:
             stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
 
@@ -38,16 +36,12 @@ def test_stimulation_duration_too_short(port):
     stimulator = St2(port="COM3", show_log=True)
     list_channels = []
     channel_number = 2
-    channel_1 = Channel(mode=Modes.SINGLE,
-                        no_channel=channel_number, amplitude=10, pulse_width=300,
-                        device_type=Device.Rehastim2
-                        )
+    channel_1 = Channel(
+        mode=Modes.SINGLE, no_channel=channel_number, amplitude=10, pulse_width=300, device_type=Device.Rehastim2
+    )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
-    with pytest.raises(
-            RuntimeError,
-            match="Asked stimulation duration too short"
-    ):
+    with pytest.raises(RuntimeError, match="Asked stimulation duration too short"):
         stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.001)
 
 
@@ -59,10 +53,7 @@ def test_channel_list_empty(port):
 
     stimulator = St2(port=port, show_log=True)
     list_channels = []
-    with pytest.raises(
-            ValueError,
-            match="Please provide at least one channel for stimulation."
-    ):
+    with pytest.raises(ValueError, match="Please provide at least one channel for stimulation."):
         stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
 
 
@@ -76,9 +67,9 @@ def test_no_channel_instance_error(port):
     list_channels = [1]
     index = 0
     with pytest.raises(
-            TypeError,
-            match=f"Item at index {index} is not a Channel instance, got {type(list_channels[index]).__name__} "
-                  f"type instead."
+        TypeError,
+        match=f"Item at index {index} is not a Channel instance, got {type(list_channels[index]).__name__} "
+        f"type instead.",
     ):
         stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
         stimulator.close_port()

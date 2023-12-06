@@ -331,7 +331,7 @@ class RehastimGeneric:
                         ack = rehastim_error(signed_int(self.ack_received[i][7:8]))
                         if signed_int(self.ack_received[i][7:8]) in [-1, -2, -3]:
                             self.error_occured = True
-                            raise RuntimeError(f"Stimulation error : {ack} " )
+                            raise RuntimeError(f"Stimulation error : {ack} ")
                     elif (
                         self.ack_received[i][6] == self.Rehastim2Commands["ActualValues"].value
                         and not self.is_motomed_connected

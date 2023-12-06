@@ -15,9 +15,7 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel for mid-level stimulation
-channel_1 = Channel(
-    no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24
-)
+channel_1 = Channel(no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24)
 channel_2 = Channel(
     mode=Modes.SINGLE,
     no_channel=2,
@@ -156,7 +154,8 @@ for a muscle loading and unloading phase.
 """
 
 stimulator.start_stim_one_channel_stimulation(
-    no_channel=1, points=list_stimulation_points, stim_sequence=30, pulse_interval=10)
+    no_channel=1, points=list_stimulation_points, stim_sequence=30, pulse_interval=10
+)
 
 # You can update the configuration of the point during the stimulation.
 point11.set_amplitude(30)
