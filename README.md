@@ -7,7 +7,7 @@ Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/late
 
 ## How to use
 A set of example is provided in the `examples` folder to show how to control the Rehastim2 and the RehastimP24 :
-Please take a look at the [documentation example page](https://pysciencemode.readthedocs.io/en/latest/example.html) for description of each example.
+Please take a look at the [documentation example page](https://pysciencemode.readthedocs.io/en/latest/examples.html) for description of each example.
 
 ## Main differences between the Rehastim2 and the RehastimP24
 They are some differences between the Rehastim2 and the RehastimP24.
