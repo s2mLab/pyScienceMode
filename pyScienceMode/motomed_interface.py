@@ -113,7 +113,7 @@ class _Motomed:
 
         Returns
         -------
-        mode: str
+        The mode of the motomed in a string get_mot_mode_ack. Otherwise, raise an error.
         """
         self._send_packet("GetMotomedMode")
         get_mot_mode_ack = self._calling_ack(self.rehastim._get_last_ack())
@@ -290,6 +290,10 @@ class _Motomed:
         ----------
         arm_training: bool
             If True, the training will be done with the arm.
+
+        Returns
+        -------
+        None
         """
         self.body_training = 1 if arm_training else 0
         self._send_packet("StartBasicTraining")
@@ -424,7 +428,7 @@ class _Motomed:
 
     def get_torque(self):
         """
-        Get the actual torqur of the motomed.
+        Get the actual torque of the motomed.
 
         Returns
         -------
@@ -434,7 +438,7 @@ class _Motomed:
 
     def get_phase_result(self):
         """
-        Get the actual torqur of the motomed.
+        Get the actual torque of the motomed.
 
         Returns
         -------

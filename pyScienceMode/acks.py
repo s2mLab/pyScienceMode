@@ -4,6 +4,18 @@ from .utils import signed_int
 
 
 def motomed_error_values(error_code: int):
+    """
+    Handles the Motomed errors
+
+    Parameters
+    ----------
+    error_code: int
+        Motomed code error
+
+    Returns
+    -------
+    Returns the string corresponding to the information contain in the 'MotomedError' packet.
+    """
     if error_code == -1:
         return "Transfer error"
     elif error_code == -2:
@@ -22,6 +34,15 @@ def motomed_error_values(error_code: int):
 
 def rehastim_error(error_code: int) -> str:
     """
+    Handles the Rehastim2 errors
+
+    Parameters
+    ----------
+    error_code: int
+        Rehastim2 code error
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StimulationError' packet.
     """
     if error_code == -1:
@@ -34,6 +55,13 @@ def rehastim_error(error_code: int) -> str:
 
 def stimulation_error(error_code: int) -> str:
     """
+    Parameters
+    ----------
+    error_code: int
+        Rehastim2 code error
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StimulationError' packet.
     """
     if error_code == -1:
@@ -51,6 +79,14 @@ def stimulation_error(error_code: int) -> str:
 
 def get_motomed_mode_ack(packet: (list, str)) -> str:
     """
+    Parameters
+    ----------
+    packet: (list, str)
+        Packet received from the Motomed
+
+    Returns
+    -------
+
     Returns the string corresponding to the information contain in the 'InitPhaseTrainingAck' packet.
     """
     if packet[7] == 0:
@@ -78,6 +114,16 @@ def get_motomed_mode_ack(packet: (list, str)) -> str:
 
 def init_phase_training_ack(packet: bytes) -> str:
     """
+    This function processes a packet received from the Motomed and returns a string
+    corresponding to the information contained in the 'InitPhaseTrainingAck' packet
+
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'InitPhaseTrainingAck' packet.
     """
     if str(packet[7]) == "0":
@@ -88,7 +134,16 @@ def init_phase_training_ack(packet: bytes) -> str:
 
 def start_phase_ack(packet: bytes) -> str:
     """
+    This function processes a packet received from the Motomed and returns a string
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
+    Else, returns the error message corresponding to the error code
     """
     if str(packet[7]) == "0":
         return "Start phase training / change phase sent to MOTOmed"
@@ -98,7 +153,16 @@ def start_phase_ack(packet: bytes) -> str:
 
 def pause_phase_ack(packet: bytes) -> str:
     """
+    This function processes a packet received from the Motomed and returns a string
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
+    Else, returns the error message corresponding to the error code
     """
     if str(packet[7]) == "0":
         return "Start pause sent to MOTOmed"
@@ -108,6 +172,13 @@ def pause_phase_ack(packet: bytes) -> str:
 
 def stop_phase_training_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -118,6 +189,13 @@ def stop_phase_training_ack(packet: bytes) -> str:
 
 def set_rotation_direction_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -128,6 +206,13 @@ def set_rotation_direction_ack(packet: bytes) -> str:
 
 def set_speed_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -138,6 +223,13 @@ def set_speed_ack(packet: bytes) -> str:
 
 def set_gear_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -148,6 +240,13 @@ def set_gear_ack(packet: bytes) -> str:
 
 def start_basic_training_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -158,6 +257,13 @@ def start_basic_training_ack(packet: bytes) -> str:
 
 def pause_basic_training_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -168,6 +274,13 @@ def pause_basic_training_ack(packet: bytes) -> str:
 
 def continue_basic_training_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -178,6 +291,13 @@ def continue_basic_training_ack(packet: bytes) -> str:
 
 def stop_basic_training_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Motomed
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartPhaseAck' packet.
     """
     if str(packet[7]) == "0":
@@ -186,7 +306,18 @@ def stop_basic_training_ack(packet: bytes) -> str:
         return motomed_error_values(signed_int(packet[7:8]))
 
 
-def motomed_error_ack(packet):
+def motomed_error_ack(packet: int) -> str:
+    """
+    This function processes a packet received from the Motomed and returns a string corresponding to the error code
+    Parameters
+    ----------
+    packet: int
+        Packet received from the Motomed
+
+    Returns
+    -------
+    Returns the string corresponding to the information contain in the 'MotomedError' packet.
+    """
     if packet == -4:
         return "Motomed connection error"
     elif packet == -6:
@@ -196,6 +327,13 @@ def motomed_error_ack(packet):
 # Acks Stimulators
 def get_mode_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Rehastim
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'getModeAck' packet.
     """
     if packet[7] == 0:
@@ -211,6 +349,13 @@ def get_mode_ack(packet: bytes) -> str:
 
 def init_stimulation_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Rehastim
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'InitChannelListModeAck' packet.
     """
     if packet[7] == 0:
@@ -221,6 +366,13 @@ def init_stimulation_ack(packet: bytes) -> str:
 
 def start_stimulation_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Rehastim
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StartChannelListModeAck' packet.
     """
     if packet[7] == 0:
@@ -231,6 +383,13 @@ def start_stimulation_ack(packet: bytes) -> str:
 
 def stop_stimulation_ack(packet: bytes) -> str:
     """
+    Parameters
+    ----------
+    packet: bytes
+        Packet received from the Rehastim
+
+    Returns
+    -------
     Returns the string corresponding to the information contain in the 'StopChannelListModeAck' packet.
     """
     if packet[7] == 0:
