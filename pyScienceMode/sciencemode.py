@@ -213,8 +213,7 @@ class RehastimGeneric:
             If True, get the last ack of the init packet. If False, get the last ack of the normal packet.
         Returns
         -------
-        last_ack : bytes
-            Last ack received.
+        bytes
         """
         if self.error_occured:
             raise RuntimeError("Stimulation error")
@@ -332,7 +331,7 @@ class RehastimGeneric:
                         ack = rehastim_error(signed_int(self.ack_received[i][7:8]))
                         if signed_int(self.ack_received[i][7:8]) in [-1, -2, -3]:
                             self.error_occured = True
-                            raise RuntimeError("Stimulation error : ", ack)
+                            raise RuntimeError(f"Stimulation error : {ack} ")
                     elif (
                         self.ack_received[i][6] == self.Rehastim2Commands["ActualValues"].value
                         and not self.is_motomed_connected
@@ -695,7 +694,6 @@ class RehastimGeneric:
 
         Returns
         -------
-        last_result : float
             The torque of the motomed.
         """
         self.is_phase_result.wait()

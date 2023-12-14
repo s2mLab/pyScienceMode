@@ -15,9 +15,7 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel for mid-level stimulation
-channel_1 = Channel(
-    no_channel=1, name="Biceps", amplitude=50, pulse_width=100, frequency=20, device_type=Device.Rehastimp24
-)
+channel_1 = Channel(no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24)
 channel_2 = Channel(
     mode=Modes.SINGLE,
     no_channel=2,
