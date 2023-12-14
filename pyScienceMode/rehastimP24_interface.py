@@ -487,7 +487,7 @@ class RehastimP24(RehastimGeneric):
             self._get_current_data()
             self._get_last_ack()
             self.check_stimulation_errors()
-            time.sleep(0.1)
+            time.sleep(0.005)
 
         self.pause_stimulation()
         self.stimulation_started = True
