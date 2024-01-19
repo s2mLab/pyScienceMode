@@ -1,5 +1,5 @@
 import time
-from pyScienceMode import Rehastim2 as St
+from pyScienceMode.devices.rehastim2 import Rehastim2 as St
 from pyScienceMode import Channel as Ch
 from pyScienceMode import Modes, Device
 

@@ -1,14 +1,11 @@
 import time
-from .utils import (
-    check_unique_channel,
-    calc_electrode_number,
-    generic_error_check,
-    check_list_channel_order,
-)
-from .sciencemode import RehastimGeneric
+
 from sciencemode import sciencemode
-from .enums import Device, HighVoltage, StimStatus
-from .channel import Point, Channel
+
+from ..utils import check_unique_channel, calc_electrode_number, generic_error_check, check_list_channel_order
+from .rehastim_generic import RehastimGeneric
+from ..enums import Device, HighVoltage, StimStatus
+from ..channel import Point, Channel
 
 
 class RehastimP24(RehastimGeneric):
@@ -59,7 +56,7 @@ class RehastimP24(RehastimGeneric):
             Microcontroller version.
         """
         extended_version_ack = sciencemode.ffi.new("Smpt_get_extended_version_ack*")
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         sciencemode.lib.smpt_send_get_extended_version(self.device, packet_number)
         if self.show_log is True:
             print(
@@ -82,7 +79,7 @@ class RehastimP24(RehastimGeneric):
             Device id.
         """
         device_id_ack = sciencemode.ffi.new("Smpt_get_device_id_ack*")
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         sciencemode.lib.smpt_send_get_device_id(self.device, packet_number)
 
         if self.show_log is True:
@@ -107,7 +104,7 @@ class RehastimP24(RehastimGeneric):
         """
 
         stim_status_ack = sciencemode.ffi.new("Smpt_get_stim_status_ack*")
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         sciencemode.lib.smpt_send_get_stim_status(self.device, packet_number)
 
         if self.show_log is True:
@@ -132,7 +129,7 @@ class RehastimP24(RehastimGeneric):
             Battery voltage.
         """
         battery_status_ack = sciencemode.ffi.new("Smpt_get_battery_status_ack*")
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         sciencemode.lib.smpt_send_get_battery_status(self.device, packet_number)
 
         if self.show_log is True:
@@ -156,7 +153,7 @@ class RehastimP24(RehastimGeneric):
             Main status.
         """
         main_status_ack = sciencemode.ffi.new("Smpt_get_main_status_ack*")
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         sciencemode.lib.smpt_send_get_main_status(self.device, packet_number)
 
         if self.show_log is True:
@@ -171,12 +168,15 @@ class RehastimP24(RehastimGeneric):
         """
         Reset the device. General Level command.
         """
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         ret = sciencemode.lib.smpt_send_reset(self.device, packet_number)
 
         if self.show_log is True:
             print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Reset).name)
         self._get_last_ack()
+
+    def close_port(self):
+        sciencemode.lib.smpt_close_serial_port(self.device)
 
     def get_all(self):
         """
@@ -195,6 +195,62 @@ class RehastimP24(RehastimGeneric):
             battery_status_success,
             main_status_success,
         )
+
+    def _setup_device(self):
+        self.device = sciencemode.ffi.new("Smpt_device*")
+        self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
+        self.cmd = sciencemode.ffi.new("Smpt_cmd*")
+        self.ack = sciencemode.ffi.new("Smpt_ack*")
+        self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
+        self.ll_channel_config_ack = sciencemode.ffi.new("Smpt_ll_channel_config_ack*")
+        self.ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
+        self.ml_update = sciencemode.ffi.new("Smpt_ml_update*")
+
+        if not self.check_serial_port():
+            raise RuntimeError(f"Failed to access port {self.port_name}.")
+
+        if not self._open_serial_port():
+            raise RuntimeError(f"Unable to open port {self.port_name}.")
+
+    def check_serial_port(self):
+        ret = sciencemode.lib.smpt_check_serial_port(self.com)
+        if self.show_log:
+            print(f"Port check for {self.port_name} : {'successful' if ret else 'unsuccessful'}")
+        return ret
+
+    def _open_serial_port(self):
+        """
+        Try to open the serial port.Used for the RehastimP24
+        """
+        ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
+        if self.show_log:
+            print(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
+        return ret
+
+    def _get_next_packet_number(self):
+        """
+        Get the next packet to send another command. Used for the RehastimP24
+        """
+        if hasattr(self, "device") and self.device is not None:
+            packet_number = sciencemode.lib.smpt_packet_number_generator_next(self.device)
+            return packet_number
+
+    def _get_current_data(self):
+        """
+        Retrieve current data from the rehastimP24 mid level stimulation.
+        """
+        ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
+        ml_get_current_data.data_selection = sciencemode.lib.Smpt_Ml_Data_Channels
+        ml_get_current_data.packet_number = self.get_next_packet_number()
+
+        ret = sciencemode.lib.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
+        if not ret:
+            print("Failed to get current data.")
+        if self.show_log is True:
+            print(
+                "Command sent to rehastim:",
+                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name,
+            )
 
     @staticmethod
     def _channel_number_to_channel_connector(no_channel):
@@ -232,6 +288,17 @@ class RehastimP24(RehastimGeneric):
 
     #  Low level commands
 
+    def _get_last_device_ack(self):
+        """
+        Get the last ack received by the device.
+        """
+        while not sciencemode.lib.smpt_new_packet_received(self.device):
+            time.sleep(0.005)
+        ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
+        if self.show_log is True:
+            print("Ack received by rehastimP24: ", self.RehastimP24Commands(self.ack.command_number).name)
+        return ret
+
     def ll_init(self):
         """
         Initialize the lower level of the device. The low-level is used for defining a custom shaped pulse.
@@ -242,7 +309,7 @@ class RehastimP24(RehastimGeneric):
         ll_init.high_voltage_level = (
             sciencemode.lib.Smpt_High_Voltage_Default
         )  # This switches on the high voltage source
-        ll_init.packet_number = self.get_next_packet_number()
+        ll_init.packet_number = self._get_next_packet_number()
 
         if not sciencemode.lib.smpt_send_ll_init(self.device, ll_init):
             raise RuntimeError("Low level initialization failed.")
@@ -251,7 +318,7 @@ class RehastimP24(RehastimGeneric):
             "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Init).name),
         )
 
-        self.get_next_packet_number()
+        self._get_next_packet_number()
         self._get_last_ack()
         self.check_ll_init_ack()
 
@@ -339,7 +406,7 @@ class RehastimP24(RehastimGeneric):
                 )
 
         for _ in range(stim_sequence):
-            ll_config.packet_number = self.get_next_packet_number()
+            ll_config.packet_number = self._get_next_packet_number()
             sciencemode.lib.smpt_send_ll_channel_config(self.device, ll_config)
             if self.show_log is True:
                 print(
@@ -387,7 +454,7 @@ class RehastimP24(RehastimGeneric):
         """
         Stop the device lower level.
         """
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
         if not sciencemode.lib.smpt_send_ll_stop(self.device, packet_number):
             raise RuntimeError("Low level stop failed.")
         self.log(
@@ -425,7 +492,7 @@ class RehastimP24(RehastimGeneric):
 
         ml_init = sciencemode.ffi.new("Smpt_ml_init*")
         ml_init.stop_all_channels_on_error = stop_all_on_error
-        ml_init.packet_number = self.get_next_packet_number()
+        ml_init.packet_number = self._get_next_packet_number()
 
         if not sciencemode.lib.smpt_send_ml_init(self.device, ml_init):
             raise RuntimeError("Failed to start stimulation")
@@ -464,7 +531,7 @@ class RehastimP24(RehastimGeneric):
         self.list_channels = upd_list_channels
         self._safety = safety
         self._current_stim_duration = stimulation_duration
-        self.ml_update.packet_number = self.get_next_packet_number()
+        self.ml_update.packet_number = self._get_next_packet_number()
 
         for channel in upd_list_channels:
             if safety and not channel.is_pulse_symmetric():
@@ -554,7 +621,7 @@ class RehastimP24(RehastimGeneric):
         """
         Stop the mid level stimulation.
         """
-        packet_number = self.get_next_packet_number()
+        packet_number = self._get_next_packet_number()
 
         if not sciencemode.lib.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("Failure to stop stimulation.")

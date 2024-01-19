@@ -3,15 +3,17 @@ Stimulator Interface class used to control the rehamove2.
 See ScienceMode2 - Description and protocol for more information.
 """
 from typing import Tuple
+import serial
 import time
-from .acks import (
+
+from ..acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
     init_stimulation_ack,
     get_mode_ack,
     rehastim_error,
 )
-from .utils import (
+from ..utils import (
     signed_int,
     check_stimulation_interval,
     check_inter_pulse_interval,
@@ -21,10 +23,10 @@ from .utils import (
     calc_electrode_number,
     packet_construction,
 )
-from .sciencemode import RehastimGeneric
-from .motomed_interface import _Motomed
-from .enums import Device
-from .channel import Channel
+from .rehastim_generic import RehastimGeneric
+from ..motomed_interface import _Motomed
+from ..enums import Device
+from ..channel import Channel
 
 
 class Rehastim2(RehastimGeneric):
@@ -96,6 +98,22 @@ class Rehastim2(RehastimGeneric):
             self.pulse_width.append(list_channels[i].get_pulse_width())
             self.mode.append(list_channels[i].get_mode())
             self.given_channels.append(list_channels[i].get_no_channel())
+
+    def check_serial_port(self):
+        raise RuntimeError("Checking the serial port is not supported for Rehastim2.")
+
+    def close_port(self):
+        self.port.close()
+
+    def _setup_device(self):
+        self.port = serial.Serial(
+            self.port_name,
+            self.BAUD_RATE,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_EVEN,
+            stopbits=serial.STOPBITS_ONE,
+            timeout=0.1,
+        )
 
     def _send_packet(self, cmd: str) -> str:
         """
@@ -174,6 +192,20 @@ class Rehastim2(RehastimGeneric):
 
         packet = packet_construction(self.packet_count, "InitChannelListMode", data_stimulation)
         return packet
+
+    def _get_last_device_ack(self):
+        """
+        Get the last ack received by the device.
+        """
+        while 1:
+            packet = self._read_packet()
+            if packet and len(packet) != 0:
+                break
+        if packet and not self.error_occured:
+            if self.show_log and packet[-1][6] in [t.value for t in self.Rehastim2Commands]:
+                print(f"Ack received by rehastim: {self.Rehastim2Commands(packet[-1][6]).name}")
+                self.ack_received.append(packet[-1])
+        return packet[-1]
 
     def _packet_start_stimulation(self) -> bytes:
         """

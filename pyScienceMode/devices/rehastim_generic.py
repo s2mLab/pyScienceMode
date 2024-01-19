@@ -3,14 +3,14 @@ Class to control the RehaMove 2 device from the ScienceMode 2 protocol.
 See ScienceMode2 - Description and protocol for more information.
 """
 
+from abc import ABC, abstractmethod
 import threading
-import serial
 import time
 
 import numpy as np
 
-from .utils import packet_construction, signed_int
-from .acks import (
+from ..utils import packet_construction, signed_int
+from ..acks import (
     motomed_error_ack,
     rehastim_error,
     init_stimulation_ack,
@@ -18,15 +18,13 @@ from .acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
 )
-from .enums import Rehastim2Commands, RehastimP24Commands, Device
-
-from sciencemode import sciencemode
+from ..enums import Rehastim2Commands, RehastimP24Commands, Device
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
 
 
-class RehastimGeneric:
+class RehastimGeneric(ABC):
     """
     Class used for the sciencemode communication protocol.
 
@@ -81,33 +79,7 @@ class RehastimGeneric:
         """
         self.device_type = device_type
         self.port_name = port
-        if self.device_type == Device.Rehastim2.value:
-            self.port = serial.Serial(
-                port,
-                self.BAUD_RATE,
-                bytesize=serial.EIGHTBITS,
-                parity=serial.PARITY_EVEN,
-                stopbits=serial.STOPBITS_ONE,
-                timeout=0.1,
-            )
-
-        elif self.device_type == Device.Rehastimp24.value:
-            self.device = sciencemode.ffi.new("Smpt_device*")
-            self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
-            self.cmd = sciencemode.ffi.new("Smpt_cmd*")
-            self.ack = sciencemode.ffi.new("Smpt_ack*")
-            self.ml_get_current_data_ack = sciencemode.ffi.new("Smpt_ml_get_current_data_ack*")
-            self.ll_channel_config_ack = sciencemode.ffi.new("Smpt_ll_channel_config_ack*")
-            self.ll_init_ack = sciencemode.ffi.new("Smpt_ll_init_ack*")
-            self.ml_update = sciencemode.ffi.new("Smpt_ml_update*")
-
-            if not self.check_serial_port():
-                raise RuntimeError(f"Failed to access port {self.port_name}.")
-
-            if not self.open_serial_port():
-                raise RuntimeError(f"Unable to open port {self.port_name}.")
-        else:
-            raise ValueError("Device type not recognized")
+        self._setup_device()
 
         self.port_open = True
         self.time_last_cmd = 0
@@ -146,32 +118,6 @@ class RehastimGeneric:
         if self.reha_connected and not self.__comparison_thread_started:
             self._start_thread_catch_ack()
 
-    def check_serial_port(self):
-        """
-        Verify if the serial port is available and functional. Used for the RehastimP24
-        """
-        ret = sciencemode.lib.smpt_check_serial_port(self.com)
-        if self.show_log:
-            print(f"Port check for {self.port_name} : {'successful' if ret else 'unsuccessful'}")
-        return ret
-
-    def open_serial_port(self):
-        """
-        Try to open the serial port.Used for the RehastimP24
-        """
-        ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
-        if self.show_log:
-            print(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
-        return ret
-
-    def get_next_packet_number(self):
-        """
-        Get the next packet to send another command. Used for the RehastimP24
-        """
-        if hasattr(self, "device") and self.device is not None:
-            packet_number = sciencemode.lib.smpt_packet_number_generator_next(self.device)
-            return packet_number
-
     def log(self, status_msg: str, full_msg: str = None):
         """
         Log messages based on the show_log mode.
@@ -185,23 +131,9 @@ class RehastimGeneric:
         if self.show_log is True or self.show_log == "Status":
             print(status_msg)
 
-    def _get_current_data(self):
-        """
-        Retrieve current data from the rehastimP24 mid level stimulation.
-        """
-        ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
-        if self.device_type == Device.Rehastimp24.value:
-            ml_get_current_data.data_selection = sciencemode.lib.Smpt_Ml_Data_Channels
-            ml_get_current_data.packet_number = self.get_next_packet_number()
-
-            ret = sciencemode.lib.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
-            if not ret:
-                print("Failed to get current data.")
-            if self.show_log is True:
-                print(
-                    "Command sent to rehastim:",
-                    self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name,
-                )
+    @abstractmethod
+    def _setup_device(self):
+        """Setup device specific parameters."""
 
     def _get_last_ack(self, init: bool = False) -> bytes:
         """
@@ -233,23 +165,13 @@ class RehastimGeneric:
                 self.last_ack = None
             return last_ack
 
-        if self.device_type == Device.Rehastimp24.value:
-            while not sciencemode.lib.smpt_new_packet_received(self.device):
-                time.sleep(0.005)
-            ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
-            if self.show_log is True:
-                print("Ack received by rehastimP24: ", self.RehastimP24Commands(self.ack.command_number).name)
-            return ret
-        elif self.device_type == Device.Rehastim2.value:
-            while 1:
-                packet = self._read_packet()
-                if packet and len(packet) != 0:
-                    break
-            if packet and not self.error_occured:
-                if self.show_log and packet[-1][6] in [t.value for t in self.Rehastim2Commands]:
-                    print(f"Ack received by rehastim: {self.Rehastim2Commands(packet[-1][6]).name}")
-                    self.ack_received.append(packet[-1])
-            return packet[-1]
+        return self._get_last_device_ack()
+
+    @abstractmethod
+    def _get_last_device_ack(self):
+        """
+        Get the last ack received by the device.
+        """
 
     def _return_list_ack_received(self) -> list:
         """
@@ -465,14 +387,17 @@ class RehastimGeneric:
         packet = packet_construction(packet_count, "InitAck", [0])
         return packet
 
+    @abstractmethod
+    def check_serial_port(self):
+        """
+        Verify if the serial port is available and functional. Used for the RehastimP24
+        """
+
+    @abstractmethod
     def close_port(self):
         """
         Closes the port.
         """
-        if self.device_type == Device.Rehastimp24.value:
-            sciencemode.lib.smpt_close_serial_port(self.device)
-        elif self.device_type == Device.Rehastim2.value:
-            self.port.close()
 
     def _read_packet(self) -> list:
         """
