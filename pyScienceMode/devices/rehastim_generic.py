@@ -476,6 +476,23 @@ class RehastimGeneric(ABC):
         packet = packet_construction(self.packet_count, "Watchdog")
         return packet
 
+    @abstractmethod
+    def start_stimulation(
+        self, stimulation_duration: float = None, upd_list_channels: list = None, safety: bool = True
+    ):
+        """
+        Start the stimulation.
+
+        Parameters
+        ----------
+        stimulation_duration : float
+            Duration of the stimulation.
+        upd_list_channels : list
+            List of channels to update.
+        safety : bool
+            If True, the stimulation will stop if the stimulation duration is reached.
+        """
+
     def get_angle(self) -> float:
         """
         Returns the angle of the Rehastim.

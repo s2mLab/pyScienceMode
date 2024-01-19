@@ -340,19 +340,9 @@ class Rehastim2(RehastimGeneric):
         self._send_packet("InitChannelListMode")
         self._get_last_ack()
 
-    def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
-        """
-        Update a stimulation.
-        Warning: only the channel that has been initiated can be updated.
-
-        Parameters
-        ----------
-        stimulation_duration: float
-            Time of the stimulation after the update.
-        upd_list_channels: list[channel]
-            List of the channels that will be updated
-        """
-
+    def start_stimulation(
+        self, stimulation_duration: float = None, upd_list_channels: list = None, safety: bool = False
+    ):
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
 

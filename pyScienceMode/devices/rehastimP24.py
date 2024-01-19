@@ -502,20 +502,9 @@ class RehastimP24(RehastimGeneric):
         )
         self._get_last_ack()
 
-    def start_stimulation(self, upd_list_channels: list, stimulation_duration: int | float = None, safety: bool = True):
-        """
-        Start the mid level stimulation on the device.
-
-        Parameters
-        ----------
-        stimulation_duration : int | float
-            Duration of the stimulation in seconds.
-        upd_list_channels : list
-            Channels to stimulate.
-        safety : bool
-            Set to True if you want to check the pulse symmetry. False otherwise.
-        """
-
+    def start_stimulation(
+        self, stimulation_duration: float = None, upd_list_channels: list = None, safety: bool = True
+    ):
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
         elif not isinstance(stimulation_duration, int | float):
