@@ -36,7 +36,7 @@ class RehastimP24(RehastimGeneric):
         self._current_no_channel = None
         self._current_stim_sequence = None
         self._current_pulse_interval = None
-        self._current_stim_duration = None
+        self._current_stim_duration = None  # TODO: This variable seems to be unused.
         self.device_type = Device.Rehastimp24.value
         self._safety = True
 
@@ -505,11 +505,13 @@ class RehastimP24(RehastimGeneric):
     def start_stimulation(
         self, stimulation_duration: float = None, upd_list_channels: list = None, safety: bool = True
     ):
+        # TODO: Why isn't it allowed to stimulate for as long as we want (like in the Rehastim2)?
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
         elif not isinstance(stimulation_duration, int | float):
             raise TypeError("Please provide a int or float type for stimulation duration")
 
+        # TODO: This should be factored into rehastim_generic.py
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
@@ -522,6 +524,7 @@ class RehastimP24(RehastimGeneric):
         self._current_stim_duration = stimulation_duration
         self.ml_update.packet_number = self._get_next_packet_number()
 
+        # TODO: This should be factored into rehastim_generic.py
         for channel in upd_list_channels:
             if safety and not channel.is_pulse_symmetric():
                 raise ValueError(
@@ -537,16 +540,17 @@ class RehastimP24(RehastimGeneric):
                     "Or specify specific stimulation points.".format(channel._no_channel)
                 )
         self._send_stimulation_update()
+        self.stimulation_started = True  # BUG: This is not true as the stimulation is paused at that point.
 
-        start_time = time.time()
-        while (time.time() - start_time) < stimulation_duration:
-            self._get_current_data()
-            self._get_last_ack()
-            self.check_stimulation_errors()
-            time.sleep(0.005)
-
-        self.pause_stimulation()
-        self.stimulation_started = True
+        # TODO: This should be factored into rehastim_generic.py
+        if stimulation_duration is not None:
+            start_time = time.time()  # BUG: time.time() is not precise enough for this purpose, use time.perf_counter()
+            while (time.time() - start_time) < stimulation_duration:
+                self._get_current_data()
+                self._get_last_ack()
+                self.check_stimulation_errors()
+                time.sleep(0.005)
+            self.pause_stimulation()
 
     def pause_stimulation(self):
         """
@@ -601,6 +605,7 @@ class RehastimP24(RehastimGeneric):
         stimulation_duration : int | float
             Duration of the updated stimulation in seconds.
         """
+        # TODO: This method is useless as _current_stim_duration is never used.
         if stimulation_duration is not None:
             self._current_stim_duration = stimulation_duration
 
@@ -610,6 +615,8 @@ class RehastimP24(RehastimGeneric):
         """
         Stop the mid level stimulation.
         """
+        self.pause_stimulation()  # Make sure the stimulation is paused before stopping it.
+        
         packet_number = self._get_next_packet_number()
 
         if not sciencemode.lib.smpt_send_ml_stop(self.device, packet_number):

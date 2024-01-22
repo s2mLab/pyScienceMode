@@ -343,6 +343,7 @@ class Rehastim2(RehastimGeneric):
     def start_stimulation(
         self, stimulation_duration: float = None, upd_list_channels: list = None, safety: bool = False
     ):
+        # TODO: This should be factored out to rehastim_generic.py
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
 
@@ -352,12 +353,12 @@ class Rehastim2(RehastimGeneric):
             self.list_channels = upd_list_channels
             self.set_stimulation_signal(self.list_channels)
         self._send_packet("StartChannelListMode")
-        time_start_stim = time.time()
 
         self._get_last_ack()
-        self.stimulation_active = True
+        self.stimulation_active = True  # BUG: This is false at the exit of the function if stimulation_duration is set
 
         if stimulation_duration is not None:
+            time_start_stim = time.time()
             if stimulation_duration < time.time() - time_start_stim:
                 raise RuntimeError("Asked stimulation duration too short")
             time.sleep(stimulation_duration - (time.time() - time_start_stim))

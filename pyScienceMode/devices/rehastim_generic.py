@@ -493,6 +493,18 @@ class RehastimGeneric(ABC):
             If True, the stimulation will stop if the stimulation duration is reached.
         """
 
+    @abstractmethod
+    def pause_stimulation(self):
+        """
+        Pause the stimulation.
+        """
+
+    @abstractmethod
+    def end_stimulation(self):
+        """
+        End the stimulation.
+        """
+
     def get_angle(self) -> float:
         """
         Returns the angle of the Rehastim.
