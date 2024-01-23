@@ -1,7 +1,27 @@
+import logging
+import logging.config
 import time
 
-from pyScienceMode import Channel as Ch, Modes, Device, logger
+from pyScienceMode import Channel as Ch, Modes, Device
 from pyScienceMode.devices.rehastim2 import Rehastim2 as St
+
+
+def setup_logger():
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "output": {"format": "%(asctime)s - %(name)s.%(levelname)s:\t%(message)s"},
+        },
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "output", "stream": "ext://sys.stdout"}
+        },
+        "loggers": {
+            "pyScienceMode": {"handlers": ["console"], "level": logging.DEBUG},
+        },
+    }
+    logging.config.dictConfig(logging_config)
 
 
 def init_rehastim():
@@ -39,6 +59,9 @@ def init_rehastim():
 
 
 if __name__ == "__main__":
+    setup_logger()
+    logger = logging.getLogger("pyScienceMode")
+
     stimulator, list_channels = init_rehastim()
     motomed = stimulator.motomed
 

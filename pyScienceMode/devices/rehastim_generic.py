@@ -4,6 +4,7 @@ See ScienceMode2 - Description and protocol for more information.
 """
 
 from abc import ABC, abstractmethod
+import logging
 import threading
 import time
 
@@ -19,7 +20,9 @@ from ..acks import (
     start_stimulation_ack,
 )
 from ..enums import Rehastim2Commands, RehastimP24Commands, Device
-from ..logger import logger
+
+
+logger = logging.getLogger("pyScienceMode")
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document

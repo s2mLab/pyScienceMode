@@ -1,5 +1,8 @@
+import logging
+import logging.config
+
 from biosiglive import ViconClient, DeviceType
-from pyScienceMode import Channel, Point, Device, Modes, logger
+from pyScienceMode import Channel, Point, Device, Modes
 from pyScienceMode.devices.rehastim2 import Rehastim2 as St2
 from pyScienceMode.devices.rehastimP24 import RehastimP24 as St
 import random
@@ -14,6 +17,24 @@ The tests are done with Vicon Nexus and the biosiglive library.
 Some tests can be used for both devices, some others are specific to one device. You can
 choose the device you want by putting the right device enum in the function.
 """
+
+
+def setup_logger():
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "output": {"format": "%(asctime)s - %(name)s.%(levelname)s:\t%(message)s"},
+        },
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "output", "stream": "ext://sys.stdout"}
+        },
+        "loggers": {
+            "pyScienceMode": {"handlers": ["console"], "level": logging.DEBUG},
+        },
+    }
+    logging.config.dictConfig(logging_config)
 
 
 def get_trigger():
@@ -396,6 +417,7 @@ def diff_frequency_ll_ml(frequency):
     stimulatorp24.start_stimulation(upd_list_channels=list_channels, stimulation_duration=2, safety=True)
     stimulatorp24.end_stimulation()
 
+    logger = logging.getLogger("pyScienceMode")
     for point in channel_1.list_point:
         list_points.append(point)
         logger.info(point.pulse_width, point.amplitude)
@@ -430,6 +452,8 @@ def communication_speed_P24():
     ll_config.points[0].current = list_points[0].amplitude
     ll_config.points[1].time = list_points[1].pulse_width
     ll_config.points[1].current = list_points[1].amplitude
+
+    logger = logging.getLogger("pyScienceMode")
     while True:
         ll_config.packet_number = sciencemode.lib.smpt_packet_number_generator_next(stimulatorp24.device)
         sciencemode.lib.smpt_send_ll_channel_config(stimulatorp24.device, ll_config)
@@ -476,6 +500,8 @@ def communication_speed_r2():
     stimulator2.init_channel(stimulation_interval=8, list_channels=list_channels)
     amplitude = 10
     waiting_time = 1
+
+    logger = logging.getLogger("pyScienceMode")
     while True:
         stimulator2.start_stimulation(stimulation_duration=0.35)
         amplitude *= 1.01
@@ -555,6 +581,8 @@ def exe():
     """
     Test to see if the python program do the same thing as the .exe program.
     """
+    setup_logger()
+
     stimulatorp24 = St(port="COM4", show_log=True)
     channel_1 = Channel(no_channel=1, amplitude=20, pulse_width=350, frequency=50, device_type=Device.Rehastimp24)
     list_channels.append(channel_1)

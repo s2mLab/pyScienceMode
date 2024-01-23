@@ -1,7 +1,30 @@
 import time
+import logging
+import logging.config
 
-from pyScienceMode import logger
 from pyScienceMode.devices.rehastim2 import Rehastim2
+
+
+def setup_logger():
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "output": {"format": "%(asctime)s - %(name)s.%(levelname)s:\t%(message)s"},
+        },
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "output", "stream": "ext://sys.stdout"}
+        },
+        "loggers": {
+            "pyScienceMode": {"handlers": ["console"], "level": logging.DEBUG},
+        },
+    }
+    logging.config.dictConfig(logging_config)
+
+
+setup_logger()
+logger = logging.getLogger("pyScienceMode")
 
 
 port = "/dev/ttyUSB0"  # Enter the port on which the stimulator is connected

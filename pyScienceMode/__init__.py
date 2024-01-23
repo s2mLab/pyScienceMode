@@ -1,4 +1,3 @@
-from .logger import logger
 from .motomed_interface import _Motomed
 from .devices.rehastim_generic import RehastimGeneric
 from . import utils

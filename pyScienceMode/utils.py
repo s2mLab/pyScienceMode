@@ -1,6 +1,10 @@
+import logging
+
 import crccheck
 from .enums import ErrorCode, Rehastim2Commands
-from .logger import logger
+
+
+logger = logging.getLogger("pyScienceMode")
 
 
 """
