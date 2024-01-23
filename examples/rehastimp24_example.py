@@ -1,9 +1,5 @@
-import logging
-
-from pyScienceMode import Channel, Point, Device, Modes
+from pyScienceMode import Channel, Point, Device, Modes, logger
 from pyScienceMode.devices.rehastimP24 import RehastimP24 as St
-
-logger = logging.getLogger("pyScienceMode")
 
 
 """

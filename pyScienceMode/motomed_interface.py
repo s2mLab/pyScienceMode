@@ -3,11 +3,6 @@ Motomed Interface class used to control and get data from Motomed while connecte
 See ScienceMode2 - Description and protocol for more information.
 """
 
-import logging
-from time import sleep
-import numpy as np
-
-
 from .acks import (
     get_motomed_mode_ack,
     init_phase_training_ack,
@@ -25,9 +20,7 @@ from .acks import (
 )
 from .enums import Rehastim2Commands
 from .utils import packet_construction, signed_int
-
-
-logger = logging.getLogger("pyScienceMode")
+from .logger import logger
 
 
 class _Motomed:

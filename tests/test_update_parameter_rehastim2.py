@@ -1,6 +1,7 @@
 import pytest
-from pyScienceMode import Rehastim2 as St2
+
 from pyScienceMode import Channel, Device, Modes
+from pyScienceMode.devices.rehastim2 import Rehastim2 as St2
 
 
 # Connect the Rehastim2 device to the computer.

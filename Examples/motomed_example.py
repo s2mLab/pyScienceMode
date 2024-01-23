@@ -1,9 +1,8 @@
-import logging
 import time
 
+from pyScienceMode import logger
 from pyScienceMode.devices.rehastim2 import Rehastim2
 
-logger = logging.getLogger("pyScienceMode")
 
 port = "/dev/ttyUSB0"  # Enter the port on which the stimulator is connected
 

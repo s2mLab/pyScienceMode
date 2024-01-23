@@ -1,15 +1,12 @@
-import logging
-
-from pyScienceMode import Channel, Point, Device, Modes
-from pyScienceMode import RehastimP24 as St
-from pyScienceMode import Rehastim2 as St2
-import random
-from time import sleep
-from sciencemode import sciencemode
 from biosiglive import ViconClient, DeviceType
+from pyScienceMode import Channel, Point, Device, Modes, logger
+from pyScienceMode.devices.rehastim2 import Rehastim2 as St2
+from pyScienceMode.devices.rehastimP24 import RehastimP24 as St
+import random
+from sciencemode import sciencemode
+from time import sleep
 import numpy as np
 
-logger = logging.getLogger("pyScienceMode")
 
 """
 This file is used to test the performance of both devices (RehastimP24 and Rehastim2).
