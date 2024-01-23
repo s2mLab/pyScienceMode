@@ -1,3 +1,5 @@
+import logging
+
 from pyScienceMode import Channel, Point, Device, Modes
 from pyScienceMode import RehastimP24 as St
 from pyScienceMode import Rehastim2 as St2
@@ -6,6 +8,8 @@ from time import sleep
 from sciencemode import sciencemode
 from biosiglive import ViconClient, DeviceType
 import numpy as np
+
+logger = logging.getLogger("pyScienceMode")
 
 """
 This file is used to test the performance of both devices (RehastimP24 and Rehastim2).
@@ -397,7 +401,7 @@ def diff_frequency_ll_ml(frequency):
 
     for point in channel_1.list_point:
         list_points.append(point)
-        print(point.pulse_width, point.amplitude)
+        logger.info(point.pulse_width, point.amplitude)
     sleep(2)
     stimulatorp24.start_stim_one_channel_stimulation(
         no_channel=1, points=list_points, stim_sequence=100, pulse_interval=1000 / frequency
@@ -434,7 +438,7 @@ def communication_speed_P24():
         sciencemode.lib.smpt_send_ll_channel_config(stimulatorp24.device, ll_config)
         sleep(waiting_time)
         waiting_time *= 0.9
-        print(waiting_time)
+        logger.info(waiting_time)
 
 
 def limit_parameters(device: Device):
@@ -481,7 +485,7 @@ def communication_speed_r2():
         channel_1.set_amplitude(amplitude)
         sleep(waiting_time)
         waiting_time *= 0.9
-        print(waiting_time)
+        logger.info(waiting_time)
 
 
 def decalage(freq1, freq2, freq3, device: Device):

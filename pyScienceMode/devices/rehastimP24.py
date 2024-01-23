@@ -59,9 +59,8 @@ class RehastimP24(RehastimGeneric):
         packet_number = self._get_next_packet_number()
         sciencemode.lib.smpt_send_get_extended_version(self.device, packet_number)
         if self.show_log is True:
-            print(
-                "Command sent to rehastim:",
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Extended_Version).name,
+            self.log(
+                f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Extended_Version).name}",
             )
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_extended_version_ack(self.device, extended_version_ack)
@@ -83,7 +82,9 @@ class RehastimP24(RehastimGeneric):
         sciencemode.lib.smpt_send_get_device_id(self.device, packet_number)
 
         if self.show_log is True:
-            print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Device_Id).name)
+            self.log(
+                f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Device_Id).name}"
+            )
 
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_device_id_ack(self.device, device_id_ack)
@@ -108,7 +109,9 @@ class RehastimP24(RehastimGeneric):
         sciencemode.lib.smpt_send_get_stim_status(self.device, packet_number)
 
         if self.show_log is True:
-            print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Stim_Status).name)
+            self.log(
+                f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Stim_Status).name}"
+            )
 
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_stim_status_ack(self.device, stim_status_ack)
@@ -133,8 +136,8 @@ class RehastimP24(RehastimGeneric):
         sciencemode.lib.smpt_send_get_battery_status(self.device, packet_number)
 
         if self.show_log is True:
-            print(
-                "Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Battery_Status).name
+            self.log(
+                f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Battery_Status).name}"
             )
 
         self._get_last_ack()
@@ -157,7 +160,9 @@ class RehastimP24(RehastimGeneric):
         sciencemode.lib.smpt_send_get_main_status(self.device, packet_number)
 
         if self.show_log is True:
-            print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Main_Status).name)
+            self.log(
+                f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Main_Status).name}"
+            )
 
         self._get_last_ack()
         ret = sciencemode.lib.smpt_get_get_main_status_ack(self.device, main_status_ack)
@@ -172,7 +177,7 @@ class RehastimP24(RehastimGeneric):
         ret = sciencemode.lib.smpt_send_reset(self.device, packet_number)
 
         if self.show_log is True:
-            print("Command sent to rehastim:", self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Reset).name)
+            self.log(f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Reset).name}")
         self._get_last_ack()
 
     def close_port(self):
@@ -215,7 +220,7 @@ class RehastimP24(RehastimGeneric):
     def check_serial_port(self):
         ret = sciencemode.lib.smpt_check_serial_port(self.com)
         if self.show_log:
-            print(f"Port check for {self.port_name} : {'successful' if ret else 'unsuccessful'}")
+            self.log(f"Port check for {self.port_name} : {'successful' if ret else 'unsuccessful'}")
         return ret
 
     def _open_serial_port(self):
@@ -224,7 +229,7 @@ class RehastimP24(RehastimGeneric):
         """
         ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
         if self.show_log:
-            print(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
+            self.log(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
         return ret
 
     def _get_next_packet_number(self):
@@ -245,11 +250,10 @@ class RehastimP24(RehastimGeneric):
 
         ret = sciencemode.lib.smpt_send_ml_get_current_data(self.device, ml_get_current_data)
         if not ret:
-            print("Failed to get current data.")
+            self.log("Failed to get current data.")
         if self.show_log is True:
-            print(
-                "Command sent to rehastim:",
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name,
+            self.log(
+                f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data).name}"
             )
 
     @staticmethod
@@ -296,7 +300,7 @@ class RehastimP24(RehastimGeneric):
             time.sleep(0.005)
         ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
         if self.show_log is True:
-            print("Ack received by rehastimP24: ", self.RehastimP24Commands(self.ack.command_number).name)
+            self.log(f"Ack received by rehastimP24: {self.RehastimP24Commands(self.ack.command_number).name}")
         return ret
 
     def ll_init(self):
@@ -315,7 +319,7 @@ class RehastimP24(RehastimGeneric):
             raise RuntimeError("Low level initialization failed.")
         self.log(
             "Low level initialized",
-            "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Init).name),
+            f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Init).name}",
         )
 
         self._get_next_packet_number()
@@ -409,9 +413,8 @@ class RehastimP24(RehastimGeneric):
             ll_config.packet_number = self._get_next_packet_number()
             sciencemode.lib.smpt_send_ll_channel_config(self.device, ll_config)
             if self.show_log is True:
-                print(
-                    "Command sent to rehastim:",
-                    self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Channel_Config).name,
+                self.log(
+                    f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Channel_Config).name}",
                 )
             time.sleep(pulse_interval / 1000)
             self._get_last_ack()
@@ -459,7 +462,7 @@ class RehastimP24(RehastimGeneric):
             raise RuntimeError("Low level stop failed.")
         self.log(
             "Low level stopped",
-            "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Stop).name),
+            f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Stop).name}",
         )
         self._get_last_ack()
 
@@ -498,7 +501,7 @@ class RehastimP24(RehastimGeneric):
             raise RuntimeError("Failed to start stimulation")
         self.log(
             "Stimulation initialized",
-            "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Init).name),
+            f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Init).name}",
         )
         self._get_last_ack()
 
@@ -590,7 +593,7 @@ class RehastimP24(RehastimGeneric):
             raise RuntimeError("Failed to send stimulation update")
         self.log(
             "Stimulation started",
-            "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Update).name),
+            f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Update).name}",
         )
         self._get_last_ack()
 
@@ -616,14 +619,14 @@ class RehastimP24(RehastimGeneric):
         Stop the mid level stimulation.
         """
         self.pause_stimulation()  # Make sure the stimulation is paused before stopping it.
-        
+
         packet_number = self._get_next_packet_number()
 
         if not sciencemode.lib.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("Failure to stop stimulation.")
         self.log(
             "Stimulation stopped",
-            "Command sent to rehastim: {}".format(self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Stop).name),
+            f"Command sent to rehastim: {self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Stop).name}",
         )
         self._get_last_ack()
         self.stimulation_started = False

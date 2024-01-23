@@ -1,5 +1,10 @@
+import logging
+
 from pyScienceMode import Channel, Point, Device, Modes
 from pyScienceMode.devices.rehastimP24 import RehastimP24 as St
+
+logger = logging.getLogger("pyScienceMode")
+
 
 """
 This example shows how to use the RehastimP24 device. 
@@ -61,7 +66,7 @@ In this level you can get several information about the device.
 """
 
 # stimulator.get_battery_status()
-print(stimulator.get_stim_status())
+logger.info(stimulator.get_stim_status())
 # stimulator.get_main_status()
 # stimulator.get_all()
 # stimulator.reset()

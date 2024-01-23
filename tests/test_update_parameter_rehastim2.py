@@ -72,7 +72,6 @@ def test_update_frequency(port, frequency):
     )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=round(1 / frequency * 1000))
-    print(stimulator.stimulation_interval)
     assert stimulator.stimulation_interval == round(1 / frequency * 1000)
     stimulator.disconnect()
     stimulator.close_port()

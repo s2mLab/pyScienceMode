@@ -3,6 +3,11 @@ Motomed Interface class used to control and get data from Motomed while connecte
 See ScienceMode2 - Description and protocol for more information.
 """
 
+import logging
+from time import sleep
+import numpy as np
+
+
 from .acks import (
     get_motomed_mode_ack,
     init_phase_training_ack,
@@ -21,8 +26,8 @@ from .acks import (
 from .enums import Rehastim2Commands
 from .utils import packet_construction, signed_int
 
-from time import sleep
-import numpy as np
+
+logger = logging.getLogger("pyScienceMode")
 
 
 class _Motomed:
@@ -251,7 +256,7 @@ class _Motomed:
         stop_phase_ack = self._calling_ack(self.rehastim._get_last_ack())
         self.is_phase_training = False
         if stop_phase_ack == "PhaseResult":
-            print("Result of the phase available.")
+            logger.info("Result of the phase available.")
         elif stop_phase_ack != "Stop phase training sent to MOTOmed":
             raise RuntimeError("Error starting phase : " + str(stop_phase_ack))
 

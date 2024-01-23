@@ -1,5 +1,9 @@
+import logging
+
 import crccheck
 from .enums import ErrorCode, Rehastim2Commands
+
+logger = logging.getLogger("pyScienceMode")
 
 """
 This code provides utility functions for working with the Rehastim device, including packet construction and data 
@@ -84,9 +88,9 @@ def check_unique_channel(list_channels: list = None) -> bool:
         active_channel = []
         for i in range(len(list_channels)):
             if list_channels[i].get_no_channel() in active_channel:
-                print(
-                    "Warning : 2 channel no%s" % list_channels[i].get_no_channel()
-                    + " in list_channels given. The first one given will be used."
+                logger.info(
+                    f"Warning : 2 channel no{list_channels[i].get_no_channel()} in list_channels given. "
+                    "The first one given will be used."
                 )
                 list_channels.pop(i)
                 return False

@@ -203,7 +203,7 @@ class Rehastim2(RehastimGeneric):
                 break
         if packet and not self.error_occured:
             if self.show_log and packet[-1][6] in [t.value for t in self.Rehastim2Commands]:
-                print(f"Ack received by rehastim: {self.Rehastim2Commands(packet[-1][6]).name}")
+                self.log(f"Ack received by rehastim: {self.Rehastim2Commands(packet[-1][6]).name}")
                 self.ack_received.append(packet[-1])
         return packet[-1]
 

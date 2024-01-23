@@ -4,6 +4,7 @@ See ScienceMode2 - Description and protocol for more information.
 """
 
 from abc import ABC, abstractmethod
+import logging
 import threading
 import time
 
@@ -22,6 +23,8 @@ from ..enums import Rehastim2Commands, RehastimP24Commands, Device
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
+
+logger = logging.getLogger("pyScienceMode")
 
 
 class RehastimGeneric(ABC):
@@ -127,9 +130,9 @@ class RehastimGeneric(ABC):
         - full_msg: The additional message to show when show_log is True.
         """
         if self.show_log is True and full_msg:
-            print(full_msg)
+            logger.info(full_msg)
         if self.show_log is True or self.show_log == "Status":
-            print(status_msg)
+            logger.info(status_msg)
 
     @abstractmethod
     def _setup_device(self):
@@ -209,7 +212,7 @@ class RehastimGeneric(ABC):
         And retrieve the data sent by the motomed if motomed flag is true.
         """
 
-        print("thread started")
+        self.log("Thread 'catch ack' started")
         time_to_sleep = 0.005
         while self.stimulation_active and self.device_type == Device.Rehastim2.value:
             tic = time.time()
@@ -226,9 +229,9 @@ class RehastimGeneric(ABC):
                                 if self.Rehastim2Commands(packet[6]).name == "MotomedError":
                                     ack = motomed_error_ack(signed_int(packet[7:8]))
                                     if signed_int(packet[7:8]) in [-4, -6]:
-                                        print(f"Ack received by rehastim: {ack}")
+                                        self.log(f"Ack received by rehastim: {ack}")
                                 elif self.Rehastim2Commands(packet[6]).name != "ActualValues":
-                                    print(f"Ack received by rehastim: {self.Rehastim2Commands(packet[6]).name}")
+                                    self.log(f"Ack received by rehastim: {self.Rehastim2Commands(packet[6]).name}")
                             if packet[6] == self.Rehastim2Commands["ActualValues"].value:
                                 self._actual_values_ack(packet)
                             elif packet[6] == Rehastim2Commands["PhaseResult"].value:
@@ -352,7 +355,7 @@ class RehastimGeneric(ABC):
 
         if self.show_log:
             if self.Rehastim2Commands(packet[6]).name != "Watchdog":
-                print(f"Command sent to Rehastim : {self.Rehastim2Commands(packet[6]).name}")
+                self.log(f"Command sent to Rehastim : {self.Rehastim2Commands(packet[6]).name}")
                 self.command_send.append(packet)
 
         with self.lock:
