@@ -1,10 +1,7 @@
-# Import Stimulator class
-from pyScienceMode import Rehastim2 as St
-from pyScienceMode import Modes, Device
-
-# Import Channel class
-from pyScienceMode import Channel as Ch
 from time import sleep
+
+from pyScienceMode import Modes, Device, Channel as Ch
+from pyScienceMode.devices.rehastim2 import Rehastim2 as St
 
 #  Create a list of channels
 list_channels = []
@@ -103,7 +100,7 @@ After a disconnection, init_channel must be called.
 """
 stimulator.init_channel(stimulation_interval=15, list_channels=list_channels)
 
-stimulator.start_stimulation(2, list_channels)
+stimulator.start_stimulation(stimulation_duration=2, upd_list_channels=list_channels)
 
 stimulator.end_stimulation()
 

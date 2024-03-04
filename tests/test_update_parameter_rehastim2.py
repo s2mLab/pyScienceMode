@@ -1,6 +1,7 @@
 import pytest
-from pyScienceMode import Rehastim2 as St2
+
 from pyScienceMode import Channel, Device, Modes
+from pyScienceMode.devices.rehastim2 import Rehastim2 as St2
 
 
 # Connect the Rehastim2 device to the computer.
@@ -72,7 +73,6 @@ def test_update_frequency(port, frequency):
     )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=round(1 / frequency * 1000))
-    print(stimulator.stimulation_interval)
     assert stimulator.stimulation_interval == round(1 / frequency * 1000)
     stimulator.disconnect()
     stimulator.close_port()

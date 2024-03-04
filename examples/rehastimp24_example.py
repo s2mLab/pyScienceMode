@@ -1,5 +1,9 @@
+import logging
+import logging.config
+
 from pyScienceMode import Channel, Point, Device, Modes
-from pyScienceMode import RehastimP24 as St
+from pyScienceMode.devices.rehastimP24 import RehastimP24 as St
+
 
 """
 This example shows how to use the RehastimP24 device. 
@@ -7,6 +11,28 @@ There are several commands divided into three levels (general, low and mid).
 You can't call commands from different levels, you must first close the current level
 to be able to use commands from another one.
 """
+
+
+def setup_logger():
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "output": {"format": "%(asctime)s - %(name)s.%(levelname)s:\t%(message)s"},
+        },
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "output", "stream": "ext://sys.stdout"}
+        },
+        "loggers": {
+            "pyScienceMode": {"handlers": ["console"], "level": logging.DEBUG},
+        },
+    }
+    logging.config.dictConfig(logging_config)
+
+
+setup_logger()
+logger = logging.getLogger("pyScienceMode")
 
 # list which contains the channels you want to use
 list_channels = []
@@ -61,7 +87,7 @@ In this level you can get several information about the device.
 """
 
 # stimulator.get_battery_status()
-print(stimulator.get_stim_status())
+logger.info(stimulator.get_stim_status())
 # stimulator.get_main_status()
 # stimulator.get_all()
 # stimulator.reset()

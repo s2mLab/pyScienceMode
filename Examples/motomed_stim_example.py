@@ -1,7 +1,27 @@
+import logging
+import logging.config
 import time
-from pyScienceMode import Rehastim2 as St
-from pyScienceMode import Channel as Ch
-from pyScienceMode import Modes, Device
+
+from pyScienceMode import Channel as Ch, Modes, Device
+from pyScienceMode.devices.rehastim2 import Rehastim2 as St
+
+
+def setup_logger():
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "output": {"format": "%(asctime)s - %(name)s.%(levelname)s:\t%(message)s"},
+        },
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "output", "stream": "ext://sys.stdout"}
+        },
+        "loggers": {
+            "pyScienceMode": {"handlers": ["console"], "level": logging.DEBUG},
+        },
+    }
+    logging.config.dictConfig(logging_config)
 
 
 def init_rehastim():
@@ -39,6 +59,9 @@ def init_rehastim():
 
 
 if __name__ == "__main__":
+    setup_logger()
+    logger = logging.getLogger("pyScienceMode")
+
     stimulator, list_channels = init_rehastim()
     motomed = stimulator.motomed
 
@@ -58,8 +81,8 @@ if __name__ == "__main__":
         if (10 <= angle_crank < 20 or 180 <= angle_crank < 220) and (tric_delt_stim or bic_delt_stim):
             stimulator.pause_stimulation()
             tric_delt_stim, bic_delt_stim = False, False
-            print("angle crank", angle_crank)
-            print("stimulation_state", (tric_delt_stim or bic_delt_stim))
+            logger.info(f"angle crank {angle_crank}")
+            logger.info(f"stimulation_state {tric_delt_stim or bic_delt_stim}")
 
         if 20 <= angle_crank < 180 and not tric_delt_stim:
             list_channels[0].set_amplitude(0)
@@ -69,8 +92,8 @@ if __name__ == "__main__":
             stimulator.start_stimulation(upd_list_channels=list_channels)
             tric_delt_stim = True
             bic_delt_stim = False
-            print("angle crank", angle_crank)
-            print("stimulation_state", tric_delt_stim)
+            logger.info(f"angle crank {angle_crank}")
+            logger.info(f"stimulation_state {tric_delt_stim}")
 
         if (220 <= angle_crank < 360 or 0 <= angle_crank < 10) and not bic_delt_stim:
             list_channels[0].set_amplitude(15)
@@ -80,7 +103,7 @@ if __name__ == "__main__":
             stimulator.start_stimulation(upd_list_channels=list_channels)
             bic_delt_stim = True
             tric_delt_stim = False
-            print("angle crank", angle_crank)
-            print("stimulation_state", bic_delt_stim)
+            logger.info(f"angle crank {angle_crank}")
+            logger.info(f"stimulation_state {bic_delt_stim}")
 
         time.sleep(0.01)
