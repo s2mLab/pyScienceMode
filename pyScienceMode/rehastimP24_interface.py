@@ -448,11 +448,12 @@ class RehastimP24(RehastimGeneric):
         safety : bool
             Set to True if you want to check the pulse symmetry. False otherwise.
         """
-
+        """
         if not stimulation_duration:
             raise ValueError("Please indicate the stimulation duration")
         elif not isinstance(stimulation_duration, int | float):
             raise TypeError("Please provide a int or float type for stimulation duration")
+        """
 
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
@@ -463,7 +464,7 @@ class RehastimP24(RehastimGeneric):
 
         self.list_channels = upd_list_channels
         self._safety = safety
-        self._current_stim_duration = stimulation_duration
+        #self._current_stim_duration = stimulation_duration
         self.ml_update.packet_number = self.get_next_packet_number()
 
         for channel in upd_list_channels:
@@ -481,13 +482,22 @@ class RehastimP24(RehastimGeneric):
                     "Or specify specific stimulation points.".format(channel._no_channel)
                 )
         self._send_stimulation_update()
-
-        start_time = time.time()
-        while (time.time() - start_time) < stimulation_duration:
+        if not stimulation_duration:
             self._get_current_data()
             self._get_last_ack()
             self.check_stimulation_errors()
             time.sleep(0.005)
+        else:
+            if not isinstance(stimulation_duration, int | float):
+                raise TypeError("Please provide a int or float type for stimulation duration")
+            else:
+                self._current_stim_duration = stimulation_duration
+                start_time = time.time()
+                while (time.time() - start_time) < stimulation_duration:
+                    self._get_current_data()
+                    self._get_last_ack()
+                    self.check_stimulation_errors()
+                    time.sleep(0.005)
 
         self.pause_stimulation()
         self.stimulation_started = True
