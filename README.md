@@ -20,3 +20,5 @@ You are welcome to contribute to this project by following the steps describes i
 ## How to cite
 Please refer to the [documentation cite page](https://pysciencemode.readthedocs.io/en/latest/cite.html) to cite pyScienceMode.
 
+## Acknowledgements
+The software development was supported by Ingénierie de technologies interactives en réadaptation [INTER #160 OptiStim](https://regroupementinter.com/fr/mandat/160-optistim/).
