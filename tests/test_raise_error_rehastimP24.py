@@ -30,13 +30,23 @@ def test_electrode_error_p24(instant, port):
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
     if instant == "while":
-        with pytest.raises(RuntimeError, match=f"Electrode error on channel {channel_number}"):
+        with pytest.raises(
+            RuntimeError, match=f"Electrode error on channel {channel_number}"
+        ):
             while 1:
-                stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=20, safety=True)
+                stimulator.start_stimulation(
+                    upd_list_channels=list_channels,
+                    stimulation_duration=20,
+                    safety=True,
+                )
 
     elif instant == "begining":
-        with pytest.raises(RuntimeError, match=f"Electrode error on channel {channel_number}"):
-            stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
+        with pytest.raises(
+            RuntimeError, match=f"Electrode error on channel {channel_number}"
+        ):
+            stimulator.start_stimulation(
+                upd_list_channels=list_channels, stimulation_duration=1, safety=True
+            )
     stimulator.close_port()
 
 
@@ -48,7 +58,9 @@ def test_no_stimulation_points_error():
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
     channel_number = 1
-    channel_1 = Channel(no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24)
+    channel_1 = Channel(
+        no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24
+    )
 
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
@@ -58,7 +70,9 @@ def test_no_stimulation_points_error():
         "Please either provide an amplitude and pulse width for a biphasic stimulation."
         "Or specify specific stimulation points.".format(channel_1._no_channel),
     ):
-        stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5, safety=True)
+        stimulator.start_stimulation(
+            upd_list_channels=list_channels, stimulation_duration=0.5, safety=True
+        )
     stimulator.close_port()
 
 
@@ -70,7 +84,9 @@ def test_symmetric_error():
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
     channel_number = 1
-    channel_1 = Channel(no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24)
+    channel_1 = Channel(
+        no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24
+    )
 
     list_channels.append(channel_1)
     channel_1.add_point(350, 20)
@@ -81,7 +97,9 @@ def test_symmetric_error():
         f"Polarization and depolarization must have the same area.\n"
         f"Or set safety=False in start_stimulation.",
     ):
-        stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5, safety=True)
+        stimulator.start_stimulation(
+            upd_list_channels=list_channels, stimulation_duration=0.5, safety=True
+        )
     stimulator.close_port()
 
 
@@ -117,7 +135,9 @@ def test_channel_list_empty():
 
     stimulator = Stp24(port="COM4", show_log="Status")
     list_channels = []
-    with pytest.raises(ValueError, match="Please provide at least one channel for stimulation."):
+    with pytest.raises(
+        ValueError, match="Please provide at least one channel for stimulation."
+    ):
         stimulator.init_stimulation(list_channels=list_channels)
     stimulator.close_port()
 
@@ -149,9 +169,14 @@ def test_point_list_empty():
     list_points = []
     channel_number = 1
 
-    with pytest.raises(ValueError, match="Please provide at least one point for stimulation."):
+    with pytest.raises(
+        ValueError, match="Please provide at least one point for stimulation."
+    ):
         stimulator.start_stim_one_channel_stimulation(
-            no_channel=channel_number, points=list_points, stim_sequence=1, pulse_interval=10
+            no_channel=channel_number,
+            points=list_points,
+            stim_sequence=1,
+            pulse_interval=10,
         )
     stimulator.end_stim_one_channel()
     stimulator.close_port()

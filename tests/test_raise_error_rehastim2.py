@@ -18,13 +18,19 @@ def test_electrode_error(port):
     list_channels = []
     channel_number = 2
     channel_1 = Channel(
-        mode=Modes.SINGLE, no_channel=channel_number, amplitude=10, pulse_width=300, device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=channel_number,
+        amplitude=10,
+        pulse_width=300,
+        device_type=Device.Rehastim2,
     )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
     with pytest.raises(RuntimeError, match=f"Stimulation error"):
         while 1:
-            stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=10)
+            stimulator.start_stimulation(
+                upd_list_channels=list_channels, stimulation_duration=10
+            )
 
 
 @pytest.mark.parametrize("port", ["COM3"])
@@ -37,12 +43,18 @@ def test_stimulation_duration_too_short(port):
     list_channels = []
     channel_number = 2
     channel_1 = Channel(
-        mode=Modes.SINGLE, no_channel=channel_number, amplitude=10, pulse_width=300, device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=channel_number,
+        amplitude=10,
+        pulse_width=300,
+        device_type=Device.Rehastim2,
     )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
     with pytest.raises(RuntimeError, match="Asked stimulation duration too short"):
-        stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.001)
+        stimulator.start_stimulation(
+            upd_list_channels=list_channels, stimulation_duration=0.001
+        )
 
 
 @pytest.mark.parametrize("port", ["COM3"])
@@ -53,7 +65,9 @@ def test_channel_list_empty(port):
 
     stimulator = St2(port=port, show_log=True)
     list_channels = []
-    with pytest.raises(ValueError, match="Please provide at least one channel for stimulation."):
+    with pytest.raises(
+        ValueError, match="Please provide at least one channel for stimulation."
+    ):
         stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
 
 

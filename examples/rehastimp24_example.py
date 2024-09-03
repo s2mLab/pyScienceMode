@@ -15,7 +15,9 @@ list_channels = []
 list_stimulation_points = []
 
 # Create an object channel for mid-level stimulation
-channel_1 = Channel(no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24)
+channel_1 = Channel(
+    no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24
+)
 channel_2 = Channel(
     mode=Modes.SINGLE,
     no_channel=2,
@@ -48,7 +50,9 @@ channel_4 = Channel(
 )
 
 # Create an object stimulator
-stimulator = St(port="COM4", show_log="Status")  # Enter the port on which the rehastimP24 is connected
+stimulator = St(
+    port="COM4", show_log="Status"
+)  # Enter the port on which the rehastimP24 is connected
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
 list_channels.append(channel_2)
@@ -97,7 +101,9 @@ If you set the safety flag to False, it will not  check if the stimulation point
 for a muscle loading and unloading phase. 
 """
 
-stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=5, safety=True)
+stimulator.start_stimulation(
+    upd_list_channels=list_channels, stimulation_duration=5, safety=True
+)
 
 # You can modify some parameters during the stimulation.
 # if you have chosen the default shape pulse (single,doublet,triplet), you can modify the amplitude and the pulse width.

@@ -2,6 +2,7 @@
 Stimulator Interface class used to control the rehamove2.
 See ScienceMode2 - Description and protocol for more information.
 """
+
 from typing import Tuple
 import time
 from .acks import (
@@ -151,7 +152,9 @@ class Rehastim2(RehastimGeneric):
         elif packet[6] == self.Rehastim2Commands["StimulationError"].value:
             return rehastim_error(signed_int(packet[7:8]))
         elif packet[6] == self.Rehastim2Commands["ActualValues"].value:
-            raise RuntimeError("Motomed is connected, so put the flag with_motomed to True.")
+            raise RuntimeError(
+                "Motomed is connected, so put the flag with_motomed to True."
+            )
         else:
             raise RuntimeError(f"Error packet : not understood {packet[6]}")
 
@@ -172,7 +175,9 @@ class Rehastim2(RehastimGeneric):
             0,
         ]
 
-        packet = packet_construction(self.packet_count, "InitChannelListMode", data_stimulation)
+        packet = packet_construction(
+            self.packet_count, "InitChannelListMode", data_stimulation
+        )
         return packet
 
     def _packet_start_stimulation(self) -> bytes:
@@ -186,7 +191,9 @@ class Rehastim2(RehastimGeneric):
             data_stimulation.append(msb)
             data_stimulation.append(lsb)
             data_stimulation.append(int(self.amplitude[i]))
-        packet = packet_construction(self.packet_count, "StartChannelListMode", data_stimulation)
+        packet = packet_construction(
+            self.packet_count, "StartChannelListMode", data_stimulation
+        )
         return packet
 
     def _msb_lsb_main_stim(self) -> Tuple[int, int]:
@@ -302,13 +309,17 @@ class Rehastim2(RehastimGeneric):
 
         # Find electrode_number (according to Science_Mode2_Description_Protocol_20121212 p17)
         self.electrode_number = calc_electrode_number(self.list_channels)
-        self.electrode_number_low_frequency = calc_electrode_number(self.list_channels, enable_low_frequency=True)
+        self.electrode_number_low_frequency = calc_electrode_number(
+            self.list_channels, enable_low_frequency=True
+        )
 
         self.set_stimulation_signal(self.list_channels)
         self._send_packet("InitChannelListMode")
         self._get_last_ack()
 
-    def start_stimulation(self, stimulation_duration: float = None, upd_list_channels: list = None):
+    def start_stimulation(
+        self, stimulation_duration: float = None, upd_list_channels: list = None
+    ):
         """
         Update a stimulation.
         Warning: only the channel that has been initiated can be updated.
@@ -326,7 +337,9 @@ class Rehastim2(RehastimGeneric):
 
             # Verify if the updated channels have been initialised
             if new_electrode_number != self.electrode_number:
-                raise RuntimeError("Error update: all channels have not been initialised")
+                raise RuntimeError(
+                    "Error update: all channels have not been initialised"
+                )
             self.list_channels = upd_list_channels
             self.set_stimulation_signal(self.list_channels)
         self._send_packet("StartChannelListMode")

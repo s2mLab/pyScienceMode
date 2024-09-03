@@ -19,13 +19,19 @@ def test_update_amplitude(port, amplitude):
     list_channels = []
     channel_number = 2
     channel_1 = Channel(
-        mode=Modes.SINGLE, no_channel=channel_number, amplitude=amplitude, pulse_width=300, device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=channel_number,
+        amplitude=amplitude,
+        pulse_width=300,
+        device_type=Device.Rehastim2,
     )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
     channel_1.set_amplitude(amplitude)
     assert channel_1.get_amplitude() == amplitude
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=0.5
+    )
     stimulator.disconnect()
     stimulator.close_port()
 
@@ -51,7 +57,9 @@ def test_update_pulse_width(port, pulse_width):
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
     channel_1.set_pulse_width(pulse_width=pulse_width)
     assert channel_1.get_pulse_width() == pulse_width
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=0.5
+    )
     stimulator.disconnect()
     stimulator.close_port()
 
@@ -68,10 +76,16 @@ def test_update_frequency(port, frequency):
     list_channels = []
     channel_number = 2
     channel_1 = Channel(
-        mode=Modes.SINGLE, no_channel=channel_number, amplitude=10, pulse_width=400, device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=channel_number,
+        amplitude=10,
+        pulse_width=400,
+        device_type=Device.Rehastim2,
     )
     list_channels.append(channel_1)
-    stimulator.init_channel(list_channels=list_channels, stimulation_interval=round(1 / frequency * 1000))
+    stimulator.init_channel(
+        list_channels=list_channels, stimulation_interval=round(1 / frequency * 1000)
+    )
     print(stimulator.stimulation_interval)
     assert stimulator.stimulation_interval == round(1 / frequency * 1000)
     stimulator.disconnect()
@@ -89,12 +103,18 @@ def test_update_mode(port, mode):
     list_channels = []
     channel_number = 2
     channel_1 = Channel(
-        mode=mode, no_channel=channel_number, amplitude=10, pulse_width=350, device_type=Device.Rehastim2
+        mode=mode,
+        no_channel=channel_number,
+        amplitude=10,
+        pulse_width=350,
+        device_type=Device.Rehastim2,
     )
     list_channels.append(channel_1)
     stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
     channel_1.set_mode(mode=mode)
     assert channel_1.get_mode() == mode.value
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=0.5)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=0.5
+    )
     stimulator.disconnect()
     stimulator.close_port()

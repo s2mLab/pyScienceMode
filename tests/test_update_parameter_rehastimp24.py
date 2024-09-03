@@ -30,7 +30,9 @@ def test_update_amplitude(port, amplitude):
     stimulator.init_stimulation(list_channels=list_channels)
     channel_1.set_amplitude(amplitude)
     assert channel_1.get_amplitude() == amplitude
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=1, safety=True
+    )
     stimulator.close_port()
 
 
@@ -56,7 +58,9 @@ def test_update_pulse_width(port, pulse_width):
     stimulator.init_stimulation(list_channels=list_channels)
     channel_1.set_pulse_width(pulse_width=pulse_width)
     assert channel_1.get_pulse_width() == pulse_width
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=1, safety=True
+    )
     stimulator.close_port()
 
 
@@ -82,7 +86,9 @@ def test_update_frequency(port, frequency):
     stimulator.init_stimulation(list_channels=list_channels)
     channel_1.set_frequency(frequency=frequency)
     assert round(channel_1.get_frequency()) == frequency
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=1, safety=True
+    )
     stimulator.close_port()
 
 
@@ -108,5 +114,7 @@ def test_update_mode(port, mode):
     stimulator.init_stimulation(list_channels=list_channels)
     channel_1.set_mode(mode=mode)
     assert channel_1.get_mode() == mode.value
-    stimulator.start_stimulation(upd_list_channels=list_channels, stimulation_duration=1, safety=True)
+    stimulator.start_stimulation(
+        upd_list_channels=list_channels, stimulation_duration=1, safety=True
+    )
     stimulator.close_port()
