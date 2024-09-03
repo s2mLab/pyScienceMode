@@ -1,6 +1,7 @@
 """
 Class used to construct a channel for each different electrode.
 """
+
 from .enums import Device, Modes
 
 
@@ -65,7 +66,9 @@ class Channel:
                 self.device_type = Device[device_type].value
             except KeyError:
                 valid_devices = ", ".join([d.name for d in Device])
-                raise ValueError(f"device_type must be one of the following: {valid_devices}")
+                raise ValueError(
+                    f"device_type must be one of the following: {valid_devices}"
+                )
         elif isinstance(device_type, Device):
             self.device_type = device_type.value
         else:
@@ -77,7 +80,9 @@ class Channel:
                     self._mode = Modes[mode.upper()].value
                 except KeyError:
                     valid_modes = ", ".join([m.name for m in Modes])
-                    raise ValueError(f"Choose a correct mode among {valid_modes.lower()}")
+                    raise ValueError(
+                        f"Choose a correct mode among {valid_modes.lower()}"
+                    )
             elif isinstance(mode, Modes):
                 self._mode = mode.value
             else:
@@ -98,7 +103,9 @@ class Channel:
         if self.device_type == Device.Rehastim2.value and frequency != 50.0:
             # If the user enters a frequency for a Rehastim2 channel, raise an error.
             # the frequency must still have a default value (50 in this case), otherwise division by 0.
-            raise RuntimeError("Frequency can not be set for individual channel for the Rehastim2")
+            raise RuntimeError(
+                "Frequency can not be set for individual channel for the Rehastim2"
+            )
 
         if self.device_type == Device.Rehastimp24.value:
             self.generate_pulse()
@@ -227,25 +234,42 @@ class Channel:
         """
         if self.device_type == Device.Rehastim2.value:
             if self._amplitude < 0 or self._amplitude > 130:
-                raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
+                raise ValueError(
+                    "Error : Amplitude min = 0, max = 130. Amplitude given : %s"
+                    % self._amplitude
+                )
             if self._no_channel < 1 or self._no_channel > 8:
-                raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
+                raise ValueError(
+                    "Error : 8 channel possible. Channel given : %s" % self._no_channel
+                )
             if self._pulse_width < 0 or self._pulse_width > 500:
-                raise ValueError("Error : Impulsion time [0,500], given : %s" % self._pulse_width)
+                raise ValueError(
+                    "Error : Impulsion time [0,500], given : %s" % self._pulse_width
+                )
 
         if self.device_type == Device.Rehastimp24.value:
             if self._period < 0.5 or self._period > 16383:
                 raise ValueError(
-                    "Error : Frequency min = 0.5, max = 2000. Frequency given : %s Hz" % (1000 / self._period)
+                    "Error : Frequency min = 0.5, max = 2000. Frequency given : %s Hz"
+                    % (1000 / self._period)
                 )
             if self._no_channel < 1 or self._no_channel > 8:
-                raise ValueError("Error : 8 channel possible. Channel given : %s" % self._no_channel)
+                raise ValueError(
+                    "Error : 8 channel possible. Channel given : %s" % self._no_channel
+                )
             if self._amplitude < 0 or self._amplitude > 130:
-                raise ValueError("Error : Amplitude min = 0, max = 130. Amplitude given : %s" % self._amplitude)
+                raise ValueError(
+                    "Error : Amplitude min = 0, max = 130. Amplitude given : %s"
+                    % self._amplitude
+                )
             if self._pulse_width < 0 or self._pulse_width > 4095:
-                raise ValueError("Error : Pulse Width [0,4095], given : %s" % self._pulse_width)
+                raise ValueError(
+                    "Error : Pulse Width [0,4095], given : %s" % self._pulse_width
+                )
             if self._ramp < 0 or self._ramp > 16:
-                raise ValueError("Error : Ramp min = 0, max = 16. Ramp given : %s" % self._ramp)
+                raise ValueError(
+                    "Error : Ramp min = 0, max = 16. Ramp given : %s" % self._ramp
+                )
 
     def set_mode(self, mode: str | Modes):
         """
@@ -382,7 +406,9 @@ class Channel:
             self._period = 1000.0 / frequency
             self.generate_pulse()
         else:
-            raise ValueError("Frequency can not be set for individual channel for the Rehastim2")
+            raise ValueError(
+                "Frequency can not be set for individual channel for the Rehastim2"
+            )
 
     def get_frequency(self) -> int | float:
         """
@@ -428,7 +454,9 @@ class Channel:
                 self.device_type = Device[normalized_device_type].value
             except KeyError:
                 valid_devices = ", ".join([d.value for d in Device])
-                raise ValueError(f"device_type must be one of the following: {valid_devices}")
+                raise ValueError(
+                    f"device_type must be one of the following: {valid_devices}"
+                )
         elif isinstance(device_type, Device):
             self.device_type = device_type.value
         else:
@@ -461,7 +489,9 @@ class Channel:
                 point = Point(pulse_width, amplitude)
                 self.list_point.append(point)
             else:
-                raise ValueError(f"Cannot add more than {Channel.MAX_POINTS} points to a channel")
+                raise ValueError(
+                    f"Cannot add more than {Channel.MAX_POINTS} points to a channel"
+                )
             return point
         else:
             raise ValueError("Point control not available on Rehastim2")

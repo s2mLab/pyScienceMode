@@ -35,7 +35,10 @@ def check_stimulation_interval(stimulation_interval: int = None):
     """
     if stimulation_interval:
         if stimulation_interval < 8 or stimulation_interval > 1025:
-            raise ValueError("Error : Stimulation interval [8,1025]. Stimulation given : %s" % stimulation_interval)
+            raise ValueError(
+                "Error : Stimulation interval [8,1025]. Stimulation given : %s"
+                % stimulation_interval
+            )
 
 
 def check_inter_pulse_interval(inter_pulse_interval: int = None):
@@ -50,7 +53,10 @@ def check_inter_pulse_interval(inter_pulse_interval: int = None):
     """
     if inter_pulse_interval:
         if inter_pulse_interval < 2 or inter_pulse_interval > 129:
-            raise ValueError("Error : Inter pulse interval [2,129], given : %s" % inter_pulse_interval)
+            raise ValueError(
+                "Error : Inter pulse interval [2,129], given : %s"
+                % inter_pulse_interval
+            )
 
 
 def check_low_frequency_factor(low_frequency_factor: int = None):
@@ -64,7 +70,9 @@ def check_low_frequency_factor(low_frequency_factor: int = None):
     """
     if low_frequency_factor:
         if low_frequency_factor < 0 or low_frequency_factor > 7:
-            raise ValueError("Error : Low frequency factor [0,7], given : %s" % low_frequency_factor)
+            raise ValueError(
+                "Error : Low frequency factor [0,7], given : %s" % low_frequency_factor
+            )
 
 
 def check_unique_channel(list_channels: list = None) -> bool:
@@ -107,11 +115,15 @@ def check_list_channel_order(list_channels):
     number_previous_channel = 0
     for i in range(len(list_channels)):
         if list_channels[i].get_no_channel() < number_previous_channel:
-            raise RuntimeError("Error: channels in list_channels given are not in order.")
+            raise RuntimeError(
+                "Error: channels in list_channels given are not in order."
+            )
         number_previous_channel = list_channels[i].get_no_channel()
 
 
-def calc_electrode_number(list_channels: list, enable_low_frequency: bool = False) -> int:
+def calc_electrode_number(
+    list_channels: list, enable_low_frequency: bool = False
+) -> int:
     """
     When enable_low_frequency = False :
     Calculates the number corresponding to which electrode is activated.
@@ -145,7 +157,9 @@ def calc_electrode_number(list_channels: list, enable_low_frequency: bool = Fals
     return electrode_number
 
 
-def packet_construction(packet_count: int, packet_type: str, packet_data: list = None) -> bytes:
+def packet_construction(
+    packet_count: int, packet_type: str, packet_data: list = None
+) -> bytes:
     """
     Constructs the packet which will be sent to the Rehastim.
 
@@ -180,7 +194,15 @@ def packet_construction(packet_count: int, packet_type: str, packet_data: list =
     checksum = _stuff_byte(checksum)
     data_length = _stuff_byte(len(packet_payload))
 
-    packet = packet + [stuffing_byte] + [checksum] + [stuffing_byte] + [data_length] + packet_payload + [stop_byte]
+    packet = (
+        packet
+        + [stuffing_byte]
+        + [checksum]
+        + [stuffing_byte]
+        + [data_length]
+        + packet_payload
+        + [stop_byte]
+    )
     return b"".join([byte.to_bytes(1, "little") for byte in packet])
 
 

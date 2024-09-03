@@ -11,16 +11,36 @@ def init_rehastim():
 
     # Create all channels possible
     channel_1 = Ch(
-        mode=Modes.SINGLE, no_channel=1, amplitude=10, pulse_width=100, name="Biceps", device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=1,
+        amplitude=10,
+        pulse_width=100,
+        name="Biceps",
+        device_type=Device.Rehastim2,
     )
     channel_2 = Ch(
-        mode=Modes.SINGLE, no_channel=2, amplitude=8, pulse_width=100, name="delt_ant", device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=2,
+        amplitude=8,
+        pulse_width=100,
+        name="delt_ant",
+        device_type=Device.Rehastim2,
     )
     channel_3 = Ch(
-        mode=Modes.SINGLE, no_channel=3, amplitude=8, pulse_width=100, name="Triceps", device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=3,
+        amplitude=8,
+        pulse_width=100,
+        name="Triceps",
+        device_type=Device.Rehastim2,
     )
     channel_4 = Ch(
-        mode=Modes.SINGLE, no_channel=4, amplitude=9, pulse_width=100, name="delt_post", device_type=Device.Rehastim2
+        mode=Modes.SINGLE,
+        no_channel=4,
+        amplitude=9,
+        pulse_width=100,
+        name="delt_post",
+        device_type=Device.Rehastim2,
     )
 
     # Choose which channel will be used
@@ -33,7 +53,9 @@ def init_rehastim():
     stimulator = St(
         port="/dev/ttyYSB0", show_log=True, with_motomed=True
     )  # Enter the port on which the stimulator is connected
-    stimulator.init_channel(stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0)
+    stimulator.init_channel(
+        stimulation_interval=20, list_channels=list_channels, low_frequency_factor=0
+    )
 
     return stimulator, list_channels
 
@@ -55,7 +77,9 @@ if __name__ == "__main__":
     tric_delt_stim = False
     while 1:
         angle_crank = motomed.get_angle()
-        if (10 <= angle_crank < 20 or 180 <= angle_crank < 220) and (tric_delt_stim or bic_delt_stim):
+        if (10 <= angle_crank < 20 or 180 <= angle_crank < 220) and (
+            tric_delt_stim or bic_delt_stim
+        ):
             stimulator.pause_stimulation()
             tric_delt_stim, bic_delt_stim = False, False
             print("angle crank", angle_crank)

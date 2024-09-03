@@ -72,7 +72,9 @@ class _Motomed:
         """
         self.rehastim.motomed_done.wait()  # If the event is set, motomed last command is done next command can be sent
         if cmd == "InitPhaseTraining":
-            packet = packet_construction(self.rehastim.packet_count, "InitPhaseTraining", [self.body_training])
+            packet = packet_construction(
+                self.rehastim.packet_count, "InitPhaseTraining", [self.body_training]
+            )
             self.rehastim.motomed_done.clear()
         elif cmd == "StartPhase":
             self.is_phase_result = False
@@ -87,19 +89,29 @@ class _Motomed:
                 self.training_side,
                 self.crank_orientation,
             ]
-            packet = packet_construction(self.rehastim.packet_count, "StartPhase", data_command)
+            packet = packet_construction(
+                self.rehastim.packet_count, "StartPhase", data_command
+            )
             self.rehastim.motomed_done.clear()
         elif cmd == "SetRotationDirection":
-            packet = packet_construction(self.rehastim.packet_count, "SetRotationDirection", [self.direction])
+            packet = packet_construction(
+                self.rehastim.packet_count, "SetRotationDirection", [self.direction]
+            )
             self.rehastim.motomed_done.clear()
         elif cmd == "SetSpeed":
-            packet = packet_construction(self.rehastim.packet_count, "SetSpeed", [self.passive_speed])
+            packet = packet_construction(
+                self.rehastim.packet_count, "SetSpeed", [self.passive_speed]
+            )
             self.rehastim.motomed_done.clear()
         elif cmd == "SetGear":
-            packet = packet_construction(self.rehastim.packet_count, "SetGear", [self.gear])
+            packet = packet_construction(
+                self.rehastim.packet_count, "SetGear", [self.gear]
+            )
             self.rehastim.motomed_done.clear()
         elif cmd == "StartBasicTraining":
-            packet = packet_construction(self.rehastim.packet_count, "StartBasicTraining", [self.body_training])
+            packet = packet_construction(
+                self.rehastim.packet_count, "StartBasicTraining", [self.body_training]
+            )
             self.rehastim.motomed_done.clear()
         else:
             packet = packet_construction(self.rehastim.packet_count, cmd)
@@ -117,7 +129,12 @@ class _Motomed:
         """
         self._send_packet("GetMotomedMode")
         get_mot_mode_ack = self._calling_ack(self.rehastim._get_last_ack())
-        if get_mot_mode_ack in ["Transfer error", "Busy error", "Motomed busy", "Motomed connection error"]:
+        if get_mot_mode_ack in [
+            "Transfer error",
+            "Busy error",
+            "Motomed busy",
+            "Motomed connection error",
+        ]:
             raise RuntimeError("Error getting motomed mode : " + str(get_mot_mode_ack))
         else:
             return get_mot_mode_ack
@@ -191,7 +208,9 @@ class _Motomed:
             self.phase_variant = 3
 
         if self.phase_variant not in [0, 1, 2, 3]:
-            raise RuntimeError("Please chose one option between 'active' 'symmetry_training' and 'Motomedmax_game'.")
+            raise RuntimeError(
+                "Please chose one option between 'active' 'symmetry_training' and 'Motomedmax_game'."
+            )
 
         if not self.is_phase_initialize:
             raise RuntimeError("Phase not initialized.")
@@ -214,7 +233,9 @@ class _Motomed:
         if not spasm_detection:
             self.spasm_detection = 0
             if direction_restoration:
-                raise RuntimeError("You can use direction restoration only if spasm detection is active.")
+                raise RuntimeError(
+                    "You can use direction restoration only if spasm detection is active."
+                )
         else:
             if direction_restoration:
                 self.spasm_detection = 2
@@ -227,11 +248,17 @@ class _Motomed:
         elif training_side == "right":
             self.training_side = 2
         else:
-            raise RuntimeError("Training side must be 'both', 'right' or 'left'." f"You have : {training_side}.")
+            raise RuntimeError(
+                "Training side must be 'both', 'right' or 'left'."
+                f"You have : {training_side}."
+            )
         self.crank_orientation = 1 if crank_symetric else 0
         self._send_packet("StartPhase")
         start_phase_train_ack = self._calling_ack(self.rehastim._get_last_ack())
-        if start_phase_train_ack != "Start phase training / change phase sent to MOTOmed":
+        if (
+            start_phase_train_ack
+            != "Start phase training / change phase sent to MOTOmed"
+        ):
             raise RuntimeError("Error starting phase : " + str(start_phase_train_ack))
 
     def _pause_phase_training(self):
@@ -268,19 +295,31 @@ class _Motomed:
         """
         Stop the training.
         """
-        self._stop_phase_training() if self.is_phase_training else self._stop_basic_training()
+        (
+            self._stop_phase_training()
+            if self.is_phase_training
+            else self._stop_basic_training()
+        )
 
     def pause_training(self):
         """
         Pause the training.
         """
-        self._pause_phase_training() if self.is_phase_training else self._pause_basic_training()
+        (
+            self._pause_phase_training()
+            if self.is_phase_training
+            else self._pause_basic_training()
+        )
 
     def continue_training(self):
         """
         Continue the training.
         """
-        self._continue_phase_training() if self.is_phase_training else self._continue_basic_training()
+        (
+            self._continue_phase_training()
+            if self.is_phase_training
+            else self._continue_basic_training()
+        )
 
     def start_basic_training(self, arm_training: bool = True):
         """

@@ -52,7 +52,9 @@ stimulator = St(
 Initialise the channels given.
 It is possible to modify the list of channels, the stimulation interval and the low_frequency_factor
 """
-stimulator.init_channel(stimulation_interval=200, list_channels=list_channels, low_frequency_factor=2)
+stimulator.init_channel(
+    stimulation_interval=200, list_channels=list_channels, low_frequency_factor=2
+)
 
 """
 Start the stimulation.
