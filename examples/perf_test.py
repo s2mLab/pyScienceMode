@@ -3,7 +3,10 @@ from pyScienceMode import RehastimP24 as St
 from pyScienceMode import Rehastim2 as St2
 import random
 from time import sleep
-from sciencemode import sciencemode
+try:
+    from sciencemode import sciencemode
+except ImportError:
+    pass
 from biosiglive import ViconClient, DeviceType
 import numpy as np
 
