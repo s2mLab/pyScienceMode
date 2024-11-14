@@ -6,7 +6,10 @@ from .utils import (
     check_list_channel_order,
 )
 from .sciencemode import RehastimGeneric
-from sciencemode import sciencemode
+try:
+    from sciencemode import sciencemode
+except ImportError:
+    pass
 from .enums import Device, HighVoltage, StimStatus
 from .channel import Point, Channel
 
