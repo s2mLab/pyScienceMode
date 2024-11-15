@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pyScienceMode"
+name = "pysciencemode"
 version = "1.1.2"
 description = "Python interface to control the Rehastim2 and RehastimP24 devices."
 readme = "README.md"
@@ -21,7 +21,7 @@ requires-python = ">=3.10"
 dependencies = ["numpy", "crccheck", "colorama", "pyserial", "typing"]
 
 [tool.setuptools]
-packages = ["pyScienceMode"]
+packages = ["pysciencemode"]
 
 [project.urls]
 "Homepage" = "https://github.com/s2mLab/pyScienceMode"

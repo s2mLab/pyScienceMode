@@ -1,5 +1,5 @@
-from pyScienceMode import Channel, Point, Device, Modes
-from pyScienceMode import RehastimP24 as St
+from pysciencemode import Channel, Point, Device, Modes
+from pysciencemode import RehastimP24 as St
 
 """
 This example shows how to use the RehastimP24 device. 

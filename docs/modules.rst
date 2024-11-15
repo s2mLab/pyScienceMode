@@ -1,8 +1,8 @@
-pyScienceMode
+pysciencemode
 ==============
 
 .. toctree::
    :maxdepth: 4
 
-   pyScienceMode
+   pysciencemode
 

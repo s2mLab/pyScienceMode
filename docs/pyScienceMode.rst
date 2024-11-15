@@ -1,69 +1,69 @@
-pyScienceMode package
+pysciencemode package
 ======================
 
 Submodules
 ----------
 
-pyScienceMode.channel module
+pysciencemode.channel module
 -----------------------------
 
-.. automodule:: pyScienceMode.channel
+.. automodule:: pysciencemode.channel
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.acks module
+pysciencemode.acks module
 --------------------------
 
-.. automodule:: pyScienceMode.acks
+.. automodule:: pysciencemode.acks
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.enums module
+pysciencemode.enums module
 ---------------------------
 
-.. automodule:: pyScienceMode.enums
+.. automodule:: pysciencemode.enums
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.motomed_interface module
+pysciencemode.motomed_interface module
 ----------------------------------------
 
-.. automodule:: pyScienceMode.motomed_interface
+.. automodule:: pysciencemode.motomed_interface
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.rehastim2_interface module
+pysciencemode.rehastim2_interface module
 -----------------------------------------
 
-.. automodule:: pyScienceMode.rehastim2_interface
+.. automodule:: pysciencemode.rehastim2_interface
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.rehastimP24_interface module
+pysciencemode.rehastimP24_interface module
 -------------------------------------------
 
-.. automodule:: pyScienceMode.rehastimP24_interface
+.. automodule:: pysciencemode.rehastimP24_interface
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.sciencemode module
+pysciencemode.sciencemode module
 ---------------------------------
 
-.. automodule:: pyScienceMode.sciencemode
+.. automodule:: pysciencemode.sciencemode
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyScienceMode.utils module
+pysciencemode.utils module
 ---------------------------
 
-.. automodule:: pyScienceMode.utils
+.. automodule:: pysciencemode.utils
    :members:
    :undoc-members:
    :show-inheritance:

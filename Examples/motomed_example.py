@@ -1,5 +1,5 @@
 import time
-from pyScienceMode import Rehastim2
+from pysciencemode import Rehastim2
 
 port = "/dev/ttyUSB0"  # Enter the port on which the stimulator is connected
 

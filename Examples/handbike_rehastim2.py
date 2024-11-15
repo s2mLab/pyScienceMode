@@ -2,9 +2,9 @@ import time
 
 import nidaqmx
 
-from pyScienceMode import Rehastim2 as St
-from pyScienceMode import Channel as Ch
-from pyScienceMode import Device, Modes
+from pysciencemode import Rehastim2 as St
+from pysciencemode import Channel as Ch
+from pysciencemode import Device, Modes
 
 """
 This example shows how to use the RehastimP24 device for a hand cycling purpose.
