@@ -1,6 +1,6 @@
 import pytest
-from pyScienceMode import RehastimP24 as Stp24
-from pyScienceMode import Channel, Point, Device, Modes
+from pysciencemode import RehastimP24 as Stp24
+from pysciencemode import Channel, Point, Device, Modes
 
 # Connect the Rehastimp24 device to the computer.
 # Then you can run the whole file (except for the test_electrode_error) or just one test.

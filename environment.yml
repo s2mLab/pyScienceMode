@@ -1,4 +1,4 @@
-name: pyScienceMode
+name: pysciencemode
 channels:
 - conda-forge
 - default

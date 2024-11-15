@@ -1,6 +1,6 @@
-from pyScienceMode import Channel, Point, Device, Modes
-from pyScienceMode import RehastimP24 as St
-from pyScienceMode import Rehastim2 as St2
+from pysciencemode import Channel, Point, Device, Modes
+from pysciencemode import RehastimP24 as St
+from pysciencemode import Rehastim2 as St2
 import random
 from time import sleep
 try:

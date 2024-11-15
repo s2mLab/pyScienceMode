@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath("../"))
 
 # -- Project information -----------------------------------------------------
 
-project = "pyScienceMode"
+project = "pysciencemode"
 copyright = "2023, Baert, Ceglia, Co, Faresin"
 author = "Baert, Ceglia, Co, Faresin "
 
 # The full version, including alpha/beta/rc tags
-release = "1.1"
+release = "1.1.2"
 
 
 # -- General configuration ---------------------------------------------------
