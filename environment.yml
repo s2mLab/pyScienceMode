@@ -1,0 +1,11 @@
+name: pyScienceMode
+channels:
+- conda-forge
+- default
+dependencies:
+- python >=3.10
+- numpy
+- crccheck
+- colorama
+- pyserial
+- typing
