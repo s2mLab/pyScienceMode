@@ -1,9 +1,23 @@
 # pyScienceMode
 `pyScienceMode` is a Python interface to control the Rehastim2 and the RehastimP24. 
 Please have a look to the documentation for more information about [pyScienceMode](https://pysciencemode.readthedocs.io/en/latest/index.html)
-## How to install
-Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) to install pyScienceMode. 
 
+## How to install
+These are the different ways to install pyScienceMode for the Rehastim2 control.
+To control the RehastimP24, please follow the given steps in `Installing from source` as it requires an additional wheel compilation.
+
+### Installing from PyPI
+```bash
+pip install pysciencemode
+```
+
+### Installing from Anaconda
+```bash
+conda install -c conda-forge pysciencemode
+```
+
+### Installing from source
+Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) to install pyScienceMode. 
 
 ## How to use
 A set of example is provided in the `examples` folder to show how to control the Rehastim2 and the RehastimP24 :
