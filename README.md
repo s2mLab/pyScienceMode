@@ -32,6 +32,7 @@ You are welcome to contribute to this project by following the steps describes i
 [how to contribute](https://pysciencemode.readthedocs.io/en/latest/contributing.html) page.
 
 ## How to cite
+[![status](https://joss.theoj.org/papers/39ed869b636795151756cc57c7e625ad/status.svg)](https://joss.theoj.org/papers/39ed869b636795151756cc57c7e625ad)</br>
 Please refer to the [documentation cite page](https://pysciencemode.readthedocs.io/en/latest/cite.html) to cite pyScienceMode.
 
 ## Acknowledgements
