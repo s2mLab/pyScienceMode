@@ -46,8 +46,8 @@ range of clinical or experimental applications.
 # Statement of Need
 
 To enhance FES rehabilitation, it is essential to provide optimized and personalized stimulation for both the patient
-and the performed task. Advanced control technology is needed to deliver new stimulation protocols
-[@ibitoye2016strategies][@rouse2019fes] that can enhance motion [@molazadeh2021shared] or increase muscle force
+and the performed task. Advanced control technology is needed to deliver new stimulation protocols 
+[@ibitoye2016strategies; @rouse2019fes] that can enhance motion [@molazadeh2021shared] or increase muscle force
 production [@doll2018dynamic]. However, most commercially available electrical stimulators lack flexible device control,
 and customization is often restricted to manufacturer-provided interfaces, limiting real-time adaptation to experimental
 conditions. Hasomed’s stimulators are widely used in research because their ScienceMode API facilitates advanced
