@@ -49,7 +49,7 @@ class Rehastim2Commands(Enum):
     GetMotomedMode = 12
 
 
-class RehastimP24Commands(Enum):
+class P24Commands(Enum):
     Smpt_Cmd_Ll_Init = 0
     Smpt_Cmd_Ll_Init_Ack = 1
     Smpt_Cmd_Ll_Channel_Config = 2
@@ -170,4 +170,4 @@ class StimStatus(Enum):
 
 class Device(Enum):
     Rehastim2 = "Rehastim2"
-    Rehastimp24 = "RehastimP24"
+    P24 = "P24"

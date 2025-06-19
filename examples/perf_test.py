@@ -1,5 +1,5 @@
 from pysciencemode import Channel, Point, Device, Modes
-from pysciencemode import RehastimP24 as St
+from pysciencemode import P24 as St
 from pysciencemode import Rehastim2 as St2
 import random
 from time import sleep
@@ -11,7 +11,7 @@ from biosiglive import ViconClient, DeviceType
 import numpy as np
 
 """
-This file is used to test the performance of both devices (RehastimP24 and Rehastim2).
+This file is used to test the performance of both devices (P24 and Rehastim2).
 The tests are done with Vicon Nexus and the biosiglive library.
 Some tests can be used for both devices, some others are specific to one device. You can
 choose the device you want by putting the right device enum in the function.
@@ -50,7 +50,7 @@ def init_trigger():
 
 def custom_shape_pulse():
     """
-    Test of the new feature of the RehastimP24 : custom shape pulse
+    Test of the new feature of the P24 : custom shape pulse
     """
     stimulatorp24 = St(port="COM4", show_log=True)
     channel_1 = Channel(
@@ -58,7 +58,7 @@ def custom_shape_pulse():
         name="Biceps",
         amplitude=30,
         frequency=20,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
 
     list_channels.append(channel_1)
@@ -99,7 +99,7 @@ def single_doublet_triplet(device: Device):
     """
     Mode test (single, doublet, triplet) for both devices. It uses 3 channels at the same time.
     """
-    if device == Device.Rehastimp24:
+    if device == Device.P24:
         stimulatorp24 = St(port="COM4", show_log=True)
         channel_1 = Channel(
             mode=Modes.SINGLE,
@@ -108,7 +108,7 @@ def single_doublet_triplet(device: Device):
             amplitude=30,
             pulse_width=350,
             frequency=20,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         channel_2 = Channel(
             mode=Modes.DOUBLET,
@@ -117,7 +117,7 @@ def single_doublet_triplet(device: Device):
             amplitude=30,
             frequency=20,
             pulse_width=350,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         channel_3 = Channel(
             mode=Modes.TRIPLET,
@@ -126,7 +126,7 @@ def single_doublet_triplet(device: Device):
             amplitude=30,
             frequency=20,
             pulse_width=350,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
 
         list_channels.append(channel_1)
@@ -212,7 +212,7 @@ def frequency_test(device: Device):
     Test of the frequency for both devices,  we compare with the real frequency measured with Vicon and pyomeca.
     """
     # Test with 10Hz
-    if device == Device.Rehastimp24:
+    if device == Device.P24:
         stimulatorp24 = St(port="COM4", show_log=True)
         channel_1 = Channel(
             mode=Modes.SINGLE,
@@ -221,7 +221,7 @@ def frequency_test(device: Device):
             amplitude=30,
             pulse_width=350,
             frequency=10,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         list_channels.append(channel_1)
 
@@ -277,7 +277,7 @@ def frequency_test(device: Device):
 
 def force_rehastim2():
     """
-    Same pattern as the force_rehastimp24 to compare the output force of the ergometer handle of the two devices
+    Same pattern as the force_p24 to compare the output force of the ergometer handle of the two devices
     """
     stimulator2 = St2(port="COM3", show_log=True)
     channel_1 = Channel(
@@ -299,7 +299,7 @@ def force_rehastim2():
     list_channels.clear()
 
 
-def force_rehastimp24():
+def force_p24():
     """
     This function is used to compare the force output of the two devices.
     """
@@ -311,7 +311,7 @@ def force_rehastimp24():
         amplitude=10,
         pulse_width=300,
         frequency=100,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulatorp24.init_stimulation(list_channels=list_channels)
@@ -328,11 +328,11 @@ def force_rehastimp24():
 
 def more_than_16_points():
     """
-    Test to stimulate with more than 16 points. (only for RehastimP24)
+    Test to stimulate with more than 16 points. (only for P24)
     """
     stimulatorp24 = St(port="COM4", show_log=True)
     channel_1 = Channel(
-        no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24
+        no_channel=1, name="Biceps", frequency=20, device_type=Device.P24
     )
 
     # Need to remove the max_point condition in channel.py (add_point function)
@@ -372,7 +372,7 @@ def update_parameters(device: Device):
     Test to update the parameters of the stimulation (amplitude, pulse width, frequency, mode, no_channel)
     for both devices. It uses 2 channels.
     """
-    if device == Device.Rehastimp24:
+    if device == Device.P24:
         stimulatorp24 = St(port="COM4", show_log=True)
         channel_1 = Channel(
             mode=Modes.SINGLE,
@@ -381,7 +381,7 @@ def update_parameters(device: Device):
             amplitude=20,
             pulse_width=350,
             frequency=50,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         list_channels.append(channel_1)
         stimulatorp24.init_stimulation(list_channels=list_channels)
@@ -466,7 +466,7 @@ def diff_frequency_ll_ml(frequency):
         amplitude=20,
         pulse_width=350,
         frequency=frequency,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulatorp24.init_stimulation(list_channels=list_channels)
@@ -501,7 +501,7 @@ def diff_frequency_ll_ml(frequency):
 
 def communication_speed_P24():
     """
-    Test to see the communication speed between the computer and the RehastimP24
+    Test to see the communication speed between the computer and the P24
     """
     stimulatorp24 = St(port="COM4", show_log=True)
     stimulatorp24.ll_init()
@@ -534,10 +534,10 @@ def limit_parameters(device: Device):
     """
     Test to see the limit of the parameters for both devices
     """
-    if device == Device.Rehastimp24:
+    if device == Device.P24:
         stimulatorp24 = St(port="COM4", show_log=True)
         channel_1 = Channel(
-            no_channel=1, name="Biceps", frequency=15, device_type=Device.Rehastimp24
+            no_channel=1, name="Biceps", frequency=15, device_type=Device.P24
         )
         list_channels.append(channel_1)
         for _ in range(8):
@@ -598,7 +598,7 @@ def decalage(freq1, freq2, freq3, device: Device):
     """
     Test to see if there is a delay between the stimulation of the 3 channels for both devices.
     """
-    if device == Device.Rehastimp24:
+    if device == Device.P24:
         stimulatorp24 = St(port="COM4", show_log=True)
         channel_1 = Channel(
             mode=Modes.SINGLE,
@@ -607,7 +607,7 @@ def decalage(freq1, freq2, freq3, device: Device):
             amplitude=20,
             pulse_width=350,
             frequency=freq1,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         channel_2 = Channel(
             mode=Modes.TRIPLET,
@@ -616,7 +616,7 @@ def decalage(freq1, freq2, freq3, device: Device):
             amplitude=20,
             pulse_width=350,
             frequency=freq2,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         channel_3 = Channel(
             mode=Modes.TRIPLET,
@@ -625,7 +625,7 @@ def decalage(freq1, freq2, freq3, device: Device):
             amplitude=20,
             pulse_width=350,
             frequency=freq3,
-            device_type=Device.Rehastimp24,
+            device_type=Device.P24,
         )
         list_channels.append(channel_1)
         list_channels.append(channel_2)
@@ -687,7 +687,7 @@ def exe():
         amplitude=20,
         pulse_width=350,
         frequency=50,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulatorp24.init_stimulation(list_channels=list_channels)

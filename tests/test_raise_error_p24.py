@@ -1,8 +1,8 @@
 import pytest
-from pysciencemode import RehastimP24 as Stp24
+from pysciencemode import P24 as Stp24
 from pysciencemode import Channel, Point, Device, Modes
 
-# Connect the Rehastimp24 device to the computer.
+# Connect the P24 device to the computer.
 # Then you can run the whole file (except for the test_electrode_error) or just one test.
 
 
@@ -25,7 +25,7 @@ def test_electrode_error_p24(instant, port):
         amplitude=20,
         pulse_width=300,
         frequency=10,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
@@ -59,7 +59,7 @@ def test_no_stimulation_points_error():
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
-        no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24
+        no_channel=channel_number, frequency=10, device_type=Device.P24
     )
 
     list_channels.append(channel_1)
@@ -85,7 +85,7 @@ def test_symmetric_error():
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
-        no_channel=channel_number, frequency=10, device_type=Device.Rehastimp24
+        no_channel=channel_number, frequency=10, device_type=Device.P24
     )
 
     list_channels.append(channel_1)
@@ -117,7 +117,7 @@ def test_no_stimulation_duration_error():
         amplitude=20,
         pulse_width=300,
         frequency=10,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
 
     list_channels.append(channel_1)

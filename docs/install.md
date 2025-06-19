@@ -1,5 +1,5 @@
 # pyScienceMode Installation
-`pyScienceMode` is a Python interface to control the Rehastim2 and the RehastimP24. 
+`pyScienceMode` is a Python interface to control the Rehastim2 and the P24. 
 
 ## How to install
 To install the program run the following command in the main directory 
@@ -7,7 +7,7 @@ To install the program run the following command in the main directory
 ```bash
 python setup.py install
 ```
-To use the `RehastimP24` you need to install the [sciencemode library](.\sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl)
+To use the `P24` you need to install the [sciencemode library](.\sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl)
 
 
 You will need to create a new conda environment with Python 3.10 (important).
@@ -16,7 +16,7 @@ and run the following command :
 ```bash
 pip install sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl
 ```
-Now you can use the sciencemode library for the RehastimP24.
+Now you can use the sciencemode library for the P24.
 
 ## Dependencies
 There are some dependencies. You can install them by running the following command :
