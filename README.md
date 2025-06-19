@@ -1,6 +1,10 @@
 # pyScienceMode
-`pyScienceMode` is a Python interface to control the Rehastim2 and the P24. 
-Please have a look to the documentation for more information about [pyScienceMode](https://pysciencemode.readthedocs.io/en/latest/index.html)
+Functional electrical stimulation (FES) research would benefit of an open, flexible control method for customizable
+stimulation patterns. `pyScienceMode` provides a unified Python API for both Rehastim2 and P24 devices, enabling real-time
+adjustment of frequency, intensity, pulse width, train duration and sensor-triggered control. It supports rapid
+prototyping of personalized, real-time FES protocols, making novel rehabilitation strategies reproducible, adaptable and
+easily extensible as new hardware emerges. Please have a look to the documentation for more information about
+[pyScienceMode](https://pysciencemode.readthedocs.io/en/latest/index.html).
 
 ## How to install
 These are the different ways to install pyScienceMode for the Rehastim2 control.
