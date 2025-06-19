@@ -18,7 +18,7 @@ from .acks import (
     stop_stimulation_ack,
     start_stimulation_ack,
 )
-from .enums import Rehastim2Commands, RehastimP24Commands, Device
+from .enums import Rehastim2Commands, P24Commands, Device
 
 try:
     from sciencemode import sciencemode
@@ -84,7 +84,7 @@ class RehastimGeneric:
         with_motomed : bool
             If the motomed is connected to the Rehastim, put this flag to True.
         device_type : str | Device
-            Device type. Can be either "Rehastim2" or "RehastimP24".
+            Device type. Can be either "Rehastim2" or "P24".
         """
         self.device_type = device_type
         self.port_name = port
@@ -98,7 +98,7 @@ class RehastimGeneric:
                 timeout=0.1,
             )
 
-        elif self.device_type == Device.Rehastimp24.value:
+        elif self.device_type == Device.P24.value:
             self.device = sciencemode.ffi.new("Smpt_device*")
             self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
             self.cmd = sciencemode.ffi.new("Smpt_cmd*")
@@ -147,7 +147,7 @@ class RehastimGeneric:
         self.ack_received = []  # Command received by the rehastim2
 
         self.Rehastim2Commands = Rehastim2Commands
-        self.RehastimP24Commands = RehastimP24Commands
+        self.P24Commands = P24Commands
 
         self.error_occured = False  # If the stimulation is not working and error occured flag set to true, raise an error
         self.stimulation_active = False
@@ -157,7 +157,7 @@ class RehastimGeneric:
 
     def check_serial_port(self):
         """
-        Verify if the serial port is available and functional. Used for the RehastimP24
+        Verify if the serial port is available and functional. Used for the P24
         """
         ret = sciencemode.lib.smpt_check_serial_port(self.com)
         if self.show_log:
@@ -168,7 +168,7 @@ class RehastimGeneric:
 
     def open_serial_port(self):
         """
-        Try to open the serial port.Used for the RehastimP24
+        Try to open the serial port.Used for the P24
         """
         ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
         if self.show_log:
@@ -177,7 +177,7 @@ class RehastimGeneric:
 
     def get_next_packet_number(self):
         """
-        Get the next packet to send another command. Used for the RehastimP24
+        Get the next packet to send another command. Used for the P24
         """
         if hasattr(self, "device") and self.device is not None:
             packet_number = sciencemode.lib.smpt_packet_number_generator_next(
@@ -200,10 +200,10 @@ class RehastimGeneric:
 
     def _get_current_data(self):
         """
-        Retrieve current data from the rehastimP24 mid level stimulation.
+        Retrieve current data from the P24 mid level stimulation.
         """
         ml_get_current_data = sciencemode.ffi.new("Smpt_ml_get_current_data*")
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             ml_get_current_data.data_selection = sciencemode.lib.Smpt_Ml_Data_Channels
             ml_get_current_data.packet_number = self.get_next_packet_number()
 
@@ -215,7 +215,7 @@ class RehastimGeneric:
             if self.show_log is True:
                 print(
                     "Command sent to rehastim:",
-                    self.RehastimP24Commands(
+                    self.P24Commands(
                         sciencemode.lib.Smpt_Cmd_Ml_Get_Current_Data
                     ).name,
                 )
@@ -250,14 +250,14 @@ class RehastimGeneric:
                 self.last_ack = None
             return last_ack
 
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             while not sciencemode.lib.smpt_new_packet_received(self.device):
                 time.sleep(0.005)
             ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
             if self.show_log is True:
                 print(
-                    "Ack received by rehastimP24: ",
-                    self.RehastimP24Commands(self.ack.command_number).name,
+                    "Ack received by P24: ",
+                    self.P24Commands(self.ack.command_number).name,
                 )
             return ret
         elif self.device_type == Device.Rehastim2.value:
@@ -560,7 +560,7 @@ class RehastimGeneric:
         """
         Closes the port.
         """
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             sciencemode.lib.smpt_close_serial_port(self.device)
         elif self.device_type == Device.Rehastim2.value:
             self.port.close()

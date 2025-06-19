@@ -44,10 +44,10 @@ pysciencemode.rehastim2_interface module
    :undoc-members:
    :show-inheritance:
 
-pysciencemode.rehastimP24_interface module
+pysciencemode.P24_interface module
 -------------------------------------------
 
-.. automodule:: pysciencemode.rehastimP24_interface
+.. automodule:: pysciencemode.P24_interface
    :members:
    :undoc-members:
    :show-inheritance:

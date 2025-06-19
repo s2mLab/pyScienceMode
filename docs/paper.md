@@ -36,7 +36,7 @@ stimulation protocols and offers straightforward integration into research pipel
 and the P24 stimulator devices (Hasomed Inc., Magdeburg, Germany), enabling the creation of customized stimulation
 protocols by allowing the user to control key stimulation parameters such as frequency, pulse intensity, pulse width,
 and pulse train duration. Additionally, pyScienceMode supports the combined use of the MOTOmed rehabilitation bike
-(Reck-Technik GmbH & Co. KG, Betzenweiler, Germany  ) and the Rehastim2 stimulator, allowing pedal angle–based
+(Reck-Technik GmbH & Co. KG, Betzenweiler, Germany) and the Rehastim2 stimulator, allowing pedal angle–based
 stimulation control (Figure 1), as well as direct adjustment of the bike’s speed and resistance. Furthermore,
 pyScienceMode is designed to work with a variety of experimental tools including encoders, electromyography sensors,
 and force plates making it easy to build new stimulation strategies and control approach for research. By enabling an
@@ -46,13 +46,13 @@ range of clinical or experimental applications.
 # Statement of Need
 
 To enhance FES rehabilitation, it is essential to provide optimized and personalized stimulation for both the patient
-and the performed task. Advanced control technology is needed to deliver new stimulation protocols
-[@ibitoye2016strategies][@rouse2019fes] that can enhance motion [@molazadeh2021shared] or increase muscle force
+and the performed task. Advanced control technology is needed to deliver new stimulation protocols 
+[@ibitoye2016strategies; @rouse2019fes] that can enhance motion [@molazadeh2021shared] or increase muscle force
 production [@doll2018dynamic]. However, most commercially available electrical stimulators lack flexible device control,
 and customization is often restricted to manufacturer-provided interfaces, limiting real-time adaptation to experimental
 conditions. Hasomed’s stimulators are widely used in research because their ScienceMode API facilitates advanced
 stimulation customization. Building on this API, `pyScienceMode` was developed to provide full and intuitive control of
-stimulator devices through the   Python programming language. Furthermore, the package can be updated to integrate any
+stimulator devices through the Python programming language. Furthermore, the package can be updated to integrate any
 new stimulation device that provides an API, ensuring ongoing adaptability and innovation in FES research. This
 capability is essential for testing new rehabilitation protocols and to gain a deeper understanding of the underlying
 mechanisms of FES.
@@ -60,13 +60,17 @@ mechanisms of FES.
 Although similar packages exist, including a LabVIEW-based interface for the Rehastim2 device [@ravichandran2022labview]
 and a C library for the P24 stimulator (https://github.com/ScienceMode/ScienceMode4_c_library), the development of
 `pyScienceMode` in Python is particularly beneficial for fast prototyping, given Python’s free and widely adopted
-programming language.  A key advantage of `pyScienceMode` is that it can integrate with other sensors and devices
-that have their own libraries via multiprocessing (e.g., example below). This asset will enable the scientific community
-to control the FES for different tasks and goals, for instance triggered onset/offset for the drop foot correction and
-cycling events. The package supports customization of stimulation parameters (e.g., doublets, triplets, ramp
-modifications) to address challenges such as muscle fatigue, pain reduction, and motion smoothness. By unifying these
-advanced controls in a single platform, `pyScienceMode` enables reproducible and adaptable FES interventions that help
-researchers to pursue their challenging research and to design innovative rehabilitation strategies. 
+programming language. While a python wrapper is available for the P24 stimulator
+(https://github.com/ScienceMode/ScienceMode4_python_wrapper), already enabling customized control, none are available
+for the Rehastim2 stimulator. `pyScienceMode` regroups the functionalities of both the Rehastim2 and P24 stimulators, 
+providing a unified interface, a user-friendly coding environment and a simple installation procedure. It can also
+integrate other sensors and devices that have their own libraries via multiprocessing (e.g., example below). This will
+enable the scientific community to control the FES for different tasks and goals, for instance triggered onset/offset
+for the drop foot correction and cycling events. The package supports customization of stimulation parameters (e.g.,
+doublets, triplets, ramp modifications) to address challenges such as muscle fatigue, pain reduction, and motion
+smoothness. By unifying these advanced controls in a single platform, `pyScienceMode` enables reproducible and adaptable
+FES interventions that help researchers to pursue their challenging research and to design innovative rehabilitation 
+strategies. 
 
 
 # Features

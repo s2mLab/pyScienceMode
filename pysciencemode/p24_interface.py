@@ -14,14 +14,14 @@ from .enums import Device, HighVoltage, StimStatus
 from .channel import Point, Channel
 
 
-class RehastimP24(RehastimGeneric):
+class P24(RehastimGeneric):
     """
-    Class used for the communication with RehastimP24.
+    Class used for the communication with P24.
     """
 
     def __init__(self, port: str, show_log: bool | str = False):
         """
-        Creates an object stimulator for the RehastimP24.
+        Creates an object stimulator for the P24.
 
         Parameters
         ----------
@@ -43,7 +43,7 @@ class RehastimP24(RehastimGeneric):
         self._current_stim_sequence = None
         self._current_pulse_interval = None
         self._current_stim_duration = None
-        self.device_type = Device.Rehastimp24.value
+        self.device_type = Device.P24.value
         self._safety = True
 
         super().__init__(port, device_type=self.device_type, show_log=self.show_log)
@@ -67,7 +67,7 @@ class RehastimP24(RehastimGeneric):
         if self.show_log is True:
             print(
                 "Command sent to rehastim:",
-                self.RehastimP24Commands(
+                self.P24Commands(
                     sciencemode.lib.Smpt_Cmd_Get_Extended_Version
                 ).name,
             )
@@ -95,7 +95,7 @@ class RehastimP24(RehastimGeneric):
         if self.show_log is True:
             print(
                 "Command sent to rehastim:",
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Device_Id).name,
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Get_Device_Id).name,
             )
 
         self._get_last_ack()
@@ -123,7 +123,7 @@ class RehastimP24(RehastimGeneric):
         if self.show_log is True:
             print(
                 "Command sent to rehastim:",
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Stim_Status).name,
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Get_Stim_Status).name,
             )
 
         self._get_last_ack()
@@ -153,7 +153,7 @@ class RehastimP24(RehastimGeneric):
         if self.show_log is True:
             print(
                 "Command sent to rehastim:",
-                self.RehastimP24Commands(
+                self.P24Commands(
                     sciencemode.lib.Smpt_Cmd_Get_Battery_Status
                 ).name,
             )
@@ -182,7 +182,7 @@ class RehastimP24(RehastimGeneric):
         if self.show_log is True:
             print(
                 "Command sent to rehastim:",
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Get_Main_Status).name,
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Get_Main_Status).name,
             )
 
         self._get_last_ack()
@@ -200,7 +200,7 @@ class RehastimP24(RehastimGeneric):
         if self.show_log is True:
             print(
                 "Command sent to rehastim:",
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Reset).name,
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Reset).name,
             )
         self._get_last_ack()
 
@@ -278,7 +278,7 @@ class RehastimP24(RehastimGeneric):
         self.log(
             "Low level initialized",
             "Command sent to rehastim: {}".format(
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Init).name
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Ll_Init).name
             ),
         )
 
@@ -377,7 +377,7 @@ class RehastimP24(RehastimGeneric):
             if self.show_log is True:
                 print(
                     "Command sent to rehastim:",
-                    self.RehastimP24Commands(
+                    self.P24Commands(
                         sciencemode.lib.Smpt_Cmd_Ll_Channel_Config
                     ).name,
                 )
@@ -436,7 +436,7 @@ class RehastimP24(RehastimGeneric):
         self.log(
             "Low level stopped",
             "Command sent to rehastim: {}".format(
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ll_Stop).name
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Ll_Stop).name
             ),
         )
         self._get_last_ack()
@@ -477,7 +477,7 @@ class RehastimP24(RehastimGeneric):
         self.log(
             "Stimulation initialized",
             "Command sent to rehastim: {}".format(
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Init).name
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Ml_Init).name
             ),
         )
         self._get_last_ack()
@@ -552,7 +552,7 @@ class RehastimP24(RehastimGeneric):
 
     def pause_stimulation(self):
         """
-        Pause the mid-level stimulation on the RehaStimP24 device by setting all points to zero amplitude.
+        Pause the mid-level stimulation on the P24 device by setting all points to zero amplitude.
         """
         if self.list_channels is None:
             raise RuntimeError("No channels initialized for pausing stimulation.")
@@ -596,7 +596,7 @@ class RehastimP24(RehastimGeneric):
         self.log(
             "Stimulation started",
             "Command sent to rehastim: {}".format(
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Update).name
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Ml_Update).name
             ),
         )
         self._get_last_ack()
@@ -632,7 +632,7 @@ class RehastimP24(RehastimGeneric):
         self.log(
             "Stimulation stopped",
             "Command sent to rehastim: {}".format(
-                self.RehastimP24Commands(sciencemode.lib.Smpt_Cmd_Ml_Stop).name
+                self.P24Commands(sciencemode.lib.Smpt_Cmd_Ml_Stop).name
             ),
         )
         self._get_last_ack()

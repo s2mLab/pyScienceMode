@@ -7,8 +7,8 @@ from pysciencemode import Channel as Ch
 from pysciencemode import Device, Modes
 
 """
-This example shows how to use the RehastimP24 device for a hand cycling purpose.
-Because the RehastimP24 device is not compatible with the MotoMed, this example will showcase the use of an encoder.
+This example shows how to use the P24 device for a hand cycling purpose.
+Because the P24 device is not compatible with the MotoMed, this example will showcase the use of an encoder.
 Therefore the nidaqmx library will be used to recover the pedal angle of the bike.
 """
 

@@ -39,16 +39,16 @@ class Channel:
         no_channel: int
             Channel number [1,8].
         amplitude: int | float
-            Channel current. [0,130] mA for Rehastim2, [0,150] mA for RehastimP24
+            Channel current. [0,130] mA for Rehastim2, [0,150] mA for P24
         pulse_width: int
             Stimulation width. [0,500] μs (current version of rehastim2 [20, 500] μs, if (pw < 20) then pw = 20)
-            [0,4095] μs for RehastimP24
+            [0,4095] μs for P24
         enable_low_frequency: bool
             Choose if the channel skip (True) or not (False) a given number of stimulation.
         name: str
             Muscle name corresponding to the channel.
         device_type: str | Device
-            Device type used. Either Rehastim2 or RehastimP24
+            Device type used. Either Rehastim2 or P24
         frequency: float
             Channel frequency. [0.5, 2000] Hz
         """
@@ -107,7 +107,7 @@ class Channel:
                 "Frequency can not be set for individual channel for the Rehastim2"
             )
 
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             self.generate_pulse()
 
     def __str__(self) -> str:
@@ -247,7 +247,7 @@ class Channel:
                     "Error : Impulsion time [0,500], given : %s" % self._pulse_width
                 )
 
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             if self._period < 0.5 or self._period > 16383:
                 raise ValueError(
                     "Error : Frequency min = 0.5, max = 2000. Frequency given : %s Hz"
@@ -400,7 +400,7 @@ class Channel:
         frequency: int | float
             Channel frequency [0.5, 1000] Hz
         """
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             if frequency <= 0:
                 raise ValueError("frequency must be positive.")
             self._period = 1000.0 / frequency
@@ -431,7 +431,7 @@ class Channel:
         ramp: int
             Channel ramp [0,16] pulses.
         """
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             self._ramp = ramp
             self.check_value_param()
             self.generate_pulse()
@@ -440,7 +440,7 @@ class Channel:
 
     def set_device_type(self, device_type: str | Device):
         """
-        Set the device (Rehastim2 or RehastimP24) for a channel
+        Set the device (Rehastim2 or P24) for a channel
 
         Parameters
         ----------
@@ -471,7 +471,7 @@ class Channel:
     def add_point(self, pulse_width: int, amplitude: int | float):
         """
         Add a point to the list of points for a channel. One channel can pilot 16 points.
-        Used for the RehastimP24
+        Used for the P24
 
         Parameters
         ----------
@@ -484,7 +484,7 @@ class Channel:
         -------
         point: Point
         """
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             if len(self.list_point) < Channel.MAX_POINTS:
                 point = Point(pulse_width, amplitude)
                 self.list_point.append(point)
@@ -500,7 +500,7 @@ class Channel:
         """
         Generate a pulse for a channel. The pulse is generated according to the mode and the parameters given.
         """
-        if self.device_type == Device.Rehastimp24.value:
+        if self.device_type == Device.P24.value:
             if self._mode == Modes.SINGLE.value:
                 self.create_single_biphasic_pulse(self._amplitude, self._pulse_width)
             if self._mode == Modes.DOUBLET.value:

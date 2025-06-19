@@ -1,9 +1,9 @@
 import pytest
-from pysciencemode import RehastimP24 as Stp24
+from pysciencemode import P24 as Stp24
 from pysciencemode import Channel, Device, Modes
 
 
-# Connect the Rehastimp24 device to the computer. Then connect channel 1 to a stim box or to the skin, and start the
+# Connect the P24 device to the computer. Then connect channel 1 to a stim box or to the skin, and start the
 # test.
 # Then you can run the whole file or just one test.
 
@@ -24,7 +24,7 @@ def test_update_amplitude(port, amplitude):
         amplitude=amplitude,
         pulse_width=300,
         frequency=10,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
@@ -52,7 +52,7 @@ def test_update_pulse_width(port, pulse_width):
         amplitude=10,
         pulse_width=pulse_width,
         frequency=10,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
@@ -80,7 +80,7 @@ def test_update_frequency(port, frequency):
         amplitude=10,
         pulse_width=500,
         frequency=frequency,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
@@ -108,7 +108,7 @@ def test_update_mode(port, mode):
         amplitude=20,
         pulse_width=350,
         frequency=10,
-        device_type=Device.Rehastimp24,
+        device_type=Device.P24,
     )
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)

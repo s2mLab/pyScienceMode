@@ -2,13 +2,13 @@ import time
 
 import nidaqmx
 
-from pysciencemode import RehastimP24 as St
+from pysciencemode import P24 as St
 from pysciencemode import Channel as Ch
 from pysciencemode import Device, Modes
 
 """
-This example shows how to use the RehastimP24 device for a hand cycling purpose.
-Because the RehastimP24 device is not compatible with the MotoMed, this example will showcase the use of an encoder.
+This example shows how to use the P24 device for a hand cycling purpose.
+Because the P24 device is not compatible with the MotoMed, this example will showcase the use of an encoder.
 Therefore the nidaqmx library will be used to recover the pedal angle of the bike.
 """
 
@@ -35,7 +35,7 @@ class HandCyclingP24:
                 frequency=100,
                 ramp=1,
                 name=channel_muscle_name[i - 1],
-                device_type=Device.Rehastimp24,
+                device_type=Device.P24,
             )
             for i in range(1, 9)
         ]

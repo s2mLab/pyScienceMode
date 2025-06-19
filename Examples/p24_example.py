@@ -1,8 +1,8 @@
 from pysciencemode import Channel, Point, Device, Modes
-from pysciencemode import RehastimP24 as St
+from pysciencemode import P24 as St
 
 """
-This example shows how to use the RehastimP24 device. 
+This example shows how to use the P24 device. 
 There are several commands divided into three levels (general, low and mid).
 You can't call commands from different levels, you must first close the current level
 to be able to use commands from another one.
@@ -16,7 +16,7 @@ list_stimulation_points = []
 
 # Create an object channel for mid-level stimulation
 channel_1 = Channel(
-    no_channel=1, name="Biceps", frequency=20, device_type=Device.Rehastimp24
+    no_channel=1, name="Biceps", frequency=20, device_type=Device.P24
 )
 channel_2 = Channel(
     mode=Modes.SINGLE,
@@ -26,7 +26,7 @@ channel_2 = Channel(
     name="Calf",
     frequency=50,
     ramp=16,
-    device_type=Device.Rehastimp24,
+    device_type=Device.P24,
 )
 channel_3 = Channel(
     mode=Modes.DOUBLET,
@@ -36,7 +36,7 @@ channel_3 = Channel(
     name="Triceps",
     frequency=25,
     ramp=5,
-    device_type=Device.Rehastimp24,
+    device_type=Device.P24,
 )
 channel_4 = Channel(
     mode=Modes.TRIPLET,
@@ -46,13 +46,13 @@ channel_4 = Channel(
     name="Quadriceps",
     frequency=15,
     ramp=1,
-    device_type=Device.Rehastimp24,
+    device_type=Device.P24,
 )
 
 # Create an object stimulator
 stimulator = St(
     port="COM4", show_log="Status"
-)  # Enter the port on which the rehastimP24 is connected
+)  # Enter the port on which the P24 is connected
 # Add the channels you want to stimulate to the list.
 list_channels.append(channel_1)
 list_channels.append(channel_2)
@@ -126,7 +126,7 @@ Restart the stimulation with the new point configuration for 5s.
 stimulator.update_stimulation(upd_list_channels=list_channels, stimulation_duration=5)
 
 """
-Stop the stimulation and leave the mid level but it does not disconnect the Pc and the RehastimP24.
+Stop the stimulation and leave the mid level but it does not disconnect the Pc and the P24.
 To restart a stimulation you have to initialize the level again
 """
 stimulator.end_stimulation()
@@ -177,11 +177,11 @@ point44.set_pulse_width(350)
 stimulator.update_stim_one_channel(upd_list_point=list_stimulation_points)
 
 """
-Stop the stimulation and leave the low level but it does not disconnect the Pc and the RehastimP24.
+Stop the stimulation and leave the low level but it does not disconnect the Pc and the P24.
 """
 stimulator.end_stim_one_channel()
 
 """
-Close the port and disconnect the Pc and the RehastimP24.
+Close the port and disconnect the Pc and the P24.
 """
 stimulator.close_port()
