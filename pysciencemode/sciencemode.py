@@ -5,6 +5,7 @@ See ScienceMode2 - Description and protocol for more information.
 
 import threading
 import serial
+import serial.tools.list_ports
 import time
 
 import numpy as np
@@ -113,10 +114,18 @@ class RehastimGeneric:
             self.ml_update = sciencemode.ffi.new("Smpt_ml_update*")
 
             if not self.check_serial_port():
-                raise RuntimeError(f"Failed to access port {self.port_name}.")
-
+                com_names = self.get_com_list()
+                raise RuntimeError(
+                    f"Failed to access port {self.port_name}.\nAvailable ports are: {com_names}"
+                )
             if not self.open_serial_port():
                 raise RuntimeError(f"Unable to open port {self.port_name}.")
+            if not self.check_port_device():
+                com_names = self.get_com_list()
+                com_names.remove(self.port_name)
+                raise RuntimeError(
+                    f"The chosen port is not the one used by the P24 stimulator, try other port {com_names}."
+                )
         else:
             raise ValueError("Device type not recognized")
 
@@ -155,6 +164,15 @@ class RehastimGeneric:
         if self.reha_connected and not self.__comparison_thread_started:
             self._start_thread_catch_ack()
 
+    @staticmethod
+    def get_com_list():
+        """
+        Get the list of available COM ports.
+        """
+        com = serial.tools.list_ports.comports()
+        com_names = [c.device for c in com]
+        return com_names
+
     def check_serial_port(self):
         """
         Verify if the serial port is available and functional. Used for the P24
@@ -173,6 +191,17 @@ class RehastimGeneric:
         ret = sciencemode.lib.smpt_open_serial_port(self.device, self.com)
         if self.show_log:
             print(f"Open {self.port_name} : {'successful' if ret else 'unsuccessful'}")
+        return ret
+
+    def check_port_device(self):
+        """
+        Check if the selected port is correct for the P24
+        """
+        ret = sciencemode.smpt_send_get_extended_version(self.device, 0)
+        if self.show_log:
+            print(
+                f"Chosen port {self.port_name} is : {'successful' if ret else 'unsuccessful'}"
+            )
         return ret
 
     def get_next_packet_number(self):
