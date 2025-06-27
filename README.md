@@ -24,8 +24,18 @@ conda install -c conda-forge pysciencemode
 Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) to install pyScienceMode. 
 
 ## How to use
-A set of example is provided in the `examples` folder to show how to control the Rehastim2 and the P24 :
+A set of example is provided in the `examples` folder to show how to control the Rehastim2 and the P24:
 Please take a look at the [documentation example page](https://pysciencemode.readthedocs.io/en/latest/examples.html) for description of each example.
+
+## Instruction for use
+
+<strong>User manual Rehastim2:</strong> https://github.com/ScienceMode/ScienceMode2/tree/main/01_User%20Manual
+
+<strong>User manual P24:</strong> https://github.com/ScienceMode/ScienceMode4_P24/tree/main/01_IFU_and_Protocol
+
+The P24 Science/P24 Module is a device that can be controlled by a computer system via a specified interface to generate and output electrical
+pulses. The P24 Science/P24 Module is intended for research applications only and is not intended to be used for medical purposes on
+human beings according to Regulation (EU) 2017/745.
 
 ## Main differences between the Rehastim2 and the P24
 They are some differences between the Rehastim2 and the P24.
