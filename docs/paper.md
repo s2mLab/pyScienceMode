@@ -60,17 +60,16 @@ mechanisms of FES.
 Although similar packages exist, including a LabVIEW-based interface for the Rehastim2 device [@ravichandran2022labview]
 and a C library for the P24 stimulator (https://github.com/ScienceMode/ScienceMode4_c_library), the development of
 `pyScienceMode` in Python is particularly beneficial for fast prototyping, given Python’s free and widely adopted
-programming language. While a python wrapper is available for the P24 stimulator
-(https://github.com/ScienceMode/ScienceMode4_python_wrapper), already enabling customized control, none are available
-for the Rehastim2 stimulator. `pyScienceMode` regroups the functionalities of both the Rehastim2 and P24 stimulators, 
-providing a unified interface, a user-friendly coding environment and a simple installation procedure. It can also
-integrate other sensors and devices that have their own libraries via multiprocessing (e.g., example below). This will
-enable the scientific community to control the FES for different tasks and goals, for instance triggered onset/offset
-for the drop foot correction and cycling events. The package supports customization of stimulation parameters (e.g.,
-doublets, triplets, ramp modifications) to address challenges such as muscle fatigue, pain reduction, and motion
-smoothness. By unifying these advanced controls in a single platform, `pyScienceMode` enables reproducible and adaptable
-FES interventions that help researchers to pursue their challenging research and to design innovative rehabilitation 
-strategies. 
+programming language. pyScienceMode is the first open-source package enabling the customization of stimulation patterns
+for the Rehastim2 stimulator in Python. The P24 stimulator control was also included to the package (based on
+https://github.com/ScienceMode/ScienceMode4_python_wrapper) to provide a unified interface and a user-friendly coding
+environment, accessible from a simple installation procedure. It can also integrate other sensors and devices that have
+their own libraries via multiprocessing (e.g., example below). This will enable the scientific community to control the
+FES for different tasks and goals, for instance triggered onset/offset for the drop foot correction and cycling events.
+The package supports customization of stimulation parameters (e.g., doublets, triplets, ramp modifications) to address
+challenges such as muscle fatigue, pain reduction, and motion smoothness. By unifying these advanced controls in a
+single platform, `pyScienceMode` enables reproducible and adaptable FES interventions that help researchers to pursue
+their challenging research and to design innovative rehabilitation strategies. 
 
 
 # Features
