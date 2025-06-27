@@ -23,6 +23,16 @@ conda install -c conda-forge pysciencemode
 ### Installing from source
 Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) to install pyScienceMode. 
 
+### Additional installation step for the P24 stimulator
+pysciencemode is not compatible with macOS and Linux for the control of the stimulator P24.
+As soon as the P24 wrapper will be compatible with macOS and Linux, we will update the documentation.
+
+<strong>For Python 3.10 only:</strong> navigate to the folder where the file sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl is located and run the following command
+```bash
+pip install sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl
+```
+<strong>For other Python version:</strong> build your own wheel from https://github.com/ScienceMode/ScienceMode4_python_wrapper and pip install it in your environment.
+
 ## How to use
 
 <p align="center">
