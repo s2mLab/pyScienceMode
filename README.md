@@ -24,6 +24,17 @@ conda install -c conda-forge pysciencemode
 Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) to install pyScienceMode. 
 
 ## How to use
+
+<p align="center">
+  <a href="https://youtu.be/3PyUr6YnI94" target="_blank">
+    <img
+      src="docs/how_to_use_pysciencemode.png"
+      alt="▶ How to use pysciencemode"
+      width="480"
+    />
+  </a>
+</p>
+
 A set of example is provided in the `examples` folder to show how to control the Rehastim2 and the P24:
 Please take a look at the [documentation example page](https://pysciencemode.readthedocs.io/en/latest/examples.html) for description of each example.
 
