@@ -23,7 +23,7 @@ copyright = "2023, Baert, Ceglia, Co, Faresin"
 author = "Baert, Ceglia, Co, Faresin "
 
 # The full version, including alpha/beta/rc tags
-release = "1.1.4"
+release = "1.1.5"
 
 
 # -- General configuration ---------------------------------------------------
