@@ -32,7 +32,7 @@ bibliography: paper.bib
 # Summary
 
 `pyScienceMode` is an open-source Python package that simplifies advanced and customizable functional electrical
-stimulation protocols and offers straightforward integration into research pipelines. The package supports the Rehastim2
+stimulation (FES) protocols and offers straightforward integration into research pipelines. The package supports the Rehastim2
 and the P24 stimulator devices (Hasomed Inc., Magdeburg, Germany), enabling the creation of customized stimulation
 protocols by allowing the user to control key stimulation parameters such as frequency, pulse intensity, pulse width,
 and pulse train duration. Additionally, pyScienceMode supports the combined use of the MOTOmed rehabilitation bike
@@ -58,13 +58,13 @@ capability is essential for testing new rehabilitation protocols and to gain a d
 mechanisms of FES.
 
 Although similar packages exist, including a LabVIEW-based interface for the Rehastim2 device [@ravichandran2022labview]
-and a C library for the P24 stimulator (https://github.com/ScienceMode/ScienceMode4_c_library), the development of
+and a C library for the P24 stimulator (<https://github.com/ScienceMode/ScienceMode4_c_library>),the development of
 `pyScienceMode` in Python is particularly beneficial for fast prototyping, given Python’s free and widely adopted
 programming language. pyScienceMode is the first open-source package enabling the customization of stimulation patterns
 for the Rehastim2 stimulator in Python. The P24 stimulator control was also included to the package (based on
-https://github.com/ScienceMode/ScienceMode4_python_wrapper) to provide a unified interface and a user-friendly coding
+<https://github.com/ScienceMode/ScienceMode4_python_wrapper>) to provide a unified interface and a user-friendly coding
 environment, accessible from a simple installation procedure. It can also integrate other sensors and devices that have
-their own libraries via multiprocessing (e.g., example below). This will enable the scientific community to control the
+their own libraries via multiprocessing (example below). This will enable the scientific community to control the
 FES for different tasks and goals, for instance triggered onset/offset for the drop foot correction and cycling events.
 The package supports customization of stimulation parameters (e.g., doublets, triplets, ramp modifications) to address
 challenges such as muscle fatigue, pain reduction, and motion smoothness. By unifying these advanced controls in a
