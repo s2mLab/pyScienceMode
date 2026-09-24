@@ -24,7 +24,24 @@ from .enums import Rehastim2Commands, P24Commands, Device
 try:
     from sciencemode import sciencemode
 except ImportError:
-    pass
+    # sciencemode_cffi is only required for the P24; Rehastim2 users can work without it.
+    sciencemode = None
+
+SCIENCEMODE_IMPORT_ERROR_MESSAGE = (
+    "The 'sciencemode' library (sciencemode_cffi) is required to use the P24 stimulator but could not be imported. "
+    "For Python 3.10 on Windows, install the wheel shipped with pyScienceMode: "
+    "'pip install sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl'. "
+    "For other Python versions, build your own wheel from "
+    "https://github.com/ScienceMode/ScienceMode4_python_wrapper and pip install it."
+)
+
+
+def _require_sciencemode():
+    """
+    Raise an explicit ImportError if the sciencemode library is not available.
+    """
+    if sciencemode is None:
+        raise ImportError(SCIENCEMODE_IMPORT_ERROR_MESSAGE)
 
 # Notes :
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
@@ -100,6 +117,7 @@ class RehastimGeneric:
             )
 
         elif self.device_type == Device.P24.value:
+            _require_sciencemode()
             self.device = sciencemode.ffi.new("Smpt_device*")
             self.com = sciencemode.ffi.new("char[]", self.port_name.encode())
             self.cmd = sciencemode.ffi.new("Smpt_cmd*")

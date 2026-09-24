@@ -9,11 +9,11 @@ from .utils import (
     check_stimulation_parameter_list,
     check_pulse_interval_list,
 )
-from .sciencemode import RehastimGeneric
+from .sciencemode import RehastimGeneric, _require_sciencemode
 try:
     from sciencemode import sciencemode
 except ImportError:
-    pass
+    sciencemode = None
 from .enums import Device, HighVoltage, Modes, StimStatus
 from .channel import Point, Channel
 
@@ -38,6 +38,7 @@ class P24(RehastimGeneric):
         """
         if show_log not in [True, False, "Status"]:
             raise ValueError("show_log must be True, False, or 'Status'.")
+        _require_sciencemode()
 
         self.list_channels = None
         self.electrode_number = 0
