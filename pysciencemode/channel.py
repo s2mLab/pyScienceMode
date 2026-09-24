@@ -188,9 +188,9 @@ class Channel:
         self.list_point.append(Point(4000, 0))
         self.list_point.append(Point(1000, 0))
 
-        # Second biphasic pulse
-        self.list_point.append(positive_pulse)
-        self.list_point.append(negative_pulse)
+        # Second biphasic pulse (new Point objects, to avoid aliasing with the first pulse)
+        self.list_point.append(Point(pulse_width=pulse_width, amplitude=amplitude))
+        self.list_point.append(Point(pulse_width=pulse_width, amplitude=-amplitude))
 
     def create_triplet(self, amplitude: int | float, pulse_width: int):
         """
@@ -216,17 +216,18 @@ class Channel:
         self.list_point.append(Point(4000, 0))
         self.list_point.append(Point(1000, 0))
 
-        self.list_point.append(positive_pulse)
-        self.list_point.append(negative_pulse)
+        # Second biphasic pulse (new Point objects, to avoid aliasing)
+        self.list_point.append(Point(pulse_width=pulse_width, amplitude=amplitude))
+        self.list_point.append(Point(pulse_width=pulse_width, amplitude=-amplitude))
 
         # Inter-pulse interval (IPI) = 5 ms
         self.list_point.append(Point(0, 0))
         self.list_point.append(Point(4000, 0))
         self.list_point.append(Point(1000, 0))
 
-        # biphasic pulse
-        self.list_point.append(positive_pulse)
-        self.list_point.append(negative_pulse)
+        # Third biphasic pulse (new Point objects, to avoid aliasing)
+        self.list_point.append(Point(pulse_width=pulse_width, amplitude=amplitude))
+        self.list_point.append(Point(pulse_width=pulse_width, amplitude=-amplitude))
 
     def check_value_param(self):
         """
@@ -403,7 +404,13 @@ class Channel:
         if self.device_type == Device.P24.value:
             if frequency <= 0:
                 raise ValueError("frequency must be positive.")
+            previous_period = self._period
             self._period = 1000.0 / frequency
+            try:
+                self.check_value_param()
+            except ValueError:
+                self._period = previous_period
+                raise
             self.generate_pulse()
         else:
             raise ValueError(
