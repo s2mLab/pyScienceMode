@@ -22,8 +22,12 @@ project = "pysciencemode"
 copyright = "2023, Baert, Ceglia, Co, Faresin"
 author = "Baert, Ceglia, Co, Faresin "
 
-# The full version, including alpha/beta/rc tags
-release = "1.1.5"
+# The full version, including alpha/beta/rc tags.
+# Read from pyproject.toml, the single source of truth for the version.
+import re
+
+with open(os.path.join(os.path.dirname(__file__), "..", "pyproject.toml"), encoding="utf-8") as _f:
+    release = re.search(r'^version\s*=\s*"([^"]+)"', _f.read(), re.M).group(1)
 
 
 # -- General configuration ---------------------------------------------------

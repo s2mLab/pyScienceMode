@@ -4,6 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pysciencemode"
+# Single source of truth for the version (docs/conf.py reads it from here).
 version = "1.1.5"
 description = "Python interface to control the Rehastim2 and P24 devices."
 readme = "README.md"
@@ -18,11 +19,22 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 
-dependencies = ["numpy", "crccheck", "colorama", "pyserial"]
+dependencies = ["numpy", "crccheck", "pyserial"]
 
-[tool.setuptools]
-packages = ["pysciencemode"]
+[project.optional-dependencies]
+# P24 support. The low-level `sciencemode` module is provided by the
+# `sciencemode_cffi` wheel, which is not on PyPI and is currently only built
+# for Windows / CPython 3.10 (see README and issue #1); it must be installed
+# separately. This extra only pulls its runtime dependency.
+p24 = ["cffi"]
 
 [project.urls]
 "Homepage" = "https://github.com/s2mLab/pyScienceMode"
 "Bug Tracker" = "https://github.com/s2mLab/pyScienceMode/issues"
+"Documentation" = "https://pysciencemode.readthedocs.io"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pysciencemode"]
+
+[tool.hatch.build.targets.sdist]
+include = ["pysciencemode", "README.md", "LICENSE", "pyproject.toml"]
