@@ -10,6 +10,7 @@ A set of example is provided in the `examples` folder to getting started with th
 
    rehastim2_example
    p24_example
+   cocofest_bridge
 
 
 

@@ -1,3 +1,4 @@
+import threading
 import time
 from typing import Callable
 
@@ -16,6 +17,13 @@ except ImportError:
     pass
 from .enums import Device, HighVoltage, Modes, StimStatus
 from .channel import Point, Channel
+from .p24_continuous import (
+    ContinuousStimulation,
+    StimulationEvent,
+    DEFAULT_ACK_TIMEOUT_S,
+    DEFAULT_KEEP_ALIVE_PERIOD_S,
+    snapshot_channels,
+)
 
 
 class P24(RehastimGeneric):
@@ -49,8 +57,99 @@ class P24(RehastimGeneric):
         self._current_stim_duration = None
         self.device_type = Device.P24.value
         self._safety = True
+        self._continuous = None  # ContinuousStimulation of the non-blocking mode, None otherwise
 
         super().__init__(port, device_type=self.device_type, show_log=self.show_log)
+
+    def get_next_packet_number(self):
+        """
+        Get the next packet number. While a non-blocking stimulation runs, its thread is the only owner of the
+        serial port: any command sent from another thread would steal its acks, so it is refused.
+        """
+        continuous = getattr(self, "_continuous", None)
+        if (
+            continuous is not None
+            and continuous.is_alive()
+            and threading.current_thread() is not continuous.thread
+        ):
+            raise RuntimeError(
+                "A non-blocking stimulation is running: only update_stimulation is allowed. "
+                "Call stop_stimulation() (or end_stimulation()) before sending other commands."
+            )
+        return super().get_next_packet_number()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+        Stop any non-blocking stimulation, leave the mid level if it was initialized and close the port.
+        """
+        try:
+            self._stop_continuous(pause=False, raise_error=exc_type is None)
+            if self.stimulation_started:
+                self.end_stimulation()
+        finally:
+            self.close_port()
+        return False
+
+    @property
+    def is_stimulating(self) -> bool:
+        """
+        True while a non-blocking stimulation started with start_stimulation(..., blocking=False) is running.
+        Raises the error of the stimulation thread if it stopped on an error.
+        """
+        self.check_stimulation_thread()
+        return self._continuous is not None and self._continuous.is_alive()
+
+    def check_stimulation_thread(self):
+        """
+        Re-raise, in the caller thread, the exception that stopped the non-blocking stimulation thread (electrode
+        error, missing ack, exception in the callback...). Called automatically by start_stimulation,
+        update_stimulation, stop_stimulation, end_stimulation and is_stimulating. The error is raised only once.
+        """
+        continuous = self._continuous
+        if continuous is not None and continuous.error is not None:
+            continuous.thread.join(1.0)
+            self._continuous = None
+            raise continuous.error
+
+    def stop_stimulation(self, pause: bool = True, timeout: float = 3.0):
+        """
+        Stop a non-blocking stimulation started with start_stimulation(..., blocking=False) and join its thread.
+        The mid level stays initialized: the stimulation can be started again with start_stimulation. Use
+        end_stimulation to leave the mid level. Does nothing if no non-blocking stimulation is running.
+
+        Parameters
+        ----------
+        pause : bool
+            If True, a last update with all amplitudes set to zero is sent before stopping (same final state as
+            the blocking start_stimulation). If False, the device stops by itself 2 s after the last keep-alive,
+            unless end_stimulation is called.
+        timeout : float
+            Maximum time in seconds to wait for the thread to stop.
+        """
+        self._stop_continuous(pause=pause, timeout=timeout)
+
+    def _stop_continuous(
+        self, pause: bool = True, timeout: float = 3.0, raise_error: bool = True
+    ):
+        continuous = self._continuous
+        if continuous is None:
+            return
+        try:
+            continuous.stop(pause=pause, timeout=timeout)
+        finally:
+            self._continuous = None
+        if raise_error and continuous.error is not None:
+            raise continuous.error
+
+    def close_port(self):
+        """
+        Close the port, after stopping the non-blocking stimulation if any.
+        """
+        self._stop_continuous(pause=True, raise_error=False)
+        super().close_port()
 
     #  General level commands
     def get_extended_version(self) -> tuple:
@@ -491,6 +590,10 @@ class P24(RehastimGeneric):
         upd_list_channels: list,
         stimulation_duration: int | float = None,
         safety: bool = True,
+        blocking: bool = True,
+        callback: Callable[[StimulationEvent], None] = None,
+        keep_alive_period: float = DEFAULT_KEEP_ALIVE_PERIOD_S,
+        ack_timeout: float = DEFAULT_ACK_TIMEOUT_S,
     ):
         """
         Start the mid level stimulation on the device.
@@ -499,17 +602,86 @@ class P24(RehastimGeneric):
         ----------
         stimulation_duration : int | float
             Duration of the stimulation in seconds.
+            If blocking is True and it is None, the update is sent and the stimulation is immediately paused.
+            If blocking is False and it is None, the stimulation runs until stop_stimulation or end_stimulation.
         upd_list_channels : list
             Channels to stimulate.
         safety : bool
             Set to True if you want to check the pulse symmetry. False otherwise.
+        blocking : bool
+            If True (default, historical behavior), the method returns when the stimulation is over.
+            If False, a background thread keeps the stimulation alive (the device stops a mid-level stimulation
+            after 2 s without command, P24 IFU v1.1 p. 23) and the method returns as soon as the device
+            acknowledged the first update. The parameters can then be changed with update_stimulation. While the
+            thread runs, it is the only one allowed to talk to the device: other commands raise a RuntimeError
+            until stop_stimulation or end_stimulation is called. If a non-blocking stimulation is already running,
+            the call is forwarded to update_stimulation.
+        callback : callable
+            Non-blocking mode only. Called from the stimulation thread with a StimulationEvent after each
+            acknowledged update and keep-alive, with a time.perf_counter timestamp. It must return quickly; if it
+            raises, the stimulation stops and the exception is re-raised on the next call.
+        keep_alive_period : float
+            Non-blocking mode only. Period in s of the keep-alive and electrode error check, in ]0, 1.5].
+        ack_timeout : float
+            Non-blocking mode only. Maximum time in s to wait for each ack of the device.
         """
+        self.check_stimulation_thread()
+        if self._continuous is not None:
+            if blocking:
+                self._stop_continuous(pause=False)
+            else:
+                self.update_stimulation(upd_list_channels, stimulation_duration)
+                return
 
         if stimulation_duration and not isinstance(stimulation_duration, int | float):
             raise TypeError(
                 "Please provide a int or float type for stimulation duration"
             )
 
+        self._check_update_channels(upd_list_channels, safety)
+
+        self.list_channels = upd_list_channels
+        self._safety = safety
+        if stimulation_duration:
+            self._current_stim_duration = stimulation_duration
+
+        if not blocking:
+            continuous = ContinuousStimulation(
+                self,
+                sciencemode,
+                snapshot_channels(upd_list_channels),
+                stimulation_duration=stimulation_duration,
+                keep_alive_period=keep_alive_period,
+                ack_timeout=ack_timeout,
+                callback=callback,
+            )
+            self._continuous = continuous
+            self.stimulation_started = True
+            try:
+                continuous.start(timeout=3 * ack_timeout)
+            except BaseException:
+                self._stop_continuous(pause=True, raise_error=False)
+                raise
+            return
+
+        self.ml_update.packet_number = self.get_next_packet_number()
+        self._send_stimulation_update()
+
+        if stimulation_duration:
+            start_time = time.time()
+            while (time.time() - start_time) < stimulation_duration:
+                self._get_current_data()
+                self._get_last_ack()
+                self.check_stimulation_errors()
+                time.sleep(0.005)
+
+        self.pause_stimulation()
+        self.stimulation_started = True
+
+    def _check_update_channels(self, upd_list_channels: list, safety: bool):
+        """
+        Check the channels given to start or update the mid level stimulation.
+        """
         if upd_list_channels is not None:
             new_electrode_number = calc_electrode_number(upd_list_channels)
             if new_electrode_number != self.electrode_number:
@@ -518,12 +690,6 @@ class P24(RehastimGeneric):
                 )
 
         check_list_channel_order(upd_list_channels)
-
-        self.list_channels = upd_list_channels
-        self._safety = safety
-        if stimulation_duration:
-            self._current_stim_duration = stimulation_duration
-        self.ml_update.packet_number = self.get_next_packet_number()
 
         for channel in upd_list_channels:
             if safety and not channel.is_pulse_symmetric():
@@ -541,18 +707,6 @@ class P24(RehastimGeneric):
                         channel._no_channel
                     )
                 )
-        self._send_stimulation_update()
-
-        if stimulation_duration:
-            start_time = time.time()
-            while (time.time() - start_time) < stimulation_duration:
-                self._get_current_data()
-                self._get_last_ack()
-                self.check_stimulation_errors()
-                time.sleep(0.005)
-
-        self.pause_stimulation()
-        self.stimulation_started = True
 
     def start_pulse_by_pulse_stimulation(
         self,
@@ -715,18 +869,60 @@ class P24(RehastimGeneric):
         self._get_last_ack()
 
     def update_stimulation(
-        self, upd_list_channels: list, stimulation_duration: int | float = None
-    ):
+        self,
+        upd_list_channels: list,
+        stimulation_duration: int | float = None,
+        wait: bool = False,
+        timeout: float = 1.0,
+    ) -> int | None:
         """
         Update the ml stimulation on the device with new channel configurations.
+
+        If a non-blocking stimulation is running (start_stimulation(..., blocking=False)), the new parameters are
+        copied and queued for the stimulation thread and the method returns immediately. It is thread safe and
+        can be called from any thread, including the callback. If several updates are queued before the thread
+        sends them, only the latest one is sent. Otherwise, the blocking start_stimulation is called again.
 
         Parameters
         ----------
         upd_list_channels : list
             Channels to stimulate.
         stimulation_duration : int | float
-            Duration of the updated stimulation in seconds.
+            Duration of the updated stimulation in seconds. In non-blocking mode, the stimulation stops this
+            duration after the call (None keeps the current end, if any).
+        wait : bool
+            Non-blocking mode only. If True, return once the device acknowledged the update.
+        timeout : float
+            Non-blocking mode only. Maximum time in s to wait for the ack when wait is True.
+
+        Returns
+        -------
+        In non-blocking mode, the sequence number of the update (see StimulationEvent.seq), None otherwise.
         """
+        self.check_stimulation_thread()
+        continuous = self._continuous
+        if continuous is not None and continuous.is_alive():
+            if stimulation_duration is not None and not isinstance(
+                stimulation_duration, int | float
+            ):
+                raise TypeError(
+                    "Please provide a int or float type for stimulation duration"
+                )
+            self._check_update_channels(upd_list_channels, self._safety)
+            self.list_channels = upd_list_channels
+            seq = continuous.request_update(
+                snapshot_channels(upd_list_channels), stimulation_duration
+            )
+            if wait:
+                continuous.wait_applied(seq, timeout)
+            return seq
+        if continuous is not None:  # The thread ended normally (stimulation_duration elapsed)
+            self._continuous = None
+            raise RuntimeError(
+                "The non-blocking stimulation has ended (stimulation_duration elapsed). "
+                "Call start_stimulation(..., blocking=False) to start it again."
+            )
+
         if stimulation_duration is not None:
             self._current_stim_duration = stimulation_duration
 
@@ -736,8 +932,14 @@ class P24(RehastimGeneric):
 
     def end_stimulation(self):
         """
-        Stop the mid level stimulation.
+        Stop the mid level stimulation (after stopping the non-blocking stimulation thread, if any).
         """
+        #  The thread error, if any, is raised after Ml_stop has been sent.
+        continuous_error = None
+        try:
+            self._stop_continuous(pause=False)
+        except Exception as e:
+            continuous_error = e
         packet_number = self.get_next_packet_number()
 
         if not sciencemode.lib.smpt_send_ml_stop(self.device, packet_number):
@@ -750,6 +952,8 @@ class P24(RehastimGeneric):
         )
         self._get_last_ack()
         self.stimulation_started = False
+        if continuous_error is not None:
+            raise continuous_error
 
     def check_stimulation_errors(self):
         """
