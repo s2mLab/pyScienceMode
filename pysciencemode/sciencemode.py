@@ -20,6 +20,7 @@ from .acks import (
     start_stimulation_ack,
 )
 from .enums import Rehastim2Commands, P24Commands, Device
+from .events import EventEmitterMixin
 
 try:
     from sciencemode import sciencemode
@@ -30,7 +31,7 @@ except ImportError:
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
 
 
-class RehastimGeneric:
+class RehastimGeneric(EventEmitterMixin):
     """
     Class used for the sciencemode communication protocol.
 

@@ -33,7 +33,13 @@ class Rehastim2(RehastimGeneric):
     Class used for the communication with Rehastim2.
     """
 
-    def __init__(self, port: str, show_log: bool = False, with_motomed: bool = False):
+    def __init__(
+        self,
+        port: str,
+        show_log: bool = False,
+        with_motomed: bool = False,
+        event_sinks: list = None,
+    ):
         """
         Creates an object stimulator.
 
@@ -45,7 +51,11 @@ class Rehastim2(RehastimGeneric):
             If True, the log of the communication will be printed.
         with_motomed: bool
             If the motomed is connected to the Rehastim, put this flag to True.
+        event_sinks: list[EventSink]
+            Sinks receiving a timestamped event for each stimulation command (see pysciencemode.events).
         """
+        for sink in event_sinks or []:
+            self.add_event_sink(sink)
         self.list_channels = None
         self.stimulation_interval = None
         self.inter_pulse_interval = 2
@@ -314,8 +324,18 @@ class Rehastim2(RehastimGeneric):
         )
 
         self.set_stimulation_signal(self.list_channels)
+        t0 = time.perf_counter_ns()
         self._send_packet("InitChannelListMode")
-        self._get_last_ack()
+        ack = self._get_last_ack()
+        self._emit(
+            "init",
+            self.list_channels,
+            t_perf_ns=t0,
+            ack=self._ack_status(ack),
+            stimulation_interval=stimulation_interval,
+            inter_pulse_interval=inter_pulse_interval,
+            low_frequency_factor=low_frequency_factor,
+        )
 
     def start_stimulation(
         self, stimulation_duration: float = None, upd_list_channels: list = None
@@ -342,10 +362,18 @@ class Rehastim2(RehastimGeneric):
                 )
             self.list_channels = upd_list_channels
             self.set_stimulation_signal(self.list_channels)
+        t0 = time.perf_counter_ns()
         self._send_packet("StartChannelListMode")
         time_start_stim = time.time()
 
-        self._get_last_ack()
+        ack = self._get_last_ack()
+        self._emit(
+            "start",
+            self.list_channels,
+            t_perf_ns=t0,
+            ack=self._ack_status(ack),
+            stimulation_duration=stimulation_duration,
+        )
         self.stimulation_active = True
 
         if stimulation_duration is not None:
@@ -361,17 +389,37 @@ class Rehastim2(RehastimGeneric):
         """
         tmp_amp = self.amplitude
         self.amplitude = [0] * len(self.list_channels)
+        t0 = time.perf_counter_ns()
         self._send_packet("StartChannelListMode")
-        self._get_last_ack()
+        ack = self._get_last_ack()
+        self._emit(
+            "pause",
+            t_perf_ns=t0,
+            ack=self._ack_status(ack),
+            paused_channels=list(self.given_channels),
+        )
         self.amplitude = tmp_amp
 
     def end_stimulation(self):
         """
         Stop a stimulation, after calling this method, init_channel must be used if stimulation need to be restarted.
         """
+        t0 = time.perf_counter_ns()
         self._send_packet("StopChannelListMode")
-        self._get_last_ack()
+        ack = self._get_last_ack()
+        self._emit("stop", t_perf_ns=t0, ack=self._ack_status(ack))
         self.packet_count = 0
+
+    def _ack_status(self, packet) -> str | None:
+        """
+        Decode an ack packet for the event log, without ever raising.
+        """
+        if not self.event_sinks:
+            return None
+        try:
+            return self._calling_ack(packet)
+        except Exception:
+            return None
 
     def get_motomed_angle(self) -> float:
         """

@@ -19,6 +19,7 @@ classifiers = [
 requires-python = ">=3.10"
 
 dependencies = ["numpy", "crccheck", "colorama", "pyserial"]
+optional-dependencies = { lsl = ["pylsl"] }
 
 [tool.setuptools]
 packages = ["pysciencemode"]

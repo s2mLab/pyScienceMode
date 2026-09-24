@@ -13,6 +13,7 @@ Welcome to pyScienceMode's documentation!
    about
    install
    examples
+   stim_events
    main_differences
    contributing
    cite

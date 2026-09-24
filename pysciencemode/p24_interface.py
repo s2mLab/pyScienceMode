@@ -16,6 +16,7 @@ except ImportError:
     pass
 from .enums import Device, HighVoltage, Modes, StimStatus
 from .channel import Point, Channel
+from .events import ChannelState
 
 
 class P24(RehastimGeneric):
@@ -23,7 +24,9 @@ class P24(RehastimGeneric):
     Class used for the communication with P24.
     """
 
-    def __init__(self, port: str, show_log: bool | str = False):
+    def __init__(
+        self, port: str, show_log: bool | str = False, event_sinks: list = None
+    ):
         """
         Creates an object stimulator for the P24.
 
@@ -35,9 +38,13 @@ class P24(RehastimGeneric):
             If True, all logs of the communication will be printed.
             If "Status", only basic logs will be printed.
             If False, no logs will be printed.
+        event_sinks: list[EventSink]
+            Sinks receiving a timestamped event for each stimulation command (see pysciencemode.events).
         """
         if show_log not in [True, False, "Status"]:
             raise ValueError("show_log must be True, False, or 'Status'.")
+        for sink in event_sinks or []:
+            self.add_event_sink(sink)
 
         self.list_channels = None
         self.electrode_number = 0
@@ -375,6 +382,13 @@ class P24(RehastimGeneric):
                     "Or set safety=False in start_stim_one_channel_stimulation."
                 )
 
+        self._emit(
+            "ll_start",
+            [ChannelState(channel=no_channel)],
+            points=[(p.pulse_width, p.amplitude) for p in points],
+            stim_sequence=stim_sequence,
+            pulse_interval=pulse_interval,
+        )
         for _ in range(stim_sequence):
             ll_config.packet_number = self.get_next_packet_number()
             sciencemode.lib.smpt_send_ll_channel_config(self.device, ll_config)
@@ -435,8 +449,10 @@ class P24(RehastimGeneric):
         Stop the device lower level.
         """
         packet_number = self.get_next_packet_number()
+        t0 = time.perf_counter_ns()
         if not sciencemode.lib.smpt_send_ll_stop(self.device, packet_number):
             raise RuntimeError("Low level stop failed.")
+        self._emit("ll_stop", t_perf_ns=t0)
         self.log(
             "Low level stopped",
             "Command sent to rehastim: {}".format(
@@ -476,6 +492,7 @@ class P24(RehastimGeneric):
         ml_init.stop_all_channels_on_error = stop_all_on_error
         ml_init.packet_number = self.get_next_packet_number()
 
+        t0 = time.perf_counter_ns()
         if not sciencemode.lib.smpt_send_ml_init(self.device, ml_init):
             raise RuntimeError("Failed to start stimulation")
         self.log(
@@ -485,6 +502,7 @@ class P24(RehastimGeneric):
             ),
         )
         self._get_last_ack()
+        self._emit("init", self.list_channels, t_perf_ns=t0)
 
     def start_stimulation(
         self,
@@ -541,7 +559,14 @@ class P24(RehastimGeneric):
                         channel._no_channel
                     )
                 )
+        t0 = time.perf_counter_ns()
         self._send_stimulation_update()
+        self._emit(
+            "start",
+            upd_list_channels,
+            t_perf_ns=t0,
+            stimulation_duration=stimulation_duration,
+        )
 
         if stimulation_duration:
             start_time = time.time()
@@ -646,7 +671,11 @@ class P24(RehastimGeneric):
                     pulse_width_list[channel.get_no_channel()][pulse_index]
                 )
 
+            t0 = time.perf_counter_ns()
             self._send_stimulation_update()
+            self._emit(
+                "pulse", upd_list_channels, t_perf_ns=t0, pulse_index=pulse_index
+            )
             self._get_current_data()
             self._get_last_ack()
             self.check_stimulation_errors()
@@ -679,7 +708,9 @@ class P24(RehastimGeneric):
             for point in channel.list_point:
                 point.amplitude = 0
 
+        t0 = time.perf_counter_ns()
         self._send_stimulation_update()
+        self._emit("pause", t_perf_ns=t0, paused_channels=list(original_points))
         for channel in self.list_channels:
             channel.list_point = original_points[channel._no_channel]
 
@@ -740,8 +771,10 @@ class P24(RehastimGeneric):
         """
         packet_number = self.get_next_packet_number()
 
+        t0 = time.perf_counter_ns()
         if not sciencemode.lib.smpt_send_ml_stop(self.device, packet_number):
             raise RuntimeError("Failure to stop stimulation.")
+        self._emit("stop", t_perf_ns=t0)
         self.log(
             "Stimulation stopped",
             "Command sent to rehastim: {}".format(

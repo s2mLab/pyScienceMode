@@ -6,3 +6,5 @@ from .p24_interface import P24
 from . import acks
 from .channel import Channel, Point
 from .enums import Rehastim2Commands, P24Commands, Modes, Device
+from . import events
+from .events import StimEvent, EventSink, CsvEventLogger, LslMarkerOutlet, MemorySink
