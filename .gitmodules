@@ -1,0 +1,3 @@
+[submodule "extern/ScienceMode4_c_library"]
+	path = extern/ScienceMode4_c_library
+	url = https://github.com/ScienceMode/ScienceMode4_c_library.git

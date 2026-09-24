@@ -8,7 +8,7 @@ easily extensible as new hardware emerges. Please have a look to the documentati
 
 ## How to install
 These are the different ways to install pyScienceMode for the Rehastim2 control.
-To control the P24, please follow the given steps in `Installing from source` as it requires an additional wheel compilation.
+To control the P24, please follow the `Additional installation step for the P24 stimulator` below, as it requires an additional wheel.
 
 ### Installing from PyPI
 ```bash
@@ -21,13 +21,19 @@ conda install -c conda-forge pysciencemode
 ```
 
 ### Installing from source
-Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) to install pyScienceMode. 
+```bash
+pip install .
+```
+Please refer to the [documentation](https://pysciencemode.readthedocs.io/en/latest/install.html) for more details.
 
 ### Additional installation step for the P24 stimulator
+Install the `p24` extra (`pip install "pysciencemode[p24]"`, or `pip install ".[p24]"` from source), which pulls `cffi`.
+The low-level `sciencemode` wrapper must then be installed separately: it is not on PyPI and the provided
+wheel is currently only available for Windows / Python 3.10.
 pysciencemode is not compatible with macOS and Linux for the control of the stimulator P24.
 As soon as the P24 wrapper will be compatible with macOS and Linux, we will update the documentation.
 
-<strong>For Python 3.10 only:</strong> navigate to the folder where the file sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl is located and run the following command
+<strong>For Python 3.10 on Windows:</strong> navigate to the folder where the file sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl is located and run the following command
 ```bash
 pip install sciencemode_cffi-1.0.0-cp310-cp310-win_amd64.whl
 ```
