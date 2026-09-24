@@ -15,6 +15,7 @@ Welcome to pyScienceMode's documentation!
    examples
    main_differences
    contributing
+   packaging
    cite
 
 Indices and tables

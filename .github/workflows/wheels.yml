@@ -1,0 +1,82 @@
+name: Wheels
+
+# Builds the platform wheels (cibuildwheel) and the sdist on every push / PR;
+# publishes to PyPI (trusted publishing) only when a `v*` tag is pushed.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  wheels:
+    name: Wheels ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: windows-AMD64, os: windows-latest, archs: AMD64}
+          - {name: manylinux-x86_64, os: ubuntu-latest, archs: x86_64}
+          - {name: manylinux-aarch64, os: ubuntu-24.04-arm, archs: aarch64}
+          - {name: macos-x86_64, os: macos-15-intel, archs: x86_64}
+          - {name: macos-arm64, os: macos-14, archs: arm64}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: pypa/cibuildwheel@v4.2.1
+        env:
+          CIBW_ARCHS: ${{ matrix.archs }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wheels-${{ matrix.name }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  sdist:
+    name: sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Build sdist
+        run: pipx run build --sdist
+      - name: Check the sdist builds and imports
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install dist/*.tar.gz
+          cd /tmp && /tmp/venv/bin/python -c "from sciencemode import sciencemode as s; v = s.lib.smpt_library_version(); print('ScienceMode4', v.major, v.minor, v.revision)"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: Publish to PyPI
+    needs: [wheels, sdist]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && github.repository == 's2mLab/pyScienceMode'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pysciencemode
+    permissions:
+      id-token: write  # trusted publishing (OIDC), no API token needed
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - run: ls -l dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

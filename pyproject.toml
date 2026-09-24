@@ -1,28 +1,89 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+# The P24 low-level bindings (`sciencemode` package) are a cffi extension
+# compiled from the ScienceMode4 C library (git submodule), so wheels are
+# platform-specific. cffi is only used here to emit C from the committed cdef
+# (tools/cffi/smpt_cdef.h): no C preprocessor is needed at build time.
+requires = ["scikit-build-core>=0.11", "cffi>=1.17"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "pysciencemode"
+# Single source of truth for the version (docs/conf.py reads it from here).
 version = "1.1.5"
 description = "Python interface to control the Rehastim2 and P24 devices."
 readme = "README.md"
-license = { text = "MIT" }
+# pysciencemode is MIT; the bundled ScienceMode4 C library (HASOMED) is
+# MPL-2.0 OR LGPL-3.0-or-later.
+license = "MIT AND (MPL-2.0 OR LGPL-3.0-or-later)"
+license-files = [
+  "LICENSE",
+  "extern/ScienceMode4_c_library/LICENSE",
+  "extern/ScienceMode4_c_library/LICENSE_LGPL_3_0",
+]
 authors = [
   { name = "S2M Lab", email = "kevin.co@umontreal.ca" }
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent",
+  "Programming Language :: C",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
 ]
 requires-python = ">=3.10"
 
-dependencies = ["numpy", "crccheck", "colorama", "pyserial"]
+# cffi is the runtime of the compiled `sciencemode` extension (P24).
+dependencies = ["numpy", "crccheck", "pyserial", "cffi>=1.17"]
 
-[tool.setuptools]
-packages = ["pysciencemode"]
+[project.optional-dependencies]
+# Kept for backward compatibility: the `sciencemode` extension is now built and
+# shipped with pysciencemode itself, so this extra adds nothing new.
+p24 = ["cffi>=1.17"]
 
 [project.urls]
 "Homepage" = "https://github.com/s2mLab/pyScienceMode"
 "Bug Tracker" = "https://github.com/s2mLab/pyScienceMode/issues"
+"Documentation" = "https://pysciencemode.readthedocs.io"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+cmake.version = ">=3.26"
+build-dir = "build/{wheel_tag}"
+# `src/sciencemode` is installed as the top-level `sciencemode` package (same
+# layout as the former `sciencemode_cffi` wheel); the compiled
+# `_sciencemode` module is added to it by CMake (see CMakeLists.txt).
+wheel.packages = ["pysciencemode", "src/sciencemode"]
+# Stable ABI (abi3) wheel: one wheel per platform works on CPython >= 3.10.
+wheel.py-api = "cp310"
+# The sdist must contain the C sources of the submodule (checked out); docs
+# (large images) and examples are left out.
+sdist.exclude = [
+  ".github",
+  ".readthedocs.yaml",
+  "*.whl",
+  "__pycache__",
+  "docs",
+  "examples",
+  "Examples",
+  "extern/ScienceMode4_c_library/.github",
+  "extern/ScienceMode4_c_library/ScienceMode_Library_Test",
+  "extern/ScienceMode4_c_library/*.pro",
+  "extern/ScienceMode4_c_library/*.pri",
+  "extern/ScienceMode4_c_library/ScienceMode_Library/*.pro",
+  "extern/ScienceMode4_c_library/ScienceMode_Library/*.pri",
+]
+
+[tool.cibuildwheel]
+# One abi3 wheel per platform (built with cp310) is reused and tested on every
+# selected CPython version. Targets (see .github/workflows/wheels.yml):
+# win_amd64, manylinux x86_64/aarch64, macOS x86_64/arm64.
+build = "cp310-* cp311-* cp312-* cp313-*"
+skip = "*-musllinux_*"
+build-verbosity = 1
+test-requires = ["pytest"]
+# Hardware-free checks of the compiled bindings (incl. a serial round-trip on a
+# POSIX pseudo-terminal), then a plain import of the high-level API.
+test-command = [
+  "pytest {project}/tests/test_sciencemode_bindings.py -v -p no:cacheprovider",
+  "python -c \"from pysciencemode import P24, Rehastim2; print('pysciencemode OK')\"",
+]
