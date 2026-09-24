@@ -489,10 +489,10 @@ class RehastimGeneric:
         # handle the LSB and MSB and stuffed bytes
         count = 0
         if packet[8] == 129:
-            angle = 255 * signed_int(packet[7:8]) + packet[9] ^ self.STUFFING_KEY
+            angle = 256 * signed_int(packet[7:8]) + (packet[9] ^ self.STUFFING_KEY)
             count += 1
         else:
-            angle = 255 * signed_int(packet[7:8]) + packet[8]
+            angle = 256 * signed_int(packet[7:8]) + packet[8]
         if packet[10 + count] == 129:
             speed = (
                 signed_int(packet[10 + count + 1 : 10 + count + 2]) ^ self.STUFFING_KEY
@@ -727,19 +727,19 @@ class RehastimGeneric:
             phase_number = packet[7]
         if packet[9 + count] == 129:
             passive_distance = (
-                255 * packet[8 + count] + packet[9 + count + 1] ^ self.STUFFING_KEY
+                256 * packet[8 + count] + (packet[9 + count + 1] ^ self.STUFFING_KEY)
             )
             count += 1
         else:
-            passive_distance = 255 * packet[8 + count] + packet[9 + count]
+            passive_distance = 256 * packet[8 + count] + packet[9 + count]
 
         if packet[11 + count] == 129:
             active_distance = (
-                255 * packet[10 + count] + packet[11 + count + 1] ^ self.STUFFING_KEY
+                256 * packet[10 + count] + (packet[11 + count + 1] ^ self.STUFFING_KEY)
             )
             count += 1
         else:
-            active_distance = 255 * packet[10 + count] + packet[10 + count + 1]
+            active_distance = 256 * packet[10 + count] + packet[10 + count + 1]
 
         if packet[12 + count] == 129:
             average_power = packet[12 + count + 1] ^ self.STUFFING_KEY
@@ -755,27 +755,27 @@ class RehastimGeneric:
 
         if packet[15 + count] == 129:
             phase_duration = (
-                255 * packet[14 + count] + packet[15 + count + 1] ^ self.STUFFING_KEY
+                256 * packet[14 + count] + (packet[15 + count + 1] ^ self.STUFFING_KEY)
             )
             count += 1
         else:
-            phase_duration = 255 * packet[14 + count] + packet[15 + count]
+            phase_duration = 256 * packet[14 + count] + packet[15 + count]
 
         if packet[17 + count] == 129:
             active_phase_duration = (
-                255 * packet[16 + count] + packet[17 + count + 1] ^ self.STUFFING_KEY
+                256 * packet[16 + count] + (packet[17 + count + 1] ^ self.STUFFING_KEY)
             )
             count += 1
         else:
-            active_phase_duration = 255 * packet[16 + count] + packet[17 + count]
+            active_phase_duration = 256 * packet[16 + count] + packet[17 + count]
 
         if packet[19 + count] == 129:
             phase_work = (
-                255 * packet[18 + count] + packet[19 + count + 1] ^ self.STUFFING_KEY
+                256 * packet[18 + count] + (packet[19 + count + 1] ^ self.STUFFING_KEY)
             )
             count += 1
         else:
-            phase_work = 255 * packet[18 + count] + packet[19 + count]
+            phase_work = 256 * packet[18 + count] + packet[19 + count]
 
         if packet[20 + count] == 129:
             success_value = packet[20 + count + 1] ^ self.STUFFING_KEY
