@@ -474,8 +474,8 @@ class RehastimGeneric:
                         del self.command_send[i]
                         del self.ack_received[i]
 
-            loop_duration = tic - time.time()
-            time.sleep(time_to_sleep - loop_duration)
+            loop_duration = time.time() - tic
+            time.sleep(max(0.0, time_to_sleep - loop_duration))
 
     def _actual_values_ack(self, packet: bytes):
         """
