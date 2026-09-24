@@ -143,6 +143,7 @@ class RehastimGeneric:
         self.max_motomed_values = 100
         self.max_phase_result = 1
         self.__thread_watchdog = None
+        self.__thread_catch_ack = None
         self.lock = threading.Lock()
         self.motomed_done = threading.Event()
         self.is_phase_result = threading.Event()
@@ -331,7 +332,9 @@ class RehastimGeneric:
         Start the thread which catches rehastim data and motomed data if motomed flag is true.
         """
         self.__comparison_thread_started = True
-        self.__thread_catch_ack = threading.Thread(target=self._thread_catch_ack)
+        self.__thread_catch_ack = threading.Thread(
+            target=self._thread_catch_ack, daemon=True
+        )
         self.__thread_catch_ack.start()
 
     def _thread_catch_ack(self):
@@ -632,10 +635,10 @@ class RehastimGeneric:
         """
         Disconnect the pc to the Rehastim by stopping sending watchdog and motomed threads (if applicable).
         """
-        self._stop_watchdog()
-        if self.reha_connected:
-            self._stop_thread_catch_ack()
+        # Must be set before joining the ack thread, otherwise its loop never ends (deadlock).
         self.stimulation_active = False
+        self._stop_watchdog()
+        self._stop_thread_catch_ack()
 
     def _stop_thread_catch_ack(self):
         """
@@ -643,7 +646,10 @@ class RehastimGeneric:
         """
         self.is_motomed_connected = False
         self.reha_connected = False
-        self.__thread_catch_ack.join()
+        if self.__thread_catch_ack is not None:
+            self.__thread_catch_ack.join()
+            self.__thread_catch_ack = None
+        self.__comparison_thread_started = False
 
     def _start_watchdog(self):
         """
@@ -651,7 +657,10 @@ class RehastimGeneric:
         """
         self.reha_connected = True
         if not self.__watchdog_thread_started:
-            self.__thread_watchdog = threading.Thread(target=self._watchdog)
+            self.__watchdog_thread_started = True
+            self.__thread_watchdog = threading.Thread(
+                target=self._watchdog, daemon=True
+            )
             self.__thread_watchdog.start()
 
     def _stop_watchdog(self):
@@ -659,7 +668,10 @@ class RehastimGeneric:
         Stop the thread which sends watchdog.
         """
         self.reha_connected = False
-        self.__thread_watchdog.join()
+        if self.__thread_watchdog is not None:
+            self.__thread_watchdog.join()
+            self.__thread_watchdog = None
+        self.__watchdog_thread_started = False
 
     def _packet_watchdog(self) -> bytes:
         """
