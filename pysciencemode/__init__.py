@@ -1,5 +1,5 @@
 from .motomed_interface import _Motomed
-from .sciencemode import RehastimGeneric
+from .sciencemode import RehastimGeneric, AckTimeoutError
 from . import utils
 from .rehastim2_interface import Rehastim2
 from .p24_interface import P24

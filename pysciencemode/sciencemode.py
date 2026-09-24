@@ -30,6 +30,13 @@ except ImportError:
 # This code needs to be used in parallel with the "ScienceMode2 - Description and protocol" document
 
 
+class AckTimeoutError(TimeoutError):
+    """
+    Raised when no acknowledgment is received from the stimulator within the allowed time
+    (e.g. cable unplugged or device switched off).
+    """
+
+
 class RehastimGeneric:
     """
     Class used for the sciencemode communication protocol.
@@ -52,6 +59,10 @@ class RehastimGeneric:
         Baud rate of protocol.
     STUFFING_BYTE : list
         Stuffed byte of protocol.
+    ack_timeout : float | None
+        Maximum time (in seconds) to wait for an acknowledgment from the stimulator before raising an
+        AckTimeoutError. Can be overridden per instance (e.g. stimulator.ack_timeout = 10).
+        Set to None to wait indefinitely (previous behaviour).
     """
 
     #  Constant for the Rehastim2
@@ -63,6 +74,9 @@ class RehastimGeneric:
     STUFFING_KEY = 0x55
     MAX_PACKET_BYTES = 69
     STUFFED_BYTES = [240, 15, 129, 85, 10]
+
+    # Maximum waiting time (s) for an acknowledgment. None means wait indefinitely.
+    ack_timeout = 5.0
 
     def __init__(
         self,
@@ -264,16 +278,20 @@ class RehastimGeneric:
         if self.error_occured:
             raise RuntimeError("Stimulation error")
 
+        deadline = self._ack_deadline()
+
         if self.is_motomed_connected:
             if init:
                 while not self.last_init_ack:
-                    pass
+                    self._check_ack_deadline(deadline)
+                    time.sleep(0.001)
                 last_ack = self.last_init_ack
                 self.ack_received.append(last_ack)
                 self.last_init_ack = None
             else:
                 while not self.last_ack:
-                    pass
+                    self._check_ack_deadline(deadline)
+                    time.sleep(0.001)
                 last_ack = self.last_ack
                 self.ack_received.append(last_ack)
                 self.last_ack = None
@@ -281,6 +299,7 @@ class RehastimGeneric:
 
         if self.device_type == Device.P24.value:
             while not sciencemode.lib.smpt_new_packet_received(self.device):
+                self._check_ack_deadline(deadline)
                 time.sleep(0.005)
             ret = sciencemode.lib.smpt_last_ack(self.device, self.ack)
             if self.show_log is True:
@@ -291,9 +310,10 @@ class RehastimGeneric:
             return ret
         elif self.device_type == Device.Rehastim2.value:
             while 1:
-                packet = self._read_packet()
+                packet = self._read_packet(deadline=deadline)
                 if packet and len(packet) != 0:
                     break
+                self._check_ack_deadline(deadline)
             if packet and not self.error_occured:
                 if self.show_log and packet[-1][6] in [
                     t.value for t in self.Rehastim2Commands
@@ -303,6 +323,34 @@ class RehastimGeneric:
                     )
                     self.ack_received.append(packet[-1])
             return packet[-1]
+
+    def _ack_deadline(self) -> float | None:
+        """
+        Compute the deadline (time.perf_counter() reference) for waiting an acknowledgment.
+
+        Returns
+        -------
+        float | None
+            The deadline, or None if ack_timeout is None (wait indefinitely).
+        """
+        if self.ack_timeout is None:
+            return None
+        return time.perf_counter() + self.ack_timeout
+
+    def _check_ack_deadline(self, deadline: float | None):
+        """
+        Raise an AckTimeoutError if the deadline is exceeded.
+
+        Parameters
+        ----------
+        deadline : float | None
+            Deadline computed by _ack_deadline. None means no deadline.
+        """
+        if deadline is not None and time.perf_counter() >= deadline:
+            raise AckTimeoutError(
+                f"No acknowledgment received from the stimulator on port {self.port_name} "
+                f"within {self.ack_timeout} s. Check that the device is switched on and connected."
+            )
 
     def _return_list_ack_received(self) -> list:
         """
@@ -594,9 +642,16 @@ class RehastimGeneric:
         elif self.device_type == Device.Rehastim2.value:
             self.port.close()
 
-    def _read_packet(self) -> list:
+    def _read_packet(self, deadline: float | None = None) -> list:
         """
         Read the bytes are waiting in the serial port.
+
+        Parameters
+        ----------
+        deadline : float | None
+            time.perf_counter() value after which an AckTimeoutError is raised if no complete packet
+            has been received. None means wait indefinitely.
+
         Returns
         -------
         packet: list
@@ -604,12 +659,15 @@ class RehastimGeneric:
         """
         packet = bytes()
         while True:
-            packet_tmp = self.port.read(self.port.inWaiting())
-            if len(packet_tmp) != 0:
-                packet += packet_tmp
-            else:
-                if packet and packet[-1] == self.STOP_BYTE:
-                    break
+            n_waiting = self.port.in_waiting
+            if n_waiting:
+                packet += self.port.read(n_waiting)
+                continue
+            if packet and packet[-1] == self.STOP_BYTE:
+                break
+            self._check_ack_deadline(deadline)
+            # Blocking read of one byte (bounded by the serial port timeout) instead of busy waiting
+            packet += self.port.read(1)
         packet_list = []
         if len(packet) > 8:
             first_start_byte = packet.index(self.START_BYTE)
@@ -621,7 +679,7 @@ class RehastimGeneric:
                         next_stop_byte += (
                             packet_tmp[next_stop_byte + 1 :].index(self.STOP_BYTE) + 1
                         )
-                    except:
+                    except ValueError:
                         packet_list = []
                         break
                 packet_list.append(packet_tmp[: next_stop_byte + 1])
