@@ -2,12 +2,14 @@ import pytest
 from pysciencemode import P24 as Stp24
 from pysciencemode import Channel, Point, Device, Modes
 
+pytestmark = [pytest.mark.hardware, pytest.mark.p24]
+
 # Connect the P24 device to the computer.
-# Then you can run the whole file (except for the test_electrode_error) or just one test.
+# Then you can run the whole file or just one test (test_electrode_error_p24 requires --run-interactive).
 
 
+@pytest.mark.interactive
 @pytest.mark.parametrize("instant", ["while", "begining"])
-@pytest.mark.parametrize("port", ["COM4"])
 def test_electrode_error_p24(instant, port):
     """
     You will need to connect channel 1 to a stim box or to the skin, then start the test.
@@ -50,12 +52,12 @@ def test_electrode_error_p24(instant, port):
     stimulator.close_port()
 
 
-def test_no_stimulation_points_error():
+def test_no_stimulation_points_error(port):
     """
     Test if no stimulation points are provided, raise an error.
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -76,12 +78,12 @@ def test_no_stimulation_points_error():
     stimulator.close_port()
 
 
-def test_symmetric_error():
+def test_symmetric_error(port):
     """
     Start a stimulation pattern with an asymmetric pulse and with safety = True.
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -103,12 +105,13 @@ def test_symmetric_error():
     stimulator.close_port()
 
 
-def test_no_stimulation_duration_error():
+def test_invalid_stimulation_duration_type_error(port):
     """
-    Test if no stimulation duration is provided in start_stimulation.
+    Test if the stimulation duration given to start_stimulation is not an int or a float, raise an error.
+    (start_stimulation no longer requires a stimulation duration: without it, the stimulation is only updated.)
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -122,18 +125,22 @@ def test_no_stimulation_duration_error():
 
     list_channels.append(channel_1)
     stimulator.init_stimulation(list_channels=list_channels)
-    with pytest.raises(ValueError, match="Please indicate the stimulation duration"):
-        stimulator.start_stimulation(upd_list_channels=list_channels, safety=True)
+    with pytest.raises(
+        TypeError, match="Please provide a int or float type for stimulation duration"
+    ):
+        stimulator.start_stimulation(
+            upd_list_channels=list_channels, stimulation_duration="1", safety=True
+        )
     stimulator.close_port()
 
 
-def test_channel_list_empty():
+def test_channel_list_empty(port):
     """
     Test if no channel is provided in the init_stimulation.
     Connect the electrode to a stim box or to the skin and start the test.
     """
 
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     with pytest.raises(
         ValueError, match="Please provide at least one channel for stimulation."
@@ -142,12 +149,12 @@ def test_channel_list_empty():
     stimulator.close_port()
 
 
-def test_no_channel_instance_error():
+def test_no_channel_instance_error(port):
     """
     Test if the channel list contains a non channel instance.
     """
 
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = [1]
     index = 0
     with pytest.raises(
@@ -159,13 +166,13 @@ def test_no_channel_instance_error():
     stimulator.close_port()
 
 
-def test_point_list_empty():
+def test_point_list_empty(port):
     """
     Test if no point is provided for the low level stimulation.
     Connect the electrode to a stim box or to the skin and start the test.
     """
 
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_points = []
     channel_number = 1
 
@@ -182,12 +189,12 @@ def test_point_list_empty():
     stimulator.close_port()
 
 
-def test_missing_pulse_width_list_error():
+def test_missing_pulse_width_list_error(port):
     """
     Test if no pulse width list is provided for one of the stimulated channels, raise an error.
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -211,12 +218,12 @@ def test_missing_pulse_width_list_error():
     stimulator.close_port()
 
 
-def test_pulse_width_list_length_error():
+def test_pulse_width_list_length_error(port):
     """
     Test if the pulse width lists given for each channel do not have the same length, raise an error.
     Connect the electrodes to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     for channel_number in [1, 2]:
         list_channels.append(
@@ -242,12 +249,12 @@ def test_pulse_width_list_length_error():
     stimulator.close_port()
 
 
-def test_pulse_interval_list_length_error():
+def test_pulse_interval_list_length_error(port):
     """
     Test if the pulse interval list does not provide one interval per pulse, raise an error.
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -274,12 +281,12 @@ def test_pulse_interval_list_length_error():
 
 
 @pytest.mark.parametrize("pulse_interval", [0, 20000])
-def test_pulse_interval_value_error(pulse_interval):
+def test_pulse_interval_value_error(pulse_interval, port):
     """
     Test if a pulse interval is out of limits, raise an error.
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -305,12 +312,12 @@ def test_pulse_interval_value_error(pulse_interval):
     stimulator.close_port()
 
 
-def test_no_mode_pulse_by_pulse_error():
+def test_no_mode_pulse_by_pulse_error(port):
     """
     Test if a channel without mode is stimulated pulse by pulse, raise an error.
     Connect the electrode to a stim box or to the skin and start the test.
     """
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_channels = []
     channel_number = 1
     channel_1 = Channel(
@@ -335,13 +342,13 @@ def test_no_mode_pulse_by_pulse_error():
     stimulator.close_port()
 
 
-def test_no_point_instance_error():
+def test_no_point_instance_error(port):
     """
     Test if the point list contains a non point instance.
     Connect the electrode to a stim box or to the skin and start the test.
     """
 
-    stimulator = Stp24(port="COM4", show_log="Status")
+    stimulator = Stp24(port=port, show_log="Status")
     list_points = [1]
     index = 0
     with pytest.raises(

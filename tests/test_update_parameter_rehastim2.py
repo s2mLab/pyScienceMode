@@ -2,13 +2,14 @@ import pytest
 from pysciencemode import Rehastim2 as St2
 from pysciencemode import Channel, Device, Modes
 
+pytestmark = [pytest.mark.hardware, pytest.mark.rehastim2]
+
 
 # Connect the Rehastim2 device to the computer.
 # You will need to connect channel 2 (or the no_channel you want between 1 and 8 to a stim box or to the skin.
 # Then you can run the whole file or just one test.
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("amplitude", [10, 20, 30])
 def test_update_amplitude(port, amplitude):
     """
@@ -36,7 +37,6 @@ def test_update_amplitude(port, amplitude):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("pulse_width", [100, 350, 500])
 def test_update_pulse_width(port, pulse_width):
     """
@@ -64,7 +64,6 @@ def test_update_pulse_width(port, pulse_width):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("frequency", [10, 30, 50])
 def test_update_frequency(port, frequency):
     """
@@ -92,7 +91,6 @@ def test_update_frequency(port, frequency):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 @pytest.mark.parametrize("mode", [Modes.SINGLE, Modes.DOUBLET, Modes.TRIPLET])
 def test_update_mode(port, mode):
     """

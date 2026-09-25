@@ -4,13 +4,14 @@ import pytest
 from pysciencemode import P24 as Stp24
 from pysciencemode import Channel, Device, Modes
 
+pytestmark = [pytest.mark.hardware, pytest.mark.p24]
+
 
 # Connect the P24 device to the computer. Then connect channel 1 to a stim box or to the skin, and start the
 # test.
 # Then you can run the whole file or just one test.
 
 
-@pytest.mark.parametrize("port", ["COM4"])
 @pytest.mark.parametrize("amplitude", [10, 20, 30])
 def test_update_amplitude(port, amplitude):
     """
@@ -38,7 +39,6 @@ def test_update_amplitude(port, amplitude):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM4"])
 @pytest.mark.parametrize("pulse_width", [100, 350, 600])
 def test_update_pulse_width(port, pulse_width):
     """
@@ -66,7 +66,6 @@ def test_update_pulse_width(port, pulse_width):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM4"])
 @pytest.mark.parametrize("frequency", [10, 30, 50])
 def test_update_frequency(port, frequency):
     """
@@ -94,7 +93,6 @@ def test_update_frequency(port, frequency):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM4"])
 @pytest.mark.parametrize("nb_pulses", [10, 50])
 def test_pulse_by_pulse_stimulation(port, nb_pulses):
     """
@@ -133,7 +131,6 @@ def test_pulse_by_pulse_stimulation(port, nb_pulses):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM4"])
 @pytest.mark.parametrize("nb_pulses_before_stop", [1, 5])
 def test_pulse_by_pulse_stop_condition(port, nb_pulses_before_stop):
     """
@@ -179,7 +176,6 @@ def test_pulse_by_pulse_stop_condition(port, nb_pulses_before_stop):
     stimulator.close_port()
 
 
-@pytest.mark.parametrize("port", ["COM4"])
 @pytest.mark.parametrize("mode", [Modes.SINGLE, Modes.DOUBLET, Modes.TRIPLET])
 def test_update_mode(port, mode):
     """

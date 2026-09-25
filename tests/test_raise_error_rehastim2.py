@@ -2,11 +2,13 @@ import pytest
 from pysciencemode import Rehastim2 as St2
 from pysciencemode import Channel, Device, Modes
 
-# Connect the P24 device to the computer.
-# Then you can run the whole file (except for the test_electrode_error) or just one test.
+pytestmark = [pytest.mark.hardware, pytest.mark.rehastim2]
+
+# Connect the Rehastim2 device to the computer.
+# Then you can run the whole file or just one test (test_electrode_error requires --run-interactive).
 
 
-@pytest.mark.parametrize("port", ["COM3"])
+@pytest.mark.interactive
 def test_electrode_error(port):
     """
     Test if the electrode is not connected to the stimulator. You will need to connect the channel 1 to a stim box
@@ -33,13 +35,12 @@ def test_electrode_error(port):
             )
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 def test_stimulation_duration_too_short(port):
     """
     Connect the electrode to the stimulator and start the test with a very short stimulation duration.
     """
 
-    stimulator = St2(port="COM3", show_log=True)
+    stimulator = St2(port=port, show_log=True)
     list_channels = []
     channel_number = 2
     channel_1 = Channel(
@@ -57,7 +58,6 @@ def test_stimulation_duration_too_short(port):
         )
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 def test_channel_list_empty(port):
     """
     Test if no channel is provided in the init_stimulation.
@@ -71,7 +71,6 @@ def test_channel_list_empty(port):
         stimulator.init_channel(list_channels=list_channels, stimulation_interval=30)
 
 
-@pytest.mark.parametrize("port", ["COM3"])
 def test_no_channel_instance_error(port):
     """
     Test if the channel list contains a non channel instance.
